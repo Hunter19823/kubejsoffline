@@ -1,42 +1,41 @@
 package pie.ilikepiefoo.html;
 
-import dev.latvian.mods.kubejs.event.EventJS;
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 public class JavaDocUtils {
 	public static final Logger LOG = LogManager.getLogger();
+	public static ArrayList<String> TEST = new ArrayList<>();
 
-	public static <T> String getClassName(Class<T> subject) {
+	public static void getParameters(Type type) {
+		if(type == null)
+			return;
+		LOG.info("Parameters for {}:", type.getTypeName());
+		if(type instanceof ParameterizedType parameterizedType) {
+			LOG.info("Owner Type: {}:", parameterizedType.getOwnerType());
+			LOG.info("Raw Type: {}:", parameterizedType.getRawType());
+			for(var possibleType : parameterizedType.getActualTypeArguments()) {
+				LOG.info(possibleType);
+				if(possibleType instanceof Class<?> target) {
+					LOG.info("Possible Type is actually class {}", target);
+				}
+			}
 
-
-		if(subject.componentType()!=null) {
-			getClassName(subject.componentType());
 		}
-
-
-
-		return subject.getCanonicalName();
-	}
-
-	public static String getLink(Class<?> subject) {
-		return "";
 	}
 
 	public static void main(String[] args) {
 		List<String> list = new ArrayList<String>();
 		list.add("Test");
-		JavaDocUtils.getClassName(list.getClass());
-		JavaDocUtils.getClassName(String.class);
-		JavaDocUtils.getClassName(Logger.class);
-		JavaDocUtils.getClassName(EventJS.class);
-		JavaDocUtils.getClassName(Minecraft.class);
-		JavaDocUtils.getClassName(LootContextParam.class);
-		JavaDocUtils.getClassName(args.getClass());
+		try {
+			getParameters(JavaDocUtils.class.getField("TEST").getGenericType());
+		} catch (NoSuchFieldException e) {
+			e.printStackTrace();
+		}
 	}
 }

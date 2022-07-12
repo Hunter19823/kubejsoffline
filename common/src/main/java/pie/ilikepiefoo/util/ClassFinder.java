@@ -3,12 +3,15 @@ package pie.ilikepiefoo.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.stream.Stream;
+import java.util.function.Consumer;
 
 public class ClassFinder {
 	public static final ClassFinder INSTANCE = new ClassFinder();
@@ -17,11 +20,17 @@ public class ClassFinder {
 	public final Map<Class<?>, SearchState> CLASS_SEARCH;
 	private Queue<Class<?>> CURRENT_DEPTH;
 	private Queue<Class<?>> NEXT_DEPTH;
+	private Queue<Consumer<Class<?>>> HANDLERS;
 
 	private ClassFinder() {
 		CLASS_SEARCH = new ConcurrentHashMap<>();
 		CURRENT_DEPTH = new ConcurrentLinkedQueue<>();
 		NEXT_DEPTH = new ConcurrentLinkedQueue<>();
+		HANDLERS = new ConcurrentLinkedQueue<>();
+	}
+
+	public void onSearched(Consumer<Class<?>> handler) {
+		HANDLERS.add(handler);
 	}
 
 	public boolean isFinished() {
@@ -90,8 +99,10 @@ public class ClassFinder {
 
 		// Add Fields
 		try{
-			for(var field : subject.getDeclaredFields())
+			for(var field : subject.getDeclaredFields()) {
 				addToQueue(field.getType());
+				addAllGenericTypes(field.getGenericType());
+			}
 		} catch (Throwable e) {
 			LOG.error(e);
 		}
@@ -102,6 +113,9 @@ public class ClassFinder {
 				addToQueue(method.getReturnType());
 				safeAddArray(method.getParameterTypes());
 				safeAddArray(method.getExceptionTypes());
+				addAllGenericTypes(method.getGenericReturnType());
+				safeAddAllGeneric(method.getGenericParameterTypes());
+				safeAddAllGeneric(method.getGenericExceptionTypes());
 			}
 		} catch (Throwable e) {
 			LOG.error(e);
@@ -113,12 +127,21 @@ public class ClassFinder {
 				addToQueue(constructor.getDeclaringClass());
 				safeAddArray(constructor.getParameterTypes());
 				safeAddArray(constructor.getExceptionTypes());
+				safeAddAllGeneric(constructor.getGenericParameterTypes());
+				safeAddAllGeneric(constructor.getGenericExceptionTypes());
 			}
 		} catch (Throwable e) {
 			LOG.error(e);
 		}
 
 		CLASS_SEARCH.put(subject, SearchState.SEARCHED);
+		for(Consumer<Class<?>> handler : HANDLERS) {
+			try {
+				handler.accept(subject);
+			} catch (Throwable e) {
+				LOG.error(e);
+			}
+		}
 	}
 
 	private void addToQueue(Class<?> target) {
@@ -127,6 +150,35 @@ public class ClassFinder {
 		if(!CLASS_SEARCH.containsKey(target)) {
 			NEXT_DEPTH.add(target);
 			CLASS_SEARCH.put(target, SearchState.IN_QUEUE);
+		}
+	}
+
+	private void addAllGenericTypes(Type type) {
+		if(type == null)
+			return;
+		if(type instanceof ParameterizedType parameterizedType) {
+			try {
+				for (var possibleType : parameterizedType.getActualTypeArguments()) {
+					if (possibleType instanceof Class<?> target) {
+						LOG.info("Found Generic Type: {}", target);
+						addToQueue(target);
+					}
+				}
+			} catch (Throwable e) {
+				LOG.error(e);
+			}
+		}
+	}
+
+	private void safeAddAllGeneric(Type[] targets){
+		if(targets == null)
+			return;
+		for(var target : targets) {
+			try {
+				addAllGenericTypes(target);
+			} catch (Throwable e){
+				LOG.error(e);
+			}
 		}
 	}
 
