@@ -18,12 +18,15 @@ public class ClassFinderTest {
 		LOG.info("Size of Classes Found {}", allKubeJSClasses.length);
 		//ClassFinder.INSTANCE.addToSearch(allKubeJSClasses);
 		ClassFinder.INSTANCE.addToSearch(KubeJS.class);
-		ClassFinder.DEBUG = false;
+		ClassTree tree = new ClassTree();
+		ClassFinder.INSTANCE.onSearched(tree::addClass);
+		ClassFinder.DEBUG = true;
 		while(!ClassFinder.INSTANCE.isFinished()) {
 			LOG.info("Class Count {}", ClassFinder.INSTANCE.CLASS_SEARCH.size());
 			//ClassFinder.INSTANCE.CLASS_SEARCH.entrySet().parallelStream().filter(entry->entry.getValue() == ClassFinder.SearchState.IN_QUEUE).forEach((entry)->ClassFinder.LOG.info("Queued Class:\t{}",entry.getKey()));
 			ClassFinder.INSTANCE.searchCurrentDepth();
 		}
+		LOG.info(tree);
 	}
 
 	public static void main(String[] args) {

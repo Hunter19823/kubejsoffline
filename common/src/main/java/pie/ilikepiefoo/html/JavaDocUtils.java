@@ -33,6 +33,9 @@ public class JavaDocUtils {
 		List<String> list = new ArrayList<String>();
 		list.add("Test");
 		try {
+			LOG.info(JavaDocUtils.class.getField("TEST").getGenericType());
+			LOG.info(JavaDocUtils.class.getField("TEST").getGenericType().getTypeName());
+			LOG.info(JavaDocUtils.class.getField("TEST").getGenericType().getTypeName());
 			getParameters(JavaDocUtils.class.getField("TEST").getGenericType());
 		} catch (NoSuchFieldException e) {
 			e.printStackTrace();

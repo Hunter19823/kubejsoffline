@@ -160,7 +160,8 @@ public class ClassFinder {
 			try {
 				for (var possibleType : parameterizedType.getActualTypeArguments()) {
 					if (possibleType instanceof Class<?> target) {
-						LOG.info("Found Generic Type: {}", target);
+						//if(DEBUG)
+						//	LOG.info("Found Generic Type: {}", target);
 						addToQueue(target);
 					}
 				}
