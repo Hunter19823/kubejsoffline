@@ -1,16 +1,16 @@
 package pie.ilikepiefoo.util;
 
+import com.google.common.base.Strings;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 public class ClassCluster implements Iterable<Class<?>> {
 	private final String name;
@@ -41,7 +41,11 @@ public class ClassCluster implements Iterable<Class<?>> {
 
 	public String getFullName(String separator) {
 		StringBuilder builder = new StringBuilder();
-		for(ClassCluster cluster : getLineage()) {
+		builder.append(separator);
+		Stack<ClassCluster> clusters = getLineage();
+		ClassCluster cluster = null;
+		while(!clusters.isEmpty()){
+			cluster = clusters.pop();
 			builder.append(cluster.getName());
 			builder.append(separator);
 		}
@@ -99,39 +103,44 @@ public class ClassCluster implements Iterable<Class<?>> {
 	}
 
 	public void addClass(String target, Class<?> subject) {
-		this.classMap.put(target, subject);
+		if(!this.classMap.containsKey(target))
+			this.classMap.put(target, subject);
+	}
+
+	public String toTree() {
+		StringBuilder builder = new StringBuilder();
+		String padding = "\n";//+Strings.repeat("  ",getLineage().size());
+		builder.append(padding);
+		builder.append(getFullName("/"));
+
+		padding+="  - ";
+		for(Class<?> target : this) {
+			builder.append(padding);
+			builder.append(target.getName());
+		}
+
+
+		return builder.toString();
+	}
+
+	private static int countCharacter(String target, String sequence){
+		int start;
+		int sum = 0;
+		while((start = target.indexOf(sequence)) != -1){
+			sum++;
+			target = target.substring(start+1);
+		}
+		return sum;
+	}
+
+	public Stream<ClassCluster> stream() {
+		return Stream.concat(Stream.of(this), this.clusterMap.values().stream().flatMap(ClassCluster::stream));
 	}
 
 	@NotNull
 	@Override
 	public Iterator<Class<?>> iterator() {
-		return new ClassIterator();
-	}
-
-	private class ClassIterator implements Iterator<Class<?>> {
-		private Iterator<Class<?>> classMapIterator;
-		private final Iterator<ClassCluster> clusterIterator;
-
-		public ClassIterator(){
-			this.classMapIterator = classMap.values().iterator();
-			this.clusterIterator = clusterMap.values().iterator();
-		}
-
-		@Override
-		public boolean hasNext() {
-			if(this.classMapIterator.hasNext())
-				return true;
-			while(this.clusterIterator.hasNext() && !this.classMapIterator.hasNext()){
-				this.classMapIterator = this.clusterIterator.next().iterator();
-			}
-
-			return this.classMapIterator.hasNext();
-		}
-
-		@Override
-		public Class<?> next() {
-			return this.classMapIterator.next();
-		}
+		return this.classMap.values().iterator();
 	}
 
 }
