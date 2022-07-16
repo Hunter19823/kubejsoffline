@@ -40,7 +40,13 @@ public class ClassFinder {
 	public void addToSearch(Class<?>... target) {
 		if(target == null)
 			return;
-		NEXT_DEPTH.addAll(Arrays.asList(target));
+		for (int i = 0; i < target.length; i++) {
+			try{
+				NEXT_DEPTH.add(target[i]);
+			} catch (Throwable e) {
+				LOG.error(e);
+			}
+		}
 	}
 
 	public void searchCurrentDepth(){
@@ -51,7 +57,7 @@ public class ClassFinder {
 			LOG.info("Search Stack is Empty.");
 		}
 
-		CURRENT_DEPTH.parallelStream().forEach((subject) -> {
+		CURRENT_DEPTH.stream().forEach((subject) -> {
 			if(DEBUG)
 				LOG.info("Now Searching {}", subject);
 			search(subject);
@@ -64,13 +70,23 @@ public class ClassFinder {
 		CLASS_SEARCH.put(subject, SearchState.BEING_SEARCHED);
 
 		// Search ComponentType
-		addToQueue(subject.getComponentType());
-
+		try{
+			addToQueue(subject.getComponentType());
+		} catch (Throwable e) {
+			LOG.error(e);
+		}
 		// Search Interfaces and Inner Classes
-		safeAddArray(subject.getClasses());
-
+		try{
+			safeAddArray(subject.getClasses());
+		} catch (Throwable e) {
+			LOG.error(e);
+		}
 		// Search Nest Members
-		safeAddArray(subject.getNestMembers());
+		try{
+			safeAddArray(subject.getNestMembers());
+		} catch (Throwable e) {
+			LOG.error(e);
+		}
 
 		// Add Nest Host
 		try{

@@ -1,13 +1,18 @@
 package pie.ilikepiefoo.util;
 
-import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -15,12 +20,12 @@ import java.util.stream.Stream;
 public class ClassCluster implements Iterable<Class<?>> {
 	private final String name;
 	private ClassCluster parent;
-	private final Map<String, Class<?>> classMap;
-	private final Map<String, ClassCluster> clusterMap;
+	private Set<Class<?>> classSet;
+	private Map<String, ClassCluster> clusterMap;
 
 	public ClassCluster(String name) {
 		this.name = name;
-		this.classMap = new ConcurrentHashMap<>();
+		this.classSet = Collections.synchronizedSet(new HashSet<>());
 		this.clusterMap = new ConcurrentHashMap<>();
 		this.parent = null;
 	}
@@ -31,7 +36,7 @@ public class ClassCluster implements Iterable<Class<?>> {
 	}
 
 	public int getShallowCount() {
-		return this.classMap.size();
+		return this.classSet.size();
 	}
 
 	@Nullable
@@ -63,8 +68,8 @@ public class ClassCluster implements Iterable<Class<?>> {
 		return lineage;
 	}
 
-	public boolean containsClass(String target) {
-		return this.classMap.containsKey(target);
+	public boolean containsClass(Class<?> target) {
+		return this.classSet.contains(target);
 	}
 
 	public boolean containsCluster(String target) {
@@ -85,26 +90,16 @@ public class ClassCluster implements Iterable<Class<?>> {
 		return cluster;
 	}
 
-	@Nullable
-	public Class<?> getClass(String target) {
-		Class<?> subject = null;
-		if(containsClass(target)){
-			subject = this.classMap.get(target);
-		}
-		return subject;
-	}
-
 	public Collection<Class<?>> getClasses() {
-		return this.classMap.values();
+		return this.classSet;
 	}
 
-	public Collection<ClassCluster> getClusters() {
-		return this.clusterMap.values();
+	public List<ClassCluster> getClusters() {
+		return this.clusterMap.values().parallelStream().toList();
 	}
 
-	public void addClass(String target, Class<?> subject) {
-		if(!this.classMap.containsKey(target))
-			this.classMap.put(target, subject);
+	public void addClass(Class<?> subject) {
+		this.classSet.add(subject);
 	}
 
 	public String toTree() {
@@ -140,7 +135,12 @@ public class ClassCluster implements Iterable<Class<?>> {
 	@NotNull
 	@Override
 	public Iterator<Class<?>> iterator() {
-		return this.classMap.values().iterator();
+		return this.classSet.iterator();
+	}
+
+	public void compress() {
+		this.clusterMap = ImmutableMap.copyOf(this.clusterMap);
+		this.classSet = ImmutableSet.copyOf(this.classSet);
 	}
 
 }

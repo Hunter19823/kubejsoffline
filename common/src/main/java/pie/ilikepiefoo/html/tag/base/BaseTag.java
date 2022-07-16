@@ -51,9 +51,6 @@ public abstract class BaseTag<TYPE extends Tag<TYPE>> implements Tag<TYPE> {
 
 	@Override
 	public <T extends Tag<T>> Tag<T> add(@Nonnull Tag<T> tag) {
-		if(tag.getParent() != null) {
-			tag.getParent().getChildren().remove(tag);
-		}
 		tag.setParent(this);
 
 		this.children.add(tag);

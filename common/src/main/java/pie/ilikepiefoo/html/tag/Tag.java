@@ -1,5 +1,8 @@
 package pie.ilikepiefoo.html.tag;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashSet;
@@ -9,6 +12,7 @@ import java.util.Set;
 import java.util.Stack;
 
 public interface Tag<TYPE extends Tag<TYPE>> {
+	public static final Logger LOG = LogManager.getLogger();
 	public default String toHTML() {
 		StringBuilder sb = new StringBuilder();
 		// Add the Head tag.
@@ -20,7 +24,13 @@ public interface Tag<TYPE extends Tag<TYPE>> {
 		Stack<Tag<?>> hierarchy = new Stack<Tag<?>>();
 		Set<Tag<?>> tagSet = new HashSet<Tag<?>>();
 		hierarchy.addAll(getChildren());
+		int counter = 0;
 		while(hierarchy.size() > 0) {
+			counter++;
+			if(hierarchy.size() < 10 && counter < 50) {
+				LOG.info(sb.toString());
+				LOG.info(hierarchy);
+			}
 			Tag<?> tag = hierarchy.pop();
 			if(!tagSet.contains(tag)) {
 				sb.append(tag.getFrontHTML());
@@ -29,6 +39,7 @@ public interface Tag<TYPE extends Tag<TYPE>> {
 				sb.append(tag.getContent());
 			}else {
 				sb.append(tag.getEndHTML());
+				continue;
 			}
 
 			if(tag.getChildren().size() > 0) {
@@ -46,7 +57,7 @@ public interface Tag<TYPE extends Tag<TYPE>> {
 	}
 
 	public default String getFrontHTML() {
-		return "<"+getName()+" "+getAttributeHTML()+">";
+		return "\n<"+getName()+" "+getAttributeHTML()+">";
 	}
 
 	public default String getAttributeHTML() {
@@ -64,7 +75,7 @@ public interface Tag<TYPE extends Tag<TYPE>> {
 
 	public default String getEndHTML() {
 		if(hasClosingTag()) {
-			return "</"+getName()+">";
+			return "\n</"+getName()+">";
 		}
 		return "";
 	}

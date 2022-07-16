@@ -36,6 +36,10 @@ dependencies {
     shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive = false }
 
 	modImplementation("dev.latvian.mods:kubejs-forge:${rootProject.kubejs_version}")
+
+
+	implementation "org.reflections:reflections:${project.reflections_version}"
+	shadow "org.reflections:reflections:${project.reflections_version}"
 }
 
 processResources {

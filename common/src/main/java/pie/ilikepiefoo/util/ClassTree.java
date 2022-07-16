@@ -1,7 +1,6 @@
 package pie.ilikepiefoo.util;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Stack;
 
 public class ClassTree {
@@ -23,8 +22,24 @@ public class ClassTree {
 		addToImplementationTree(target);
 	}
 
-	private void addToImplementationTree(Class<?> target) {
+	public ClassCluster getFileRoot() {
+		return root;
+	}
 
+	public ClassCluster getExtensionRoot() {
+		return extension;
+	}
+
+	private void addToImplementationTree(Class<?> target) {
+		LinkedList<ClassCluster> clusters;
+		for(Class<?> inter : target.getInterfaces()) {
+			clusters = getExtensionLineage(inter);
+			clusters.removeFirst();
+			clusters.removeFirst();
+			for(ClassCluster cluster : clusters) {
+				cluster.addClass(target);
+			}
+		}
 	}
 
 	public ClassCluster findDirectoryCluster(Class<?> target) {
@@ -53,8 +68,8 @@ public class ClassTree {
 		do {
 			subject = lineage.pop();
 			cluster = cluster.getCluster(subject.getSimpleName());
-			cluster.addClass(subject.getName(), subject);
-			cluster.addClass(target.getName(), target);
+			cluster.addClass(subject);
+			cluster.addClass(target);
 		} while(!lineage.empty());
 		return cluster;
 	}
@@ -109,7 +124,13 @@ public class ClassTree {
 	}
 
 	private void addToDirectoryTree(Class<?> target) {
-		getDirectoryLineage(target).getLast().addClass(target.getSimpleName(), target);
+		getDirectoryLineage(target).getLast().addClass(target);
+	}
+
+
+	public void compress() {
+		root.stream().forEach((cluster) -> cluster.compress());
+		extension.stream().forEach((cluster) -> cluster.compress());
 	}
 
 	@Override
