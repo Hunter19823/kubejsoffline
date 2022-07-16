@@ -9,77 +9,77 @@ import pie.ilikepiefoo.html.tag.text.HeaderTag;
 import pie.ilikepiefoo.util.ClassCluster;
 import pie.ilikepiefoo.util.ClassTree;
 
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 public class ClassTreePage extends HTMLFile {
 	public ClassTreePage(ClassTree tree) {
 		addCSS();
-		ClassCluster cluster = tree.getExtensionRoot();
 		Tag<?> tag = new CustomTag("ul").id("tree");
+		this.BODY_TAG.add(tag);
+		addCluster(tree.getExtensionRoot(), tag);
+		addCluster(tree.getFileRoot(), tag);
+		addScript();
+	}
 
-		Stack<ClassCluster> stack = new Stack<>();
-
-		Set<ClassCluster> seen = new HashSet<>();
-
-		stack.push(cluster);
-
-		Tag<?> inside = tag;
-		Tag<?> outside = tag;
-		ClassCluster temp = null;
-		while(!stack.isEmpty()) {
-			temp = stack.pop();
-			if(!seen.contains(temp)){
-				inside = addNest(temp);
-				outside.add(inside.getParent());
-
-				// Add to the seen stack.
-				// If we come across again, we know
-				// To go to parent.
-				seen.add(temp);
-
-				for (int i = temp.getClusters().size()-1; i >= 0; i--) {
-					stack.add(temp.getClusters().get(i));
-				}
-			} else {
-				outside = inside.getParent();
-			}
+	private class Pair {
+		private Tag<?> tag;
+		private ClassCluster cluster;
+		public Pair(Tag<?> tag, ClassCluster cluster) {
+			this.tag = tag;
+			this.cluster = cluster;
 		}
 
-//		Tag<?> inside = addNest(cluster);
-//		tag.add(inside.getParent());
-//
-//		for(var clusters : cluster.getClusters()) {
-//			inside.add(addNest(clusters).getParent());
-//		}
-		this.BODY_TAG.add(tag);
-		addScript();
+		public Tag<?> getTag() {
+			return tag;
+		}
+
+		public ClassCluster getCluster() {
+			return cluster;
+		}
+
+		public List<Pair> getChildPairs() {
+			Tag<?> inside = addNest(cluster);
+			tag.add(inside.getParent());
+			return cluster.getClusters().stream().sorted().map((cluster) -> new Pair(inside, cluster)).collect(Collectors.toList());
+		}
 	}
 
 	public Tag<?> addNest(ClassCluster cluster) {
 		Tag<?> tag = new CustomTag("li");
 		tag.add(new CustomTag("span").setContent(cluster.getFullName("/")).setClass("expandable"));
 		tag = tag.add(new CustomTag("ul").setClass("nested"));
-		tag.add(new CustomTag("span").setContent("classes").setClass("expandable"));
-		tag = tag.add(new CustomTag("ul").setClass("nested"));
+		if(cluster.getClasses().size() > 0) {
+			tag.add(new CustomTag("span").setContent("classes").setClass("expandable"));
+			tag = tag.add(new CustomTag("ul").setClass("nested"));
 
-		for(var target : cluster.getClasses()) {
-			tag.add(new CustomTag("li").setContent(target.getName()));
+			Tag<?> finalTag = tag;
+			cluster.getClasses().stream().sorted(Comparator.comparing(Class::getName)).forEachOrdered((target) -> finalTag.add(getClassTag(target)));
+			return tag.getParent();
 		}
 
-		return tag.getParent();
+		return tag;
 	}
 
-	public void addCluster(ClassCluster cluster) {
-		Tag<?> tag = this.BODY_TAG.add(new DivTag());
-		tag.id(cluster.getFullName("/"));
-		tag.add(new HeaderTag(3).add(new StringTag(cluster.getFullName("/"))));
-		var list = new UnorderedListTag();
-		tag.add(list);
+	public Tag<?> getClassTag(Class<?> target) {
+		return new CustomTag("li").setContent(target.getName());
+	}
 
-		for(var target : cluster) {
-			list.addItem(createBasicLinkTag(target));
+	public void addCluster(ClassCluster cluster, Tag<?> tag) {
+		Stack<Pair> stack = new Stack<>();
+
+		Set<ClassCluster> seen = new HashSet<>();
+
+		stack.push(new Pair(tag, cluster));
+
+		Pair temp = null;
+		while(!stack.isEmpty()) {
+			temp = stack.pop();
+			stack.addAll(temp.getChildPairs());
 		}
 	}
 

@@ -27,10 +27,10 @@ public interface Tag<TYPE extends Tag<TYPE>> {
 		int counter = 0;
 		while(hierarchy.size() > 0) {
 			counter++;
-			if(hierarchy.size() < 10 && counter < 50) {
-				LOG.info(sb.toString());
-				LOG.info(hierarchy);
-			}
+//			if(hierarchy.size() < 10 && counter < 50) {
+//				LOG.info(sb.toString());
+//				LOG.info(hierarchy);
+//			}
 			Tag<?> tag = hierarchy.pop();
 			if(!tagSet.contains(tag)) {
 				sb.append(tag.getFrontHTML());

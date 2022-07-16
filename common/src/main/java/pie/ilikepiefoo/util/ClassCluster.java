@@ -17,7 +17,7 @@ import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-public class ClassCluster implements Iterable<Class<?>> {
+public class ClassCluster implements Iterable<Class<?>>, Comparable<ClassCluster> {
 	private final String name;
 	private ClassCluster parent;
 	private Set<Class<?>> classSet;
@@ -143,4 +143,8 @@ public class ClassCluster implements Iterable<Class<?>> {
 		this.classSet = ImmutableSet.copyOf(this.classSet);
 	}
 
+	@Override
+	public int compareTo(@NotNull ClassCluster o) {
+		return o.name.compareToIgnoreCase(this.name);
+	}
 }

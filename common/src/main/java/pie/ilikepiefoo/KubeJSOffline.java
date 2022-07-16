@@ -14,6 +14,10 @@ public class KubeJSOffline {
 
     public static void init() {
 		EventHandler.init();
+
+//		Thread thread = new DocumentationThread();
+//		thread.setPriority(5);
+//		thread.start();
 		LifecycleEvent.SERVER_BEFORE_START.register(new ServerStarted());
 	}
 

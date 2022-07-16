@@ -32,8 +32,8 @@ dependencies {
 	modImplementation("dev.latvian.mods:kubejs-fabric:${rootProject.kubejs_version}")
 
 
-	implementation "org.reflections:reflections:${project.reflections_version}"
-	shadow "org.reflections:reflections:${project.reflections_version}"
+	//implementation "org.reflections:reflections:${project.reflections_version}"
+	shadow(implementation("org.reflections:reflections:${project.reflections_version}"))
 
 }
 

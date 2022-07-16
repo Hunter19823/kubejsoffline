@@ -38,8 +38,9 @@ dependencies {
 	modImplementation("dev.latvian.mods:kubejs-forge:${rootProject.kubejs_version}")
 
 
-	implementation "org.reflections:reflections:${project.reflections_version}"
-	shadow "org.reflections:reflections:${project.reflections_version}"
+	//implementation "org.reflections:reflections:${project.reflections_version}"
+	shadow (forgeRuntimeLibrary("org.reflections:reflections:${project.reflections_version}"))
+
 }
 
 processResources {
@@ -53,6 +54,7 @@ processResources {
 shadowJar {
     exclude "fabric.mod.json"
     exclude "architectury.common.json"
+
 
     configurations = [project.configurations.shadowCommon]
     classifier "dev-shadow"

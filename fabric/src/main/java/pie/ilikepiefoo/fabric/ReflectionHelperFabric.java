@@ -17,7 +17,7 @@ public class ReflectionHelperFabric implements ReflectionHelper {
 		Configuration configuration = new ConfigurationBuilder()
 				.setParallel(true)
 				.forPackages(packageNames)
-				.setScanners(new SubTypesScanner(false), Scanners.Resources);
+				.setScanners(Scanners.SubTypes.filterResultsBy(pred->true), Scanners.Resources);
 		Reflections reflections = new Reflections(configuration);
 		Class[] classes = reflections.getSubTypesOf(Object.class).toArray(new Class[0]);
 		return classes;
