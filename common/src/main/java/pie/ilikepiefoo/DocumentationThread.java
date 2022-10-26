@@ -3,7 +3,8 @@ package pie.ilikepiefoo;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import pie.ilikepiefoo.html.ClassTreePage;
+import pie.ilikepiefoo.html.page.ClassTreePage;
+import pie.ilikepiefoo.html.page.MainPage;
 import pie.ilikepiefoo.util.ClassFinder;
 import pie.ilikepiefoo.util.ClassTree;
 
@@ -34,7 +35,11 @@ public class DocumentationThread extends Thread {
 			ClassFinder.INSTANCE.searchCurrentDepth();
 		}
 		TREE.compress();
-		writeFile("index.html", "", new ClassTreePage(TREE).toHTML());
+		MainPage mainPage = new MainPage();
+		//mainPage.SIDE_NAV.add(mainPage.addCluster(TREE.getFileRoot(),"FileRoot"));
+		mainPage.SIDE_NAV.add(mainPage.addCluster(TREE.getExtensionRoot(),"ExtensionRoot"));
+		writeFile("index.html", "", mainPage.toHTML());
+		writeFile("tree.txt", "", TREE.toString());
 		//LOG.info(TREE);
     }
 

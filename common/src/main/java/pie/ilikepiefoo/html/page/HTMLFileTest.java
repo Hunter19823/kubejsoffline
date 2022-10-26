@@ -1,4 +1,4 @@
-package pie.ilikepiefoo.html;
+package pie.ilikepiefoo.html.page;
 
 
 import org.apache.commons.io.FileUtils;

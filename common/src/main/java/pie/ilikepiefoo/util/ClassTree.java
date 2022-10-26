@@ -8,8 +8,8 @@ public class ClassTree {
 	private final ClassCluster extension;
 
 	public ClassTree() {
-		this.root = new ClassCluster("root");
-		this.extension = new ClassCluster("root");
+		this.root = new ClassCluster("packages");
+		this.extension = new ClassCluster("inheritance");
 	}
 
 	public void addClass(Class<?> target) {
@@ -17,6 +17,8 @@ public class ClassTree {
 			return;
 		while(target.isArray())
 			target = target.getComponentType();
+		if(target.isPrimitive())
+			return;
 		addToDirectoryTree(target);
 		addToExtensionTree(target);
 		addToImplementationTree(target);

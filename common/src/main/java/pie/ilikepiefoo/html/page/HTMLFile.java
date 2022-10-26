@@ -1,4 +1,4 @@
-package pie.ilikepiefoo.html;
+package pie.ilikepiefoo.html.page;
 
 import pie.ilikepiefoo.html.tag.base.BodyTag;
 import pie.ilikepiefoo.html.tag.base.DoctypeTag;

@@ -147,4 +147,13 @@ public class ClassCluster implements Iterable<Class<?>>, Comparable<ClassCluster
 	public int compareTo(@NotNull ClassCluster o) {
 		return o.name.compareToIgnoreCase(this.name);
 	}
+
+
+	public int shallowClusterCount() {
+		return this.clusterMap.size();
+	}
+
+	public int shallowClassCount() {
+		return this.classSet.size();
+	}
 }

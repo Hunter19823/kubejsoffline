@@ -1,11 +1,8 @@
-package pie.ilikepiefoo.html;
+package pie.ilikepiefoo.html.page;
 
 import pie.ilikepiefoo.html.tag.CustomTag;
 import pie.ilikepiefoo.html.tag.Tag;
 import pie.ilikepiefoo.html.tag.base.StringTag;
-import pie.ilikepiefoo.html.tag.collection.DivTag;
-import pie.ilikepiefoo.html.tag.collection.UnorderedListTag;
-import pie.ilikepiefoo.html.tag.text.HeaderTag;
 import pie.ilikepiefoo.util.ClassCluster;
 import pie.ilikepiefoo.util.ClassTree;
 
@@ -19,7 +16,7 @@ import java.util.stream.Collectors;
 public class ClassTreePage extends HTMLFile {
 	public ClassTreePage(ClassTree tree) {
 		addCSS();
-		Tag<?> tag = new CustomTag("ul").id("tree");
+		Tag<?> tag = new CustomTag("div").id("tree");
 		this.BODY_TAG.add(tag);
 		addCluster(tree.getExtensionRoot(), tag);
 		addCluster(tree.getFileRoot(), tag);
@@ -50,12 +47,14 @@ public class ClassTreePage extends HTMLFile {
 	}
 
 	public Tag<?> addNest(ClassCluster cluster) {
-		Tag<?> tag = new CustomTag("li");
-		tag.add(new CustomTag("span").setContent(cluster.getFullName("/")).setClass("expandable"));
-		tag = tag.add(new CustomTag("ul").setClass("nested"));
+		Tag<?> tag = new CustomTag("div");
+
+		tag.add(getClusterTag(cluster));
+
+		tag = tag.add(new CustomTag("div").setClass("nested"));
 		if(cluster.getClasses().size() > 0) {
 			tag.add(new CustomTag("span").setContent("classes").setClass("expandable"));
-			tag = tag.add(new CustomTag("ul").setClass("nested"));
+			tag = tag.add(new CustomTag("div").setClass("nested"));
 
 			Tag<?> finalTag = tag;
 			cluster.getClasses().stream().sorted(Comparator.comparing(Class::getName)).forEachOrdered((target) -> finalTag.add(getClassTag(target)));
@@ -66,7 +65,24 @@ public class ClassTreePage extends HTMLFile {
 	}
 
 	public Tag<?> getClassTag(Class<?> target) {
-		return new CustomTag("li").setContent(target.getName());
+		String name = target.getName();
+		if(name.contains("$")) {
+			name = name.substring(0, name.indexOf("$"));
+		}
+		CustomTag ct = new CustomTag("div").setContent(name);
+		ct.setClass("jc");
+		ct.id(name);
+		return ct;
+	}
+
+	public Tag<?> getClusterTag(ClassCluster cluster) {
+		CustomTag ct =  new CustomTag("span")
+				.setContent(cluster.getFullName("/"))
+				.setClass("expandable")
+				.setClass("cluster")
+				.id(cluster.getFullName("."));
+		cluster.getLineage().forEach((target)->ct.setClass(target.getFullName("-")));
+		return ct;
 	}
 
 	public void addCluster(ClassCluster cluster, Tag<?> tag) {
@@ -92,7 +108,7 @@ public class ClassTreePage extends HTMLFile {
 	public void addCSS() {
 		CustomTag tag = new CustomTag("style");
 		tag.setContent("/* Remove default bullets */\n" +
-				"ul, #tree {\n" +
+				"div, #tree {\n" +
 				"  list-style-type: none;\n" +
 				"}\n" +
 				"\n" +
@@ -100,6 +116,9 @@ public class ClassTreePage extends HTMLFile {
 				"#tree {\n" +
 				"  margin: 0;\n" +
 				"  padding: 0;\n" +
+				"  position: absolute;\n" +
+				"  display: block;\n" +
+				"  left: 0%;\n" +
 				"}\n" +
 				"/* Style the caret/arrow */\n" +
 				".expandable {\n" +
@@ -128,6 +147,12 @@ public class ClassTreePage extends HTMLFile {
 				"/* Show the nested list when the user clicks on the caret/arrow (with JavaScript) */\n" +
 				".active {\n" +
 				"  display: block;\n" +
+				"}\n" +
+				"\n" +
+				"div, span {\n" +
+				"  position: relative;\n" +
+				"  display: block;\n" +
+				"  left: 15px;\n" +
 				"}");
 		this.HEADER_TAG.add(tag);
 	}
