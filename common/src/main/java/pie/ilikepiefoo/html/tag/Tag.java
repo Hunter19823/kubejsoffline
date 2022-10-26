@@ -155,4 +155,14 @@ public interface Tag<TYPE extends Tag<TYPE>> {
 		setAttributeString("style", style);
 		return (TYPE) this;
 	}
+
+	public default TYPE br() {
+		add(new CustomTag("br", false));
+		return (TYPE) this;
+	}
+
+	public default TYPE add(String content) {
+		add(new CustomTag("span", true).setContent(content));
+		return (TYPE) this;
+	}
 }

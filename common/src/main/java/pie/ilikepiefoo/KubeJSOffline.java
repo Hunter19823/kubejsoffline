@@ -8,6 +8,7 @@ import pie.ilikepiefoo.util.ReflectionHelper;
 
 public class KubeJSOffline {
     public static final String MOD_ID = "kubejsoffline";
+	public static final String MOD_NAME = "KubeJS Offline";
 	public static final Logger LOG = LogManager.getLogger();
 	public static ReflectionHelper HELPER = null;
 
