@@ -19,7 +19,7 @@ public class ClassTree {
 			target = target.getComponentType();
 		if(target.isPrimitive())
 			return;
-		addToDirectoryTree(target);
+		//addToDirectoryTree(target);
 		addToExtensionTree(target);
 		addToImplementationTree(target);
 	}
@@ -69,7 +69,7 @@ public class ClassTree {
 		Class<?> subject;
 		do {
 			subject = lineage.pop();
-			cluster = cluster.getCluster(subject.getSimpleName());
+			cluster = cluster.getCluster(subject.getName());
 			cluster.addClass(subject);
 			cluster.addClass(target);
 		} while(!lineage.empty());
@@ -131,8 +131,8 @@ public class ClassTree {
 
 
 	public void compress() {
-		root.stream().forEach((cluster) -> cluster.compress());
-		extension.stream().forEach((cluster) -> cluster.compress());
+		root.stream().forEach(ClassCluster::compress);
+		extension.stream().forEach(ClassCluster::compress);
 	}
 
 	@Override

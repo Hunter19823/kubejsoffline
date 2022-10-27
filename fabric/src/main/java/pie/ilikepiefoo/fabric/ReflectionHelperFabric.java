@@ -1,5 +1,6 @@
 package pie.ilikepiefoo.fabric;
 
+import dev.latvian.mods.kubejs.event.EventJS;
 import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
@@ -21,5 +22,10 @@ public class ReflectionHelperFabric implements ReflectionHelper {
 		Reflections reflections = new Reflections(configuration);
 		Class[] classes = reflections.getSubTypesOf(Object.class).toArray(new Class[0]);
 		return classes;
+	}
+
+	@Override
+	public Class[] getEventClasses() {
+		return new Class[] {EventJS.class};
 	}
 }

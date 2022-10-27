@@ -57,17 +57,16 @@ public interface Tag<TYPE extends Tag<TYPE>> {
 	}
 
 	public default String getFrontHTML() {
-		return "\n<"+getName()+" "+getAttributeHTML()+">";
+		return "<"+getName()+getAttributeHTML()+">";
 	}
 
 	public default String getAttributeHTML() {
 		StringBuilder sb = new StringBuilder();
 		if(getAttributes() != null) {
 			getAttributes().forEach(
-					(key, value) -> sb.append(key)
+					(key, value) -> sb.append(" ").append(key)
 							.append("=")
 							.append(value)
-							.append(" ")
 			);
 		}
 		return sb.toString();
@@ -75,7 +74,7 @@ public interface Tag<TYPE extends Tag<TYPE>> {
 
 	public default String getEndHTML() {
 		if(hasClosingTag()) {
-			return "\n</"+getName()+">";
+			return "</"+getName()+">";
 		}
 		return "";
 	}

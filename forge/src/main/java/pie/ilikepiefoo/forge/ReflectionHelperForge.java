@@ -2,6 +2,8 @@ package pie.ilikepiefoo.forge;
 
 import cpw.mods.cl.ModularURLHandler;
 import cpw.mods.niofs.union.UnionFileSystem;
+import dev.latvian.mods.kubejs.event.EventJS;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.fml.loading.ModJarURLHandler;
 import org.reflections.Configuration;
 import org.reflections.Reflections;
@@ -89,4 +91,11 @@ public class ReflectionHelperForge implements ReflectionHelper {
 		Class[] classes = reflections.getSubTypesOf(Object.class).toArray(new Class[0]);
 		return classes;
 	}
+
+	@Override
+	public Class[] getEventClasses() {
+		return new Class[] {EventJS.class, Event.class};
+	}
+
+
 }
