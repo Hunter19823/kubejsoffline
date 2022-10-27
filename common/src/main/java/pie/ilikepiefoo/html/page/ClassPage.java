@@ -7,6 +7,8 @@ import pie.ilikepiefoo.html.tag.Tag;
 import pie.ilikepiefoo.html.tag.functional.ScriptTag;
 import pie.ilikepiefoo.html.tag.text.HeaderTag;
 
+import javax.annotation.Nonnull;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -36,31 +38,31 @@ public class ClassPage extends HTMLFile {
 
 	private void generateBody() {
 		Tag<?> body = BODY_TAG;
+
 		// Add logo;
 		body.add(getLogoImage());
 		body.br();
+
 		// Add Mod Name
 		body.add(wrapInLink("/index.html", new HeaderTag(1).setContent(KubeJSOffline.MOD_NAME)));
 		body.br();
+
 		// Add Class Name and Access Modifiers
-		var temp = new HeaderTag(2);
+		Tag<?> temp = new HeaderTag(2);
+
 		temp.add(getAccessModifiers(target));
+
 		temp.add(getFullSignature(target));
-		// TODO: Wrap in try catch
-		var super_class = (target.getGenericSuperclass() == null) ? target.getSuperclass() : target.getGenericSuperclass();
+
+		var super_class = safeGetSuperType();
 		if(super_class != null) {
-			temp.br();
-			temp.add("extends ");
-			temp.br();
+			temp.add(" extends ");
 			temp.add(getFullSignature(super_class));
 		}
-		// TODO: Wrap in try catch
-		var interfaces = (target.getGenericInterfaces().length == 0) ? target.getInterfaces() : target.getGenericInterfaces();
+		var interfaces = safeGetInterfaces();
 		if(interfaces.length != 0) {
-			temp.br();
-			temp.add("implements ");
+			temp.add(" implements ");
 			for(int i = 0; i < interfaces.length; i++) {
-				temp.br();
 				temp.add(getFullSignature(interfaces[i]));
 				if(i != interfaces.length - 1)
 					temp.add(", ");
@@ -69,45 +71,128 @@ public class ClassPage extends HTMLFile {
 		body.add(temp);
 
 		// Add Innerclass Table
-		body.br();
-		body.add(getInnerClassTable(target.getClasses()));
+		temp = generateInnerClassTable(getInnerClasses());
+		if(temp != null)
+			body.br().add(temp);
 
-		// Add Class Fields
-		body.br();
-		body.add(getFieldTable(target.getFields()));
+		// Add Constructor Table
+		temp = generateConstructorTable(getConstructors());
+		if(temp != null)
+			body.br().add(temp);
 
-		// Add Class Methods
-		body.br();
-		body.add(getMethodTable(target.getMethods()));
+		// Add Fields
+		temp = generateFieldTable(getFields());
+		if(temp != null)
+			body.br().add(temp);
+
+		// Add Methods
+		temp = generateMethodTable(getMethods());
+		if(temp != null)
+			body.br().add(temp);
+
+		// TODO: Add extended classes
 	}
 
-	private Tag<?> getInnerClassTable(Class<?>[] nestMembers) {
-		return new CustomTag("span").setContent("WIP");
+	private Tag<?> generateInnerClassTable(Class<?>[] innerClasses) {
+		if(innerClasses == null || innerClasses.length == 0)
+			return null;
+		Tag<?> table = new CustomTag("table");
+		Tag<?> body = new CustomTag("tbody");
+		table.add(body);
+		Tag<?> row = new CustomTag("tr");
+		body.add(row);
+		row.add(new CustomTag("th").setContent("Inner Classes"));
+		for(Class<?> innerClass : innerClasses) {
+			row = new CustomTag("tr");
+			body.add(row);
+			row.add(new CustomTag("td").add(getFullSignature(innerClass)));
+		}
+
+		return table;
 	}
 
-	private Tag<?> getMethodTable(Method[] methods) {
-		return new CustomTag("span").setContent("WIP");
+
+	private Tag<?> generateConstructorTable(Constructor<?>[] constructors) {
+		if(constructors == null || constructors.length == 0)
+			return null;
+		Tag<?> table = new CustomTag("table");
+		Tag<?> body = table.add(new CustomTag("tbody"));
+		Tag<?> row = body.add(new CustomTag("tr"));
+
+		row.add(new CustomTag("th").setContent("Constructors"));
+		row.add(new CustomTag("th").setContent("Modifiers"));
+
+		for(Constructor<?> constructor : constructors) {
+			row = body.add(new CustomTag("tr"));
+			row.add(new CustomTag("td"))
+					.add(getFullSignature(constructor));
+			row.add(new CustomTag("td"))
+					.add(""+constructor.getModifiers()));
+		}
+
+		return table;
 	}
 
-	private Tag<?> getFieldTable(Field[] fields) {
+	private Tag<?> generateMethodTable(Method[] methods) {
+		if(methods == null || methods.length == 0)
+			return null;
+		Tag<?> table = new CustomTag("table");
+		Tag<?> body = table.add(new CustomTag("tbody"));
+		Tag<?> tr = body.add(new CustomTag("tr"));
+		tr.add(new CustomTag("th"))
+				.add("Method");
+		tr.add(new CustomTag("th"))
+				.add("Return Type");
+		tr.add(new CustomTag("th"))
+				.add("Access Modifiers");
+
+		for(Method method : methods) {
+			tr = body.add(new CustomTag("tr"));
+			tr.add(new CustomTag("td"))
+					.add(getFullSignature(method, target));
+			tr.add(new CustomTag("td"))
+					.add(getFullSignature(safeGetType(method)));
+			tr.add(new CustomTag("td"))
+					.add(""+method.getModifiers());
+		}
+
+		return table;
+	}
+
+	private static Type safeGetType(Method method) {
+		try {
+			return method.getGenericReturnType();
+		} catch (Exception e) {
+			return method.getReturnType();
+		}
+	}
+
+	private Tag<?> generateFieldTable(Field[] fields) {
+		if(fields == null || fields.length == 0)
+			return null;
+
 		var out = new CustomTag("table");
-		var tableBody = new CustomTag("tbody");
-		out.add(tableBody);
-		var header = new CustomTag("tr");
+		var tableBody = out.add(new CustomTag("tbody"));
+
+		var header = tableBody.add(new CustomTag("tr"));
 		header.add(new CustomTag("th").setContent("Fields"));
 		header.add(new CustomTag("th").setContent("Type"));
 		header.add(new CustomTag("th").setContent("Modifiers"));
-		tableBody.add(header);
 
-		for(Field field : fields) {
-			var row = new CustomTag("tr");
-			String possibleName = RemappingHelper.getMinecraftRemapper().remapField(target, field, field.getName());
-			if(possibleName == null || possibleName.isBlank())
-				possibleName = field.getName();
-			row.add(new CustomTag("td").add(possibleName));
-			row.add(new CustomTag("td").add(getFullSignature(field.getGenericType())));
-			row.add(new CustomTag("td").setContent(""+field.getModifiers()));
-			tableBody.add(row);
+		for (Field field : fields) {
+			var row = tableBody.add(new CustomTag("tr"));
+			var type = safeGetType(field);
+
+			// Field Name
+			row.add(getFullSignature(field, target));
+
+			// Field Type
+			row.add(new CustomTag("td"))
+					.add(getFullSignature(type));
+
+			// Field Modifiers
+			row.add(new CustomTag("td"))
+					.add("" + field.getModifiers());
 		}
 		out.add(header);
 
@@ -118,10 +203,172 @@ public class ClassPage extends HTMLFile {
 		return Modifier.toString(target.getModifiers());
 	}
 
+	private Class<?>[] getInnerClasses() {
+		try{
+			return target.getClasses();
+		} catch (Throwable e) {
+			try {
+				return target.getDeclaredClasses();
+			}catch (Throwable e2) {
+				return new Class[0];
+			}
+		}
+	}
+
+
+
+	private Constructor<?>[] getConstructors() {
+		try {
+			return target.getConstructors();
+		} catch (Throwable e) {
+			try {
+				return target.getDeclaredConstructors();
+			} catch (Throwable e2) {
+				return new Constructor[0];
+			}
+		}
+	}
+
+	private Field[] getFields() {
+		try {
+			return target.getFields();
+		} catch (Throwable e) {
+			try {
+				return target.getDeclaredFields();
+			} catch (Throwable e2) {
+				return new Field[0];
+			}
+		}
+	}
+
+	private Method[] getMethods() {
+		try {
+			return target.getMethods();
+		} catch (Throwable e) {
+			try{
+				return target.getDeclaredMethods();
+			} catch (Throwable e2) {
+				return new Method[0];
+			}
+		}
+	}
+
+	private static Type safeGetType(Field field) {
+		try {
+			return field.getGenericType();
+		} catch (Throwable e) {
+			return field.getType();
+		}
+	}
+
+	private static Type[] safeGetParameters(Method method) {
+		try {
+			return method.getGenericParameterTypes().length == 0 ? method.getParameterTypes() : method.getGenericParameterTypes();
+		} catch (Throwable e) {
+			return method.getParameterTypes();
+		}
+	}
+
+	private static String safeGetSimpleTypeName(Type in) {
+		if(in == null)
+			return "null";
+		if(in instanceof Class<?> type) {
+			try {
+				return type.getSimpleName();
+			} catch (Throwable e) {
+				try {
+					return type.getName().substring(type.getName().lastIndexOf('.') + 1);
+				} catch (Throwable e2) {
+					return "null";
+				}
+			}
+		}else {
+			try {
+				return in.getTypeName();
+			} catch (Throwable e) {
+				try {
+					return in.toString();
+				} catch (Throwable e2) {
+					return "null";
+				}
+			}
+		}
+	}
+
+	private Type safeGetSuperType() {
+		try {
+			return target.getGenericSuperclass();
+		} catch (Throwable e) {
+			return target.getSuperclass();
+		}
+	}
+
+	private Type[] safeGetInterfaces() {
+		try {
+			return (target.getGenericInterfaces().length == 0) ? target.getInterfaces() : target.getGenericInterfaces();
+		} catch (Throwable e) {
+			return target.getInterfaces();
+		}
+	}
+
+	public static Tag<?> getFullSignature(@Nonnull Field field, Class<?> source) {
+		Tag<?> out = new CustomTag("td");
+		out.add(Modifier.toString(field.getModifiers()));
+		out.add(" ");
+		out.add(getShortSignature(safeGetType(field)));
+		out.add(" ");
+		String possibleName = RemappingHelper.getMinecraftRemapper().remapField(source, field, field.getName());
+		if (possibleName == null || possibleName.isBlank())
+			possibleName = field.getName();
+		out.add(possibleName);
+		return out;
+	}
+
+	public static Tag<?> getFullSignature(@Nonnull Method method, Class<?> source) {
+		Tag<?> out = new CustomTag("td");
+		out.add(Modifier.toString(method.getModifiers()));
+		out.add(" ");
+		out.add(getShortSignature(method.getReturnType()));
+		out.add(" ");
+		String possibleName = RemappingHelper.getMinecraftRemapper().remapMethod(source, method, method.getName());
+		if (possibleName == null || possibleName.isBlank())
+			possibleName = method.getName();
+		out.add(possibleName);
+		out.add("(");
+		var parameters = safeGetParameters(method);
+		for (int i = 0; i < parameters.length; i++) {
+			if (i != 0 && i < parameters.length-1)
+				out.add(", ");
+			out.add(getShortSignature(method.getGenericParameterTypes()[i]));
+		}
+		out.add(")");
+
+		return out;
+	}
+
+
+	private Tag<?> getFullSignature(Constructor<?> constructor) {
+		Tag<?> out = new CustomTag("td");
+		out.add(Modifier.toString(constructor.getModifiers()));
+		out.add(" ");
+		out.add(getShortSignature(target));
+		out.add("(");
+		// TODO add constructor parameters
+		var parameters = safeGetParameters(constructor);
+		for (int i = 0; i < parameters.length; i++) {
+			if (i != 0 && i < parameters.length-1)
+				out.add(", ");
+			out.add(getShortSignature(parameters[i]));
+		}
+		out.add(")");
+
+		return out;
+	}
+
 	public static Tag<?> getFullSignature(Type type) {
-		Tag<?> out;
 		if(type == null)
 			return new CustomTag("span").setContent("null");
+		Tag<?> out;
 		// Get a tag that contains the full signature of the type.
 		// Ex: java.util.List<java.lang.String>
 		if(type instanceof ParameterizedType ptype) {
@@ -137,17 +384,19 @@ public class ClassPage extends HTMLFile {
 		} else if (type instanceof Class<?> clazz) {
 			var url = getURL(clazz);
 			if(url.isEmpty())
-				out = new CustomTag("span").setContent(clazz.getSimpleName());
+				out = new CustomTag("span").setContent(safeGetSimpleTypeName(clazz));
 			else
-				out = wrapInLink(url, new CustomTag("span").setContent(clazz.getSimpleName()));
+				out = wrapInLink(url, new CustomTag("span").setContent(safeGetSimpleTypeName(clazz)));
 		} else {
-			out = new CustomTag("span").setContent(type.getTypeName());
+			out = new CustomTag("span").setContent(safeGetSimpleTypeName(type));
 		}
 
 		return out;
 	}
 
 	public static Tag<?> getShortSignature(Type type) {
+		if(type == null)
+			return new CustomTag("span").setContent("null");
 		Tag<?> out;
 		// Get a tag that contains the short signature of the type.
 		// Ex: List<String>
@@ -164,11 +413,11 @@ public class ClassPage extends HTMLFile {
 		} else if (type instanceof Class<?> clazz) {
 			var url = getURL(clazz);
 			if(url.isEmpty())
-				out = new CustomTag("span").setContent(clazz.getSimpleName());
+				out = new CustomTag("span").setContent(safeGetSimpleTypeName(clazz));
 			else
-				out = wrapInLink(url, new CustomTag("span").setContent(clazz.getSimpleName()));
+				out = wrapInLink(url, new CustomTag("span").setContent(safeGetSimpleTypeName(clazz)));
 		} else {
-			out = new CustomTag("span").setContent(type.getTypeName());
+			out = new CustomTag("span").setContent(safeGetSimpleTypeName(type));
 		}
 
 		return out;
@@ -407,5 +656,8 @@ public class ClassPage extends HTMLFile {
 			"\n" +
 			".center-text {\n" +
 			"    text-align: center;\n" +
+			"}\n" +
+			".logo {\n" +
+			"    height: 7em;\n" +
 			"}";
 }
