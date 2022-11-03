@@ -3,12 +3,12 @@ package pie.ilikepiefoo.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
@@ -18,6 +18,7 @@ public class ClassFinder {
 	public static final Logger LOG = LogManager.getLogger();
 	public static boolean DEBUG = false;
 	public final Map<Class<?>, SearchState> CLASS_SEARCH;
+	public final Set<Connection> RELATIONSHIPS;
 	private Queue<Class<?>> CURRENT_DEPTH;
 	private Queue<Class<?>> NEXT_DEPTH;
 	private Queue<Consumer<Class<?>>> HANDLERS;
@@ -27,10 +28,23 @@ public class ClassFinder {
 		CURRENT_DEPTH = new ConcurrentLinkedQueue<>();
 		NEXT_DEPTH = new ConcurrentLinkedQueue<>();
 		HANDLERS = new ConcurrentLinkedQueue<>();
+		RELATIONSHIPS = ConcurrentHashMap.newKeySet();
+	}
+
+	public void clear(){
+		CLASS_SEARCH.clear();
+		CURRENT_DEPTH.clear();
+		NEXT_DEPTH.clear();
+		HANDLERS.clear();
+		RELATIONSHIPS.clear();
 	}
 
 	public void onSearched(Consumer<Class<?>> handler) {
 		HANDLERS.add(handler);
+	}
+
+	public Set<Connection> getRelationships() {
+		return RELATIONSHIPS;
 	}
 
 	public boolean isFinished() {
@@ -40,9 +54,9 @@ public class ClassFinder {
 	public void addToSearch(Class<?>... target) {
 		if(target == null)
 			return;
-		for (int i = 0; i < target.length; i++) {
-			try{
-				NEXT_DEPTH.add(target[i]);
+		for (Class<?> aClass : target) {
+			try {
+				NEXT_DEPTH.add(aClass);
 			} catch (Throwable e) {
 				LOG.error(e);
 			}
@@ -71,44 +85,49 @@ public class ClassFinder {
 
 		// Search ComponentType
 		try{
-			addToQueue(subject.getComponentType());
+			addToQueue(subject.getComponentType(), RelationType.COMPONENT_OF, subject);
 		} catch (Throwable e) {
 			LOG.error(e);
 		}
+
 		// Search Interfaces and Inner Classes
 		try{
-			safeAddArray(subject.getClasses());
+			safeAddArray(subject.getClasses(), RelationType.INNER_TYPE_OF, subject);
 		} catch (Throwable e) {
 			LOG.error(e);
 		}
+
 		// Search Nest Members
 		try{
-			safeAddArray(subject.getNestMembers());
+			safeAddArray(subject.getNestMembers(), subject);
 		} catch (Throwable e) {
 			LOG.error(e);
 		}
 
 		// Add Nest Host
 		try{
-			addToQueue(subject.getNestHost());
+			addToQueue(subject.getNestHost(), subject);
 		} catch (Throwable e) {
 			LOG.error(e);
 		}
 
 		// Add Super Class
 		try {
-			addToQueue(subject.getSuperclass());
+			addToQueue(subject.getSuperclass(), RelationType.SUPER_CLASS_OF, subject);
 		} catch (Throwable e) {
 			LOG.error(e);
 		}
 
 		// Search Explicit Implementations
-		safeAddArray(subject.getPermittedSubclasses());
+		safeAddArray(subject.getPermittedSubclasses(), RelationType.PERMITTED_SUBCLASS_OF, subject);
+
+		// Search Annotations
+		safeAddAllAnnotation(subject.getAnnotations(), RelationType.UNKNOWN, subject);
 
 		// Add All Generic Type Parameters
 		try{
 			for(var type : subject.getTypeParameters())
-				addToQueue(type.getGenericDeclaration());
+				addToQueue(type.getGenericDeclaration(), RelationType.GENERIC_CLASS_PARAMETER_OF, subject);
 		} catch (Throwable e) {
 			LOG.error(e);
 		}
@@ -116,8 +135,9 @@ public class ClassFinder {
 		// Add Fields
 		try{
 			for(var field : subject.getDeclaredFields()) {
-				addToQueue(field.getType());
-				addAllGenericTypes(field.getGenericType());
+				addToQueue(field.getType(), RelationType.DECLARED_FIELD_TYPE_OF, subject);
+				addAllGenericTypes(field.getGenericType(), RelationType.DECLARED_GENERIC_FIELD_TYPE_OF, subject);
+				safeAddAllAnnotation(field.getAnnotations(), RelationType.UNKNOWN, subject);
 			}
 		} catch (Throwable e) {
 			LOG.error(e);
@@ -126,12 +146,14 @@ public class ClassFinder {
 		// Add Declared Methods
 		try{
 			for(var method : subject.getDeclaredMethods()) {
-				addToQueue(method.getReturnType());
-				safeAddArray(method.getParameterTypes());
-				safeAddArray(method.getExceptionTypes());
-				addAllGenericTypes(method.getGenericReturnType());
-				safeAddAllGeneric(method.getGenericParameterTypes());
-				safeAddAllGeneric(method.getGenericExceptionTypes());
+				addToQueue(method.getReturnType(), RelationType.DECLARED_METHOD_RETURN_TYPE_OF, subject);
+				safeAddArray(method.getParameterTypes(), RelationType.DECLARED_METHOD_PARAMETER_TYPE_OF, subject);
+				safeAddArray(method.getExceptionTypes(), RelationType.DECLARED_METHOD_EXCEPTION_TYPE_OF, subject);
+				addAllGenericTypes(method.getGenericReturnType(), RelationType.DECLARED_GENERIC_METHOD_RETURN_TYPE_OF, subject);
+				safeAddAllGeneric(method.getGenericParameterTypes(), RelationType.DECLARED_GENERIC_METHOD_PARAMETER_TYPE_OF, subject);
+				safeAddAllGeneric(method.getGenericExceptionTypes(), RelationType.DECLARED_GENERIC_METHOD_EXCEPTION_TYPE_OF, subject);
+				safeAddAllAnnotation(method.getAnnotations(), RelationType.UNKNOWN, subject);
+				safeAddAllAnnotation(method.getParameterAnnotations(), RelationType.UNKNOWN, subject);
 			}
 		} catch (Throwable e) {
 			LOG.error(e);
@@ -140,11 +162,13 @@ public class ClassFinder {
 		// Add Constructors
 		try{
 			for(var constructor : subject.getConstructors()) {
-				addToQueue(constructor.getDeclaringClass());
-				safeAddArray(constructor.getParameterTypes());
-				safeAddArray(constructor.getExceptionTypes());
-				safeAddAllGeneric(constructor.getGenericParameterTypes());
-				safeAddAllGeneric(constructor.getGenericExceptionTypes());
+				addToQueue(constructor.getDeclaringClass(), subject);
+				safeAddArray(constructor.getParameterTypes(), RelationType.CONSTRUCTOR_PARAMETER_TYPE_OF, subject);
+				safeAddArray(constructor.getExceptionTypes(), RelationType.CONSTRUCTOR_EXCEPTION_TYPE_OF, subject);
+				safeAddAllGeneric(constructor.getGenericParameterTypes(), RelationType.CONSTRUCTOR_GENERIC_PARAMETER_TYPE_OF, subject);
+				safeAddAllGeneric(constructor.getGenericExceptionTypes(), RelationType.CONSTRUCTOR_GENERIC_EXCEPTION_TYPE_OF, subject);
+				safeAddAllAnnotation(constructor.getAnnotations(), RelationType.UNKNOWN, subject);
+				safeAddAllAnnotation(constructor.getParameterAnnotations(), RelationType.UNKNOWN, subject);
 			}
 		} catch (Throwable e) {
 			LOG.error(e);
@@ -160,16 +184,49 @@ public class ClassFinder {
 		}
 	}
 
-	private void addToQueue(Class<?> target) {
+	private void safeAddAllAnnotation(Annotation[][] parameterAnnotations, RelationType relationType, Class<?> subject) {
+		if(parameterAnnotations == null)
+			return;
+		try {
+			for (Annotation[] parameterAnnotation : parameterAnnotations) {
+				safeAddAllAnnotation(parameterAnnotation, relationType, subject);
+			}
+		} catch (Throwable e) {
+			LOG.error(e);
+		}
+	}
+
+	private void safeAddAllAnnotation(Annotation[] annotations, RelationType relationType, Class<?> subject) {
+		if(annotations == null)
+			return;
+		try {
+			for(var annotation : annotations) {
+				addToQueue(annotation.annotationType(), relationType, subject);
+			}
+		} catch (Throwable e) {
+			LOG.error(e);
+		}
+	}
+
+	private void addToQueue(Class<?> target, Class<?> subject) {
+		addToQueue(target, RelationType.UNKNOWN, subject);
+	}
+
+	private void addToQueue(Class<?> target, RelationType relationType, Class<?> subject) {
 		if(target == null)
 			return;
 		if(!CLASS_SEARCH.containsKey(target)) {
 			NEXT_DEPTH.add(target);
 			CLASS_SEARCH.put(target, SearchState.IN_QUEUE);
 		}
+		RELATIONSHIPS.add(new Connection(target, relationType, subject));
 	}
 
-	private void addAllGenericTypes(Type type) {
+	private void addAllGenericTypes(Type type, Class<?> subject) {
+		addAllGenericTypes(type, RelationType.UNKNOWN, subject);
+	}
+
+	private void addAllGenericTypes(Type type, RelationType relationType, Class<?> subject) {
 		if(type == null)
 			return;
 		if(type instanceof ParameterizedType parameterizedType) {
@@ -178,7 +235,7 @@ public class ClassFinder {
 					if (possibleType instanceof Class<?> target) {
 						//if(DEBUG)
 						//	LOG.info("Found Generic Type: {}", target);
-						addToQueue(target);
+						addToQueue(target, relationType, subject);
 					}
 				}
 			} catch (Throwable e) {
@@ -187,24 +244,31 @@ public class ClassFinder {
 		}
 	}
 
-	private void safeAddAllGeneric(Type[] targets){
+	private void safeAddAllGeneric(Type[] targets, Class<?> subject){
+		safeAddAllGeneric(targets, RelationType.UNKNOWN, subject);
+	}
+	private void safeAddAllGeneric(Type[] targets, RelationType relationType, Class<?> subject){
 		if(targets == null)
 			return;
 		for(var target : targets) {
 			try {
-				addAllGenericTypes(target);
+				addAllGenericTypes(target, relationType, subject);
 			} catch (Throwable e){
 				LOG.error(e);
 			}
 		}
 	}
 
-	private void safeAddArray(Class<?>[] targets){
+	private void safeAddArray(Class<?>[] targets, Class<?> subject){
+		safeAddArray(targets, RelationType.UNKNOWN, subject);
+	}
+
+	private void safeAddArray(Class<?>[] targets, RelationType relationType, Class<?> subject){
 		if(targets == null)
 			return;
 		for(var target : targets) {
 			try {
-				addToQueue(target);
+				addToQueue(target, relationType, subject);
 			} catch (Throwable e){
 				LOG.error(e);
 			}

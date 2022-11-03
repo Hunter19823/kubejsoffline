@@ -6,15 +6,14 @@ import pie.ilikepiefoo.html.tag.Tag;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 
 public class IndexPage extends HTMLFile {
-	private final Map<String, Class<?>> bindings;
-	private final Map<String, Set<ScriptType>> scriptSpecificBindings;
+	private final Map<String, Map<Class<?>,Set<ScriptType>>> bindings;
 	private final Class<?>[] eventClasses;
 
-	public IndexPage(Map<String, Class<?>> bindings, Map<String, Set<ScriptType>> scriptSpecificBindings, Class<?>[] eventClasses) {
+	public IndexPage(Map<String, Map<Class<?>,Set<ScriptType>>> bindings, Class<?>[] eventClasses) {
 		this.bindings = bindings;
-		this.scriptSpecificBindings = scriptSpecificBindings;
 		this.eventClasses = eventClasses;
 		HEADER_TAG.add(new CustomTag("style").setContent(ClassPage.CSS));
 		generateBody();
@@ -64,27 +63,27 @@ public class IndexPage extends HTMLFile {
 		row.add(new CustomTag("th").setContent("Bindings"));
 		row.add(new CustomTag("th").setContent("Type"));
 		row.add(new CustomTag("th").setContent("Scope"));
-		for(Map.Entry<String, Class<?>> entry : bindings.entrySet()){
-			row = body.add(new CustomTag("tr"));
-			row.add(new CustomTag("td"))
-					.add(
-							ClassPage.wrapInLink(
-									ClassPage.getURL(entry.getValue()),
-									new CustomTag("span").setContent(entry.getKey())
-							)
-					);
-
-			row.add(new CustomTag("td"))
-					.add(ClassPage.getFullSignature(entry.getValue()));
-
-			StringBuilder out = new StringBuilder();
-			for(int i = 0; i < scriptSpecificBindings.get(entry.getKey()).size(); i++){
-				out.append(scriptSpecificBindings.get(entry.getKey()).toArray()[i]);
-				if(i != scriptSpecificBindings.get(entry.getKey()).size()-1)
-					out.append(", ");
+		for(Map.Entry<String, Map<Class<?>,Set<ScriptType>>> entry : bindings.entrySet()){
+			for(Map.Entry<Class<?>,Set<ScriptType>> entry2 : entry.getValue().entrySet()){
+				row = body.add(new CustomTag("tr"));
+				row.add(new CustomTag("td"))
+						.add(
+								ClassPage.wrapInLink(
+										ClassPage.getURL(entry2.getKey()),
+										new CustomTag("span").setContent(entry.getKey())
+										)
+						);
+				row.add(new CustomTag("td"))
+						.add(ClassPage.getFullSignature(entry2.getKey()));
+				row.add(new CustomTag("td"))
+						.add(entry.getKey());
+				StringJoiner joiner = new StringJoiner(", ");
+				for(ScriptType type : entry2.getValue()){
+					joiner.add(type.name());
+				}
+				row.add(new CustomTag("td"))
+						.add(joiner.toString());
 			}
-			row.add(new CustomTag("td"))
-					.add(out.toString());
 		}
 
 		return table;

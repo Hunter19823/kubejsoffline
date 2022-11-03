@@ -442,7 +442,7 @@ public class ClassPage extends HTMLFile {
 		return out;
 	}
 
-	private static String safeGetFullName(Type type) {
+	public static String safeGetFullName(Type type) {
 		if(type instanceof Class<?> clazz) {
 			try{
 				return clazz.getName();

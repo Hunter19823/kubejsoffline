@@ -142,4 +142,9 @@ public class ClassTree {
 		extension.stream().forEachOrdered((cluster)->builder.append(cluster.toTree()));
 		return builder.toString();
 	}
+
+	public void clear() {
+		root.clear();
+		extension.clear();
+	}
 }

@@ -156,4 +156,10 @@ public class ClassCluster implements Iterable<Class<?>>, Comparable<ClassCluster
 	public int shallowClassCount() {
 		return this.classSet.size();
 	}
+
+	public void clear() {
+		this.clusterMap.values().parallelStream().forEach(ClassCluster::clear);
+		this.clusterMap = null;
+		this.classSet = null;
+	}
 }
