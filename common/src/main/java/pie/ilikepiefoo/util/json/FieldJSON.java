@@ -17,8 +17,10 @@ public class FieldJSON {
 		);
 		if(type.isEmpty())
 			return object;
-
-		object.add("type", TypeJSON.of((Type) type.get()));
+		var typeJson = TypeJSON.of((Type) type.get());
+		if(typeJson == null)
+			return object;
+		object.addProperty("type", typeJson.get("id").getAsInt());
 
 		// Annotations of the field.
 		var annotations = AnnotationJSON.of(field);

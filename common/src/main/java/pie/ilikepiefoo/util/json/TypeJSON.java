@@ -11,7 +11,9 @@ public class TypeJSON {
 	public static JsonObject of(Type type) {
 		if(type == null)
 			return new JsonObject();
-		JsonObject object = new JsonObject();
+		JsonObject object = ClassJSONManager.getInstance().getTypeData(type);
+		if(object == null)
+			return null;
 		object.addProperty("name", SafeOperations.safeUnwrapName(type));
 		object.addProperty("type", SafeOperations.safeUnwrapReturnType(type));
 		if(type instanceof ParameterizedType parameterizedType) {
@@ -21,8 +23,10 @@ public class TypeJSON {
 				return object;
 			for(var typeArgument : typeArguments.get()) {
 				var argument = of(typeArgument);
+				if(argument == null)
+					continue;
 				if(argument.size() > 0)
-					arguments.add(argument);
+					arguments.add(argument.get("id").getAsInt());
 			}
 			if(arguments.size() > 0)
 				object.add("args", arguments);
@@ -39,7 +43,9 @@ public class TypeJSON {
 					object.addProperty("isArray", true);
 				}
 
-				object.add("componentType", of(clazz));
+				var component = of(clazz);
+				if(component != null)
+					object.addProperty("componentType", component.get("id").getAsInt());
 			}
 		}
 

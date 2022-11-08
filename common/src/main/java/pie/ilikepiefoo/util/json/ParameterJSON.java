@@ -15,7 +15,8 @@ public class ParameterJSON {
 			object.addProperty("name", temp);
 		temp = SafeOperations.safeUnwrapReturnType(parameter);
 		if(temp != null)
-			object.addProperty("type", temp);
+			object.addProperty("type", ClassJSONManager.getInstance().getTypeID(temp));
+
 		var annotations = AnnotationJSON.of(parameter);
 		if(annotations.size() > 0)
 			object.add("ano", annotations);

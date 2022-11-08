@@ -9,15 +9,20 @@ import pie.ilikepiefoo.util.SafeOperations;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.function.Supplier;
 
 
 public class ClassJSON {
+
 	private static final Logger LOG = LogManager.getLogger();
-	public static JsonObject of(Class<?> subject) {
+
+	public static void of(Class<?> subject) {
+		if(subject == null)
+			return;
 		JsonObject object = TypeJSON.of(subject);
+		if(object == null)
+			return;
 
 		attachType(object, "superclass", subject::getSuperclass);
 		attachType(object, "genericSuperclass", subject::getGenericSuperclass);
@@ -59,14 +64,15 @@ public class ClassJSON {
 		if(array.size() > 0)
 			object.add("cons", array);
 
-		return object;
 	}
 
 	public static void attachTypes(JsonObject object, String key, Supplier<Type[]> typeSuppliers) {
 		SafeOperations.tryGet(typeSuppliers).ifPresent(types -> {
 			JsonArray array = new JsonArray();
 			for (Type type : types) {
-				object.add(key, TypeJSON.of(type));
+				var temp = TypeJSON.of(type);
+				if (temp != null)
+					array.add(temp.get("id").getAsInt());
 			}
 			object.add(key, array);
 		});
@@ -74,7 +80,9 @@ public class ClassJSON {
 
 	public static void attachType(JsonObject object, String key, Supplier<Type> typeSupplier) {
 		SafeOperations.tryGet(typeSupplier).ifPresent(type -> {
-			object.add(key, TypeJSON.of(type));
+			var temp = TypeJSON.of(type);
+			if(temp != null)
+				object.addProperty(key, temp.get("id").getAsInt());
 		});
 	}
 

@@ -16,13 +16,8 @@ import org.reflections.vfs.ZipDir;
 import pie.ilikepiefoo.util.ReflectionHelper;
 
 import java.io.File;
-import java.io.InputStream;
-import java.net.JarURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.jar.JarFile;
 
 import static org.reflections.vfs.Vfs.getFile;
@@ -33,24 +28,11 @@ public class ReflectionHelperForge implements ReflectionHelper {
 			@Override
 			public boolean matches(URL url) {
 
-				//LOG.info(url.getProtocol());
-				//LOG.info(url.getFile());
-				//LOG.info(url.getPath());
 				return ("union".equals(url.getProtocol())) && !((url).toExternalForm().matches(".+\\.jar!/.+"));
 			}
 
 			@Override
 			public Vfs.Dir createDir(URL url) throws Exception {
-
-//				LOG.info("Path: {}", url.getPath());
-//				LOG.info("File: {}", url.getFile());
-//				LOG.info("URI: {}", url.toURI().toString());
-//				LOG.info("Ref: {}", url.getRef());
-//				LOG.info("Protocol: {}", url.getRef());
-//				LOG.info("External Form: {}", url.toExternalForm());
-//				LOG.info("Query: {}", url.getQuery());
-//				LOG.info("Host: {}", url.getHost());
-//				LOG.info("Authority: {}", url.getAuthority());
 
 				String path = url.getPath();
 				if(path.indexOf('/') == 0) {
@@ -62,8 +44,6 @@ public class ReflectionHelperForge implements ReflectionHelper {
 				}
 				File file = new File(path);
 				if(file.exists()){
-//					LOG.info("New Path: {}", path);
-//					LOG.info("New File: {}", file);
 					return new ZipDir(new JarFile(file));
 				}else{
 					return null;
@@ -74,12 +54,6 @@ public class ReflectionHelperForge implements ReflectionHelper {
 
 	@Override
 	public Class[] getClasses() {
-//		LinkedList<ClassLoader> loaders = new LinkedList<>();
-//		loaders.add(this.getClass().getClassLoader());
-//		while(loaders.getLast().getParent() != null){
-//			loaders.add(loaders.getLast().getParent());
-//		}
-//		String[] packageNames = loaders.parallelStream().map(ClassLoader::getDefinedPackages).flatMap((Arrays::stream)).map(Package::getName).toList().toArray(new String[0]);
 		Package[] packages = Package.getPackages();
 		String[] packageNames = Arrays.stream(packages).parallel().map(Package::getName).toList().toArray(new String[0]);
 		LOG.info(Arrays.toString(packageNames));

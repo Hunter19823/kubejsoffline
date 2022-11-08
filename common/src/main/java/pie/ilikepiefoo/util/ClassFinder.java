@@ -219,7 +219,8 @@ public class ClassFinder {
 			NEXT_DEPTH.add(target);
 			CLASS_SEARCH.put(target, SearchState.IN_QUEUE);
 		}
-		RELATIONSHIPS.add(new Connection(target, relationType, subject));
+		if(target != subject)
+			RELATIONSHIPS.add(new Connection(target, relationType, subject));
 	}
 
 	private void addAllGenericTypes(Type type, Class<?> subject) {
@@ -233,8 +234,6 @@ public class ClassFinder {
 			try {
 				for (var possibleType : parameterizedType.getActualTypeArguments()) {
 					if (possibleType instanceof Class<?> target) {
-						//if(DEBUG)
-						//	LOG.info("Found Generic Type: {}", target);
 						addToQueue(target, relationType, subject);
 					}
 				}

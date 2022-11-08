@@ -3,16 +3,11 @@ package pie.ilikepiefoo.html.page;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import pie.ilikepiefoo.DocumentationThread;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 public class JavaDocUtils {
 	public static final Logger LOG = LogManager.getLogger();

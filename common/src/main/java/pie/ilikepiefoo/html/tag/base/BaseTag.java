@@ -2,7 +2,6 @@ package pie.ilikepiefoo.html.tag.base;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import pie.ilikepiefoo.html.tag.CustomTag;
 import pie.ilikepiefoo.html.tag.Tag;
 
 import javax.annotation.Nonnull;

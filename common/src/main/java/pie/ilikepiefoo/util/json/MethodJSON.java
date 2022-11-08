@@ -21,9 +21,13 @@ public class MethodJSON {
 				method::getGenericReturnType,
 				method::getReturnType
 		);
-		if(type.isPresent())
-			object.add("type", TypeJSON.of((Type) type.get()));
-		else{
+		if(type.isPresent()) {
+			var typeObject = TypeJSON.of((Type) type.get());
+			if(typeObject == null)
+				return new JsonObject();
+
+			object.addProperty("type", typeObject.get("id").getAsInt());
+		}else{
 			return new JsonObject();
 		}
 

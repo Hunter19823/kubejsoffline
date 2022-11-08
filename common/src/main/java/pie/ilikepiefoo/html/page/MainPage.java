@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 public class MainPage extends HTMLFile {
 	private static final Logger LOG = LogManager.getLogger();
 
-	private static String LOGO = "https://kubejs.com/logo_title.png";
 	public final Tag<?> SIDE_NAV;
 
 	public MainPage() {
@@ -47,7 +46,8 @@ public class MainPage extends HTMLFile {
 
 	private void addTopBar() {
 		Tag<?> tag = new DivTag("top-bar");
-		tag.add(new CustomTag("img").setAttributeString("src",LOGO).id("logo-img"));
+		String LOGO = "https://kubejs.com/logo_title.png";
+		tag.add(new CustomTag("img").setAttributeString("src", LOGO).id("logo-img"));
 		tag.add(new HeaderTag(3).id("page-name").setContent("KubeJS Offline"));
 		BODY_TAG.add(tag);
 	}

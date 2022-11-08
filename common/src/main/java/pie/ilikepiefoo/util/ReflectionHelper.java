@@ -1,6 +1,5 @@
 package pie.ilikepiefoo.util;
 
-import dev.latvian.mods.kubejs.script.ScriptType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
