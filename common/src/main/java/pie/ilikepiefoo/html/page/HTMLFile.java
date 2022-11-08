@@ -5,8 +5,8 @@ import pie.ilikepiefoo.html.tag.base.DoctypeTag;
 import pie.ilikepiefoo.html.tag.base.HTMLTag;
 import pie.ilikepiefoo.html.tag.base.HeadTag;
 
-public class HTMLFile {
-	public final DoctypeTag DOCTYPE_TAG = new DoctypeTag();
+public class HTMLFile extends DoctypeTag {
+	public final DoctypeTag DOCTYPE_TAG = this;
 	public final HTMLTag HTML_TAG = new HTMLTag();
 	public final HeadTag HEADER_TAG = new HeadTag();
 	public final BodyTag BODY_TAG = new BodyTag();

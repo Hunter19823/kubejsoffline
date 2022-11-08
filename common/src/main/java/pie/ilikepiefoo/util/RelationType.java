@@ -1,5 +1,7 @@
 package pie.ilikepiefoo.util;
 
+import com.google.gson.JsonObject;
+
 public enum RelationType {
 	UNKNOWN,
 	COMPONENT_OF,
@@ -19,4 +21,17 @@ public enum RelationType {
 	CONSTRUCTOR_EXCEPTION_TYPE_OF,
 	CONSTRUCTOR_GENERIC_PARAMETER_TYPE_OF,
 	CONSTRUCTOR_GENERIC_EXCEPTION_TYPE_OF
+	;
+
+	public static JsonObject getRelationTypeData() {
+		JsonObject out = new JsonObject();
+		for (RelationType relationType : RelationType.values()) {
+			out.addProperty(relationType.name(), relationType.ordinal());
+		}
+		return out;
+	}
+
+	public String getKeyName() {
+		return this.name();
+	}
 }

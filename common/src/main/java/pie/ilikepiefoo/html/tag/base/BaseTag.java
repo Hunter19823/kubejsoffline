@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 public abstract class BaseTag<TYPE extends Tag<TYPE>> implements Tag<TYPE> {
 	protected final String name;
 	protected String content = "";

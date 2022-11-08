@@ -1,17 +1,22 @@
 package pie.ilikepiefoo.util.json;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import pie.ilikepiefoo.util.RelationType;
 import pie.ilikepiefoo.util.SafeOperations;
 
 import java.lang.reflect.Type;
+import java.util.Set;
+import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.StreamSupport;
 
 public class ClassJSONManager {
-	private final JsonArray typeData;
-	private final AtomicInteger typeIDs;
-	private final ConcurrentHashMap<String, Integer> typeIDMap;
+	private JsonArray typeData;
+	private AtomicInteger typeIDs;
+	private ConcurrentHashMap<String, Integer> typeIDMap;
 	private static ClassJSONManager INSTANCE;
 
 	public static ClassJSONManager getInstance() {
@@ -21,6 +26,13 @@ public class ClassJSONManager {
 	}
 
 	public ClassJSONManager() {
+		typeData = new JsonArray();
+		typeIDs = new AtomicInteger(-1);
+		typeIDMap = new ConcurrentHashMap<>();
+	}
+
+	public void clear() {
+		typeIDMap.clear();
 		typeData = new JsonArray();
 		typeIDs = new AtomicInteger(-1);
 		typeIDMap = new ConcurrentHashMap<>();
@@ -57,5 +69,36 @@ public class ClassJSONManager {
 
 	public JsonArray getTypeData() {
 		return typeData;
+	}
+
+	public JsonArray findAllRelationsOf(Type type, RelationType... relations) {
+		return findAllRelationsOf(SafeOperations.safeUnwrapReturnType(type), relations);
+	}
+
+	public JsonArray findAllRelationsOf(String typeName, RelationType... relations) {
+		JsonArray array = new JsonArray();
+		Set<Integer> ids = ConcurrentHashMap.newKeySet();
+		Stack<Integer> to_search = new Stack<>();
+		to_search.add(getTypeID(typeName));
+		while(!to_search.isEmpty()) {
+			int id = to_search.pop(); // Get the next id to search.
+			if(ids.contains(id)) // Skip if already searched.
+				continue;
+			ids.add(id); // Mark as searched.
+			array.add(id); // Add to the array.
+			JsonObject object = typeData.get(id).getAsJsonObject(); // Get the object.
+			if(object == null) // Skip if null.
+				continue;
+			for(RelationType relationType : relations) { // For each relation type.
+				var element = object.getAsJsonArray(relationType.getKeyName()); // Get the relation.
+				if(element != null){ // If the object has the relation type.
+					to_search.addAll(
+							StreamSupport.stream(element.spliterator(), false)
+									.mapToInt(JsonElement::getAsInt)
+									.boxed().toList()); // Add all related ids to the search stack.
+				}
+			}
+		}
+		return array; // Return the array of ids.
 	}
 }

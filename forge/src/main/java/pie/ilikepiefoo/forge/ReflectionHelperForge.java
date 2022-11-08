@@ -8,9 +8,7 @@ import net.minecraftforge.fml.loading.ModJarURLHandler;
 import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
-import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ConfigurationBuilder;
-import org.reflections.vfs.JarInputDir;
 import org.reflections.vfs.Vfs;
 import org.reflections.vfs.ZipDir;
 import pie.ilikepiefoo.util.ReflectionHelper;
@@ -19,8 +17,6 @@ import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.jar.JarFile;
-
-import static org.reflections.vfs.Vfs.getFile;
 
 public class ReflectionHelperForge implements ReflectionHelper {
 	static {

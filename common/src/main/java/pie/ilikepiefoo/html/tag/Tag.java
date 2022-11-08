@@ -5,12 +5,15 @@ import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+@SuppressWarnings("unchecked")
 public interface Tag<TYPE extends Tag<TYPE>> {
 	public static final Logger LOG = LogManager.getLogger();
 	public default String toHTML() {
@@ -21,8 +24,8 @@ public interface Tag<TYPE extends Tag<TYPE>> {
 		sb.append(getContent());
 
 		// Iteratively add all child tags to the HTML document
-		Stack<Tag<?>> hierarchy = new Stack<Tag<?>>();
-		Set<Tag<?>> tagSet = new HashSet<Tag<?>>();
+		Stack<Tag<?>> hierarchy = new Stack<>();
+		Set<Tag<?>> tagSet = new HashSet<>();
 		hierarchy.addAll(getChildren());
 		int counter = 0;
 		while(hierarchy.size() > 0) {
@@ -52,6 +55,44 @@ public interface Tag<TYPE extends Tag<TYPE>> {
 		return sb.toString();
 	}
 
+	public default void writeHTML(Writer writer) throws IOException {
+		// Add the Head tag.
+		writer.write(getFrontHTML());
+		// Add Content to the front of the children.
+		writeContent(writer);
+
+		// Iteratively add all child tags to the HTML document
+		Stack<Tag<?>> hierarchy = new Stack<>();
+		Set<Tag<?>> tagSet = new HashSet<>();
+		hierarchy.addAll(getChildren());
+		int counter = 0;
+		while(hierarchy.size() > 0) {
+			counter++;
+			Tag<?> tag = hierarchy.pop();
+			if(!tagSet.contains(tag)) {
+				writer.write(tag.getFrontHTML());
+				hierarchy.push(tag);
+				tagSet.add(tag);
+				tag.writeContent(writer);
+			}else {
+				writer.write(tag.getEndHTML());
+				continue;
+			}
+
+			if(tag.getChildren().size() > 0) {
+				for (int i = tag.getChildren().size() - 1; i >= 0; i--) {
+					hierarchy.push(tag.getChildren().get(i));
+				}
+			}
+		}
+		if(hasClosingTag()){
+			writer.append("</");
+			writer.append(getName());
+			writer.append(">");
+		}
+		writer.flush();
+	}
+
 	public default String getFrontHTML() {
 		return "<"+getName()+getAttributeHTML()+">";
 	}
@@ -79,6 +120,10 @@ public interface Tag<TYPE extends Tag<TYPE>> {
 	public String getName();
 
 	public String getContent();
+
+	default void writeContent(Writer writer) throws IOException {
+		writer.write(getContent());
+	}
 
 	public boolean hasClosingTag();
 

@@ -4,7 +4,6 @@ import dev.latvian.mods.kubejs.event.EventJS;
 import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
-import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ConfigurationBuilder;
 import pie.ilikepiefoo.util.ReflectionHelper;
 

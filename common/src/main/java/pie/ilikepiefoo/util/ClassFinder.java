@@ -18,10 +18,10 @@ public class ClassFinder {
 	public static final Logger LOG = LogManager.getLogger();
 	public static boolean DEBUG = false;
 	public final Map<Class<?>, SearchState> CLASS_SEARCH;
-	public final Set<Connection> RELATIONSHIPS;
+	public final Set<Relation> RELATIONSHIPS;
 	private Queue<Class<?>> CURRENT_DEPTH;
 	private Queue<Class<?>> NEXT_DEPTH;
-	private Queue<Consumer<Class<?>>> HANDLERS;
+	private final Queue<Consumer<Class<?>>> HANDLERS;
 
 	private ClassFinder() {
 		CLASS_SEARCH = new ConcurrentHashMap<>();
@@ -43,7 +43,7 @@ public class ClassFinder {
 		HANDLERS.add(handler);
 	}
 
-	public Set<Connection> getRelationships() {
+	public Set<Relation> getRelationships() {
 		return RELATIONSHIPS;
 	}
 
@@ -58,7 +58,8 @@ public class ClassFinder {
 			try {
 				NEXT_DEPTH.add(aClass);
 			} catch (Throwable e) {
-				LOG.error(e);
+				if(DEBUG)
+					LOG.error(e);
 			}
 		}
 	}
@@ -87,35 +88,40 @@ public class ClassFinder {
 		try{
 			addToQueue(subject.getComponentType(), RelationType.COMPONENT_OF, subject);
 		} catch (Throwable e) {
-			LOG.error(e);
+			if(DEBUG)
+				LOG.error(e);
 		}
 
 		// Search Interfaces and Inner Classes
 		try{
 			safeAddArray(subject.getClasses(), RelationType.INNER_TYPE_OF, subject);
 		} catch (Throwable e) {
-			LOG.error(e);
+			if(DEBUG)
+				LOG.error(e);
 		}
 
 		// Search Nest Members
 		try{
 			safeAddArray(subject.getNestMembers(), subject);
 		} catch (Throwable e) {
-			LOG.error(e);
+			if(DEBUG)
+				LOG.error(e);
 		}
 
 		// Add Nest Host
 		try{
 			addToQueue(subject.getNestHost(), subject);
 		} catch (Throwable e) {
-			LOG.error(e);
+			if(DEBUG)
+				LOG.error(e);
 		}
 
 		// Add Super Class
 		try {
 			addToQueue(subject.getSuperclass(), RelationType.SUPER_CLASS_OF, subject);
 		} catch (Throwable e) {
-			LOG.error(e);
+			if(DEBUG)
+				LOG.error(e);
 		}
 
 		// Search Explicit Implementations
@@ -129,7 +135,8 @@ public class ClassFinder {
 			for(var type : subject.getTypeParameters())
 				addToQueue(type.getGenericDeclaration(), RelationType.GENERIC_CLASS_PARAMETER_OF, subject);
 		} catch (Throwable e) {
-			LOG.error(e);
+			if(DEBUG)
+				LOG.error(e);
 		}
 
 		// Add Fields
@@ -140,7 +147,8 @@ public class ClassFinder {
 				safeAddAllAnnotation(field.getAnnotations(), RelationType.UNKNOWN, subject);
 			}
 		} catch (Throwable e) {
-			LOG.error(e);
+			if(DEBUG)
+				LOG.error(e);
 		}
 
 		// Add Declared Methods
@@ -156,7 +164,8 @@ public class ClassFinder {
 				safeAddAllAnnotation(method.getParameterAnnotations(), RelationType.UNKNOWN, subject);
 			}
 		} catch (Throwable e) {
-			LOG.error(e);
+			if(DEBUG)
+				LOG.error(e);
 		}
 
 		// Add Constructors
@@ -171,7 +180,8 @@ public class ClassFinder {
 				safeAddAllAnnotation(constructor.getParameterAnnotations(), RelationType.UNKNOWN, subject);
 			}
 		} catch (Throwable e) {
-			LOG.error(e);
+			if(DEBUG)
+				LOG.error(e);
 		}
 
 		CLASS_SEARCH.put(subject, SearchState.SEARCHED);
@@ -179,7 +189,8 @@ public class ClassFinder {
 			try {
 				handler.accept(subject);
 			} catch (Throwable e) {
-				LOG.error(e);
+				if(DEBUG)
+					LOG.error(e);
 			}
 		}
 	}
@@ -192,7 +203,8 @@ public class ClassFinder {
 				safeAddAllAnnotation(parameterAnnotation, relationType, subject);
 			}
 		} catch (Throwable e) {
-			LOG.error(e);
+			if(DEBUG)
+				LOG.error(e);
 		}
 	}
 
@@ -204,7 +216,8 @@ public class ClassFinder {
 				addToQueue(annotation.annotationType(), relationType, subject);
 			}
 		} catch (Throwable e) {
-			LOG.error(e);
+			if(DEBUG)
+				LOG.error(e);
 		}
 	}
 
@@ -220,7 +233,7 @@ public class ClassFinder {
 			CLASS_SEARCH.put(target, SearchState.IN_QUEUE);
 		}
 		if(target != subject)
-			RELATIONSHIPS.add(new Connection(target, relationType, subject));
+			RELATIONSHIPS.add(new Relation(target, relationType, subject));
 	}
 
 	private void addAllGenericTypes(Type type, Class<?> subject) {
@@ -238,7 +251,8 @@ public class ClassFinder {
 					}
 				}
 			} catch (Throwable e) {
-				LOG.error(e);
+				if(DEBUG)
+					LOG.error(e);
 			}
 		}
 	}
@@ -253,7 +267,8 @@ public class ClassFinder {
 			try {
 				addAllGenericTypes(target, relationType, subject);
 			} catch (Throwable e){
-				LOG.error(e);
+				if(DEBUG)
+					LOG.error(e);
 			}
 		}
 	}
@@ -269,7 +284,8 @@ public class ClassFinder {
 			try {
 				addToQueue(target, relationType, subject);
 			} catch (Throwable e){
-				LOG.error(e);
+				if(DEBUG)
+					LOG.error(e);
 			}
 		}
 	}

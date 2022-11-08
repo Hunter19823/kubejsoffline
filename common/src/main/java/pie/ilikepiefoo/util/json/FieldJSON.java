@@ -28,9 +28,10 @@ public class FieldJSON {
 			object.add("ano", annotations);
 
 		// Modifiers of the field
-		var modifiers = ModifierJSON.of(field.getModifiers());
-		if(modifiers.size() > 0)
-			object.add("mod", modifiers);
+//		var modifiers = ModifierJSON.of(field.getModifiers());
+//		if(modifiers.size() > 0)
+//			object.add("mod", modifiers);
+		object.addProperty("mod", field.getModifiers());
 
 
 		return object;

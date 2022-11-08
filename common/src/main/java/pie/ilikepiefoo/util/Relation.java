@@ -2,8 +2,8 @@ package pie.ilikepiefoo.util;
 
 import java.util.Objects;
 
-public record Connection(Class<?> from, RelationType relation, Class<?> to) {
-	public Connection {
+public record Relation(Class<?> from, RelationType relation, Class<?> to) {
+	public Relation {
 		Objects.requireNonNull(from);
 		Objects.requireNonNull(relation);
 		Objects.requireNonNull(to);
