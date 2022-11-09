@@ -44,8 +44,10 @@ public class TypeJSON {
 				}
 
 				var component = of(clazz);
-				if(component != null)
+				if(component != null) {
 					object.addProperty("componentType", component.get("id").getAsInt());
+					object.addProperty("type", SafeOperations.safeUnwrapReturnType(clazz));
+				}
 			}
 		}
 

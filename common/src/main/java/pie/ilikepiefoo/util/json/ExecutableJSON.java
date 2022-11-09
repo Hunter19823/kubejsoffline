@@ -18,9 +18,6 @@ public class ExecutableJSON {
 			object.add("ano", annotations);
 
 		// Modifiers of the method
-//		var modifiers = ModifierJSON.of(executable.getModifiers());
-//		if(modifiers.size() > 0)
-//			object.add("mod", modifiers);
 		object.addProperty("mod", executable.getModifiers());
 	}
 }

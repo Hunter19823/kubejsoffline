@@ -36,9 +36,6 @@ public class ClassJSON {
 			object.add("ano", array);
 
 		// Add modifiers
-//		var modifiers = ModifierJSON.of(subject.getModifiers());
-//		if(modifiers.size() > 0)
-//			object.add("mod", modifiers);
 		object.addProperty("mod", subject.getModifiers());
 
 		// Add Fields

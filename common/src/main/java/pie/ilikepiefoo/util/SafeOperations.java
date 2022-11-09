@@ -181,7 +181,4 @@ public class SafeOperations {
 		return Optional.empty();
 	}
 
-	public static void addIfPresent(JsonObject object, String key, Supplier<Type> supplier) {
-
-	}
 }

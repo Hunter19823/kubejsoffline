@@ -92,7 +92,7 @@ public class ClassFinder {
 				LOG.error(e);
 		}
 
-		// Search Interfaces and Inner Classes
+		// Search Declared and Inner Classes
 		try{
 			safeAddArray(subject.getClasses(), RelationType.INNER_TYPE_OF, subject);
 		} catch (Throwable e) {
@@ -100,9 +100,17 @@ public class ClassFinder {
 				LOG.error(e);
 		}
 
+		// Search Interfaces
+		try {
+			safeAddArray(subject.getInterfaces(), RelationType.IMPLEMENTATION_OF, subject);
+		} catch (Throwable e) {
+			if(DEBUG)
+				LOG.error(e);
+		}
+
 		// Search Nest Members
 		try{
-			safeAddArray(subject.getNestMembers(), subject);
+			safeAddArray(subject.getNestMembers(), RelationType.NEST_MEMBER_OF, subject);
 		} catch (Throwable e) {
 			if(DEBUG)
 				LOG.error(e);
@@ -110,7 +118,7 @@ public class ClassFinder {
 
 		// Add Nest Host
 		try{
-			addToQueue(subject.getNestHost(), subject);
+			addToQueue(subject.getNestHost(), RelationType.NEST_HOST_OF, subject);
 		} catch (Throwable e) {
 			if(DEBUG)
 				LOG.error(e);
@@ -124,11 +132,11 @@ public class ClassFinder {
 				LOG.error(e);
 		}
 
-		// Search Explicit Implementations
+		// Search Permitted Subclasses
 		safeAddArray(subject.getPermittedSubclasses(), RelationType.PERMITTED_SUBCLASS_OF, subject);
 
 		// Search Annotations
-		safeAddAllAnnotation(subject.getAnnotations(), RelationType.UNKNOWN, subject);
+		safeAddAllAnnotation(subject.getAnnotations(), RelationType.ANNOTATION_OF, subject);
 
 		// Add All Generic Type Parameters
 		try{
@@ -232,8 +240,9 @@ public class ClassFinder {
 			NEXT_DEPTH.add(target);
 			CLASS_SEARCH.put(target, SearchState.IN_QUEUE);
 		}
-		if(target != subject)
+		if(target != subject && RelationType.UNKNOWN != relationType) {
 			RELATIONSHIPS.add(new Relation(target, relationType, subject));
+		}
 	}
 
 	private void addAllGenericTypes(Type type, Class<?> subject) {

@@ -15,8 +15,8 @@ import java.util.Stack;
 
 @SuppressWarnings("unchecked")
 public interface Tag<TYPE extends Tag<TYPE>> {
-	public static final Logger LOG = LogManager.getLogger();
-	public default String toHTML() {
+	Logger LOG = LogManager.getLogger();
+	default String toHTML() {
 		StringBuilder sb = new StringBuilder();
 		// Add the Head tag.
 		sb.append(getFrontHTML());
@@ -55,7 +55,7 @@ public interface Tag<TYPE extends Tag<TYPE>> {
 		return sb.toString();
 	}
 
-	public default void writeHTML(Writer writer) throws IOException {
+	default void writeHTML(Writer writer) throws IOException {
 		// Add the Head tag.
 		writer.write(getFrontHTML());
 		// Add Content to the front of the children.
@@ -93,11 +93,11 @@ public interface Tag<TYPE extends Tag<TYPE>> {
 		writer.flush();
 	}
 
-	public default String getFrontHTML() {
+	default String getFrontHTML() {
 		return "<"+getName()+getAttributeHTML()+">";
 	}
 
-	public default String getAttributeHTML() {
+	default String getAttributeHTML() {
 		StringBuilder sb = new StringBuilder();
 		if(getAttributes() != null) {
 			getAttributes().forEach(
@@ -109,7 +109,7 @@ public interface Tag<TYPE extends Tag<TYPE>> {
 		return sb.toString();
 	}
 
-	public default String getEndHTML() {
+	default String getEndHTML() {
 		if(hasClosingTag()) {
 			return "</"+getName()+">";
 		}
@@ -117,91 +117,91 @@ public interface Tag<TYPE extends Tag<TYPE>> {
 	}
 
 
-	public String getName();
+	String getName();
 
-	public String getContent();
+	String getContent();
 
 	default void writeContent(Writer writer) throws IOException {
 		writer.write(getContent());
 	}
 
-	public boolean hasClosingTag();
+	boolean hasClosingTag();
 
-	public @Nullable Tag<?> getParent();
-	public void setParent(Tag<?> parent);
+	@Nullable Tag<?> getParent();
+	void setParent(Tag<?> parent);
 
-	public List<Tag<?>> getChildren();
+	List<Tag<?>> getChildren();
 
-	public Map<String, String> getAttributes();
+	Map<String, String> getAttributes();
 
-	public <T extends Tag<T>> Tag<T> add(Tag<T> tag);
+	<T extends Tag<T>> Tag<T> add(Tag<T> tag);
 
-	public default Tag<TYPE> setAttribute(String name, String value) {
+	default Tag<TYPE> setAttribute(String name, String value) {
 		getAttributes().put(name, value);
 		return this;
 	}
 
-	public default TYPE setAttributeString(@Nonnull String name, @Nonnull String value) {
+	default TYPE setAttributeString(@Nonnull String name, @Nonnull String value) {
 		setAttribute(name, "\""+value+"\"");
 		return (TYPE) this;
 	}
 
-	public default TYPE setAttributeNumber(@Nonnull String name, @Nonnull String value) {
+	default TYPE setAttributeNumber(@Nonnull String name, @Nonnull String value) {
 		setAttribute(name, value);
 		return (TYPE) this;
 	}
 
-	public default TYPE setAttributeNumber(@Nonnull String name, @Nonnull Number value) {
+	default TYPE setAttributeNumber(@Nonnull String name, @Nonnull Number value) {
 		setAttribute(name, value.toString());
 		return (TYPE) this;
 	}
 
-	public default TYPE setClass(@Nonnull String name) {
+	default TYPE setClass(@Nonnull String name) {
 		setAttributeString("class", name);
 		return (TYPE) this;
 	}
 
-	public default TYPE id(@Nonnull String id) {
+	default TYPE id(@Nonnull String id) {
 		setAttributeString("id", id);
 		return (TYPE) this;
 	}
 
-	public default TYPE href(@Nonnull String href) {
+	default TYPE href(@Nonnull String href) {
 		setAttributeString("href", href);
 		return (TYPE) this;
 	}
 
-	public default TYPE src(@Nonnull String src) {
+	default TYPE src(@Nonnull String src) {
 		setAttributeString("src", src);
 		return (TYPE) this;
 	}
 
-	public default TYPE title(@Nonnull String title) {
+	default TYPE title(@Nonnull String title) {
 		setAttributeString("title", title);
 		return (TYPE) this;
 	}
 
-	public default TYPE height(@Nonnull String height) {
+	default TYPE height(@Nonnull String height) {
 		setAttributeString("height", height);
 		return (TYPE) this;
 	}
 
-	public default TYPE width(@Nonnull String width) {
+	default TYPE width(@Nonnull String width) {
 		setAttributeString("width", width);
 		return (TYPE) this;
 	}
 
-	public default TYPE style(@Nonnull String style) {
+	default TYPE style(@Nonnull String style) {
 		setAttributeString("style", style);
 		return (TYPE) this;
 	}
 
-	public default TYPE br() {
+	default TYPE br() {
 		add(new CustomTag("br", false));
 		return (TYPE) this;
 	}
 
-	public default TYPE add(String content) {
+	default TYPE add(String content) {
 		add(new CustomTag("span", true).setContent(content));
 		return (TYPE) this;
 	}

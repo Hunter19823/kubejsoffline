@@ -24,7 +24,7 @@ public class RelationsJSON {
 
 				if (relation == null) {
 					relation = new JsonArray();
-					from.add(""+connection.relation().getKeyName(), relation);
+					from.add(connection.relation().getKeyName(), relation);
 				}
 				var relationMap = uniqueRelations.computeIfAbsent(from.get("id").getAsInt(), (k) -> Collections.synchronizedMap(new EnumMap<>(RelationType.class)));
 				var relationSet = relationMap.computeIfAbsent(connection.relation(), (k) -> ConcurrentHashMap.newKeySet());

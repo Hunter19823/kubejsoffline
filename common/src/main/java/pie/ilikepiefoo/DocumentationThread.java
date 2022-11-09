@@ -2,12 +2,13 @@ package pie.ilikepiefoo;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import dev.latvian.mods.kubejs.script.ScriptType;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.TextComponent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 import pie.ilikepiefoo.html.page.IndexPage;
 import pie.ilikepiefoo.html.tag.Tag;
 import pie.ilikepiefoo.util.ClassFinder;
@@ -16,31 +17,19 @@ import pie.ilikepiefoo.util.json.ClassJSONManager;
 import pie.ilikepiefoo.util.json.RelationsJSON;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.Map;
-import java.util.Set;
 
 public class DocumentationThread extends Thread {
 	public static final Logger LOG = LogManager.getLogger();
-	public final Map<String, Map<Class<?>,Set<ScriptType>>> bindings;
 
-	private static Gson GSON = new GsonBuilder().create();
+	private static final Gson GSON = new GsonBuilder().create();
+	private String outputFile;
 
-	public DocumentationThread(Map<String, Map<Class<?>,Set<ScriptType>>> bindings) {
-		this.bindings = bindings;
-	}
-
-	public void setPrettyPrint(boolean prettyPrint) {
-		if (prettyPrint) {
-			GSON = new GsonBuilder().setPrettyPrinting().create();
-		} else {
-			GSON = new GsonBuilder().create();
-		}
+	public DocumentationThread() {
+		super("KJSOffline DocThread");
 	}
 
     @Override
@@ -56,7 +45,6 @@ public class DocumentationThread extends Thread {
 			}
 		}
 		// Log the bindings.
-		LOG.info("Bindings: " + GSON.toJson(bindings));
 		int step = 0;
 		int totalSteps = 9;
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] Initializing ClassFinder and Reflections Library...", ++step, totalSteps));
@@ -80,7 +68,7 @@ public class DocumentationThread extends Thread {
 		// Dump connections.
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] Generating JSON with class dependencies...", ++step, totalSteps));
 		timeMillis = System.currentTimeMillis();
-		dumpConnections();
+		jsonifyConnections();
 		timeMillis = System.currentTimeMillis() - timeMillis;
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] JSON with class dependencies generated in %,dms", step, totalSteps, timeMillis));
 
@@ -88,16 +76,19 @@ public class DocumentationThread extends Thread {
 		// Dump ClassTree to JSON
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] Generating JSON with full list of class data..", ++step, totalSteps));
 		timeMillis = System.currentTimeMillis();
-		dumpJSONs();
+		jsonifyClasses();
 		timeMillis = System.currentTimeMillis() - timeMillis;
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] JSON with full list of class data generated in %,dms", step, totalSteps, timeMillis));
 
 		// Create index.html
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] Generating index.html...", ++step, totalSteps));
 		timeMillis = System.currentTimeMillis();
-		dumpIndex();
+		var output = createIndexPage();
 		timeMillis = System.currentTimeMillis() - timeMillis;
-		sendMessage(String.format("[KJS Offline] [Step %d/%d] index.html generated in %,dms", step, totalSteps, timeMillis));
+		if(output != null)
+			sendMessage(String.format("[KJS Offline] [Step %d/%d] index.html generated in %,dms", step, totalSteps, timeMillis));
+		else
+			sendMessage(String.format("[KJS Offline] [Step %d/%d] index.html failed to generate after %,dms!", step, totalSteps, timeMillis));
 
 
 		int totalClassSize = ClassFinder.INSTANCE.CLASS_SEARCH.size();
@@ -112,73 +103,61 @@ public class DocumentationThread extends Thread {
 		long end = System.currentTimeMillis();
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] Documentation Thread finished in %,dms", ++step, totalSteps, end - start));
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] %,d classes found, %,d relationships found", ++step, totalSteps, totalClassSize, totalRelationSize));
+		if(output != null)
+			sendLink(String.format("[KJS Offline] [Step %d/%d] The Documentation page can be found at kubejs/documentation/index.html or by clicking ", step, totalSteps),"here", "kubejs/documentation/index.html");
     }
 
-	private void dumpIndex() {
-		IndexPage page = new IndexPage(bindings, GSON);
-		writeFile("index.html", "", page);
+	@Nullable
+	private File createIndexPage() {
+		IndexPage page = new IndexPage(GSON);
+		return writeHTMLPage(page);
 	}
 
-	private void dumpConnections() {
-		var out = RelationsJSON.of(ClassFinder.INSTANCE.getRelationships());
-
-		writeFile("relationships.json","", out);
+	private void jsonifyConnections() {
+		RelationsJSON.of(ClassFinder.INSTANCE.getRelationships());
 	}
 
-	private void dumpJSONs() {
+	private void jsonifyClasses() {
 		ClassFinder.INSTANCE.CLASS_SEARCH.entrySet().parallelStream().forEach((entry) -> {
 			if(entry.getValue() == ClassFinder.SearchState.SEARCHED)
 				ClassJSON.of(entry.getKey());
 		});
-		writeFile("fullClassTree.json","", ClassJSONManager.getInstance().getTypeData());
 	}
 
 	private static void sendMessage(String message) {
 		Minecraft.getInstance().gui.getChat().addMessage(new TextComponent(message));
 	}
 
+	private static void sendLink(String message, String linkText, String link) {
+		Minecraft.getInstance().gui.getChat().addMessage(new TextComponent(message).append(new TextComponent(linkText).withStyle((style) -> {
+			return style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, link)).withUnderlined(true).withColor(ChatFormatting.AQUA);
+		})));
+	}
+
 	private static Path getOutputPath() {
-		return Path.of("build/test/generated/html");
+		return KubeJSOffline.HELPER.getWorkingDirectory().resolve("kubejs/documentation");
 	}
 
 	@SuppressWarnings("ResultOfMethodCallIgnored")
-	private static File getFile(String fileName, String localPath) {
-		Path outputPath = getOutputPath().resolve(localPath).toAbsolutePath();
+	private static File getFile() {
+		Path outputPath = getOutputPath().toAbsolutePath();
 		if(!outputPath.toFile().exists())
 			outputPath.toFile().mkdirs();
 
-		return outputPath.resolve(fileName).toFile();
+		return outputPath.resolve("index.html").toFile();
 	}
 
-	private static void writeFile(String fileName, String localPath, String content) {
-		File output = getFile(fileName, localPath);
-
-		try (FileOutputStream fos = new FileOutputStream(output)) {
-			fos.write(content.getBytes(StandardCharsets.UTF_16));
-			//LOG.info("Successfully written file: " + fileName + " to " + outputPath);
-		} catch (IOException e) {
-			LOG.error("Failed to write file: " + fileName + " to " + output.getPath(), e);
-		}
-	}
-
-	private static void writeFile(String fileName, String localPath, JsonElement content) {
-		File output = getFile(fileName, localPath);
-
-		try (Writer writer = new FileWriter(output)) {
-			GSON.toJson(content, writer);
-		} catch (IOException e) {
-			LOG.error("Failed to write file: " + fileName + " to " + output.getPath(), e);
-		}
-	}
-
-	private static void writeFile(String fileName, String localPath, Tag<?> content) {
-		File output = getFile(fileName, localPath);
+	@Nullable
+	private static File writeHTMLPage(Tag<?> content) {
+		File output = getFile();
 
 		try (Writer writer = new FileWriter(output)) {
 			content.writeHTML(writer);
 			writer.flush();
 		} catch (IOException e) {
-			LOG.error("Failed to write file: " + fileName + " to " + output.getPath(), e);
+			LOG.error("Failed to write file: " + "index.html" + " to " + output.getPath(), e);
+			return null;
 		}
+		return output;
 	}
 }

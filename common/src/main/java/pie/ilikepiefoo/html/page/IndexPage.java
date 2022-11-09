@@ -2,21 +2,16 @@ package pie.ilikepiefoo.html.page;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import dev.latvian.mods.kubejs.script.ScriptType;
 import pie.ilikepiefoo.KubeJSOffline;
 import pie.ilikepiefoo.html.tag.CustomTag;
 import pie.ilikepiefoo.html.tag.collection.JSONDataTag;
 import pie.ilikepiefoo.util.RelationType;
+import pie.ilikepiefoo.util.json.BindingsJSON;
 import pie.ilikepiefoo.util.json.ClassJSONManager;
 
-import java.util.Map;
-import java.util.Set;
-
 public class IndexPage extends HTMLFile {
-	private final Map<String, Map<Class<?>,Set<ScriptType>>> bindings;
 
-	public IndexPage(Map<String, Map<Class<?>,Set<ScriptType>>> bindings, Gson gson) {
-		this.bindings = bindings;
+	public IndexPage(Gson gson) {
 		HEADER_TAG.add(new CustomTag("style").setContent(CSS));
 		HEADER_TAG.add(new JSONDataTag("DATA", ClassJSONManager.getInstance().getTypeData(), gson));
 		JsonObject object = new JsonObject();
@@ -25,6 +20,7 @@ public class IndexPage extends HTMLFile {
 		}
 		HEADER_TAG.add(new JSONDataTag("EVENTS", object, gson));
 		HEADER_TAG.add(new JSONDataTag("RELATIONS", RelationType.getRelationTypeData(), gson));
+		HEADER_TAG.add(new JSONDataTag("BINDINGS", BindingsJSON.get(), gson));
 	}
 
 

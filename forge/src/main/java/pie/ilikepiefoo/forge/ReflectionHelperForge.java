@@ -1,10 +1,8 @@
 package pie.ilikepiefoo.forge;
 
-import cpw.mods.cl.ModularURLHandler;
-import cpw.mods.niofs.union.UnionFileSystem;
 import dev.latvian.mods.kubejs.event.EventJS;
 import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.fml.loading.ModJarURLHandler;
+import net.minecraftforge.fml.loading.FMLPaths;
 import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
@@ -15,6 +13,7 @@ import pie.ilikepiefoo.util.ReflectionHelper;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.jar.JarFile;
 
@@ -58,13 +57,20 @@ public class ReflectionHelperForge implements ReflectionHelper {
 				.forPackages(packageNames)
 				.setScanners(Scanners.SubTypes.filterResultsBy(pred->true), Scanners.Resources);
 		Reflections reflections = new Reflections(configuration);
-		Class[] classes = reflections.getSubTypesOf(Object.class).toArray(new Class[0]);
-		return classes;
+		return reflections.getSubTypesOf(Object.class).toArray(new Class[0]);
 	}
 
 	@Override
 	public Class[] getEventClasses() {
 		return new Class[] {EventJS.class, Event.class};
+	}
+
+	/**
+	 * Get the path to the working directory of the current platform.
+	 */
+	@Override
+	public Path getWorkingDirectory() {
+		return FMLPaths.GAMEDIR.get();
 	}
 
 
