@@ -6,6 +6,7 @@ import pie.ilikepiefoo.util.SafeOperations;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.function.Supplier;
 
 public class TypeJSON {
 	public static JsonObject of(Type type) {
@@ -15,12 +16,23 @@ public class TypeJSON {
 		if(object == null)
 			return null;
 		object.addProperty("name", SafeOperations.safeUnwrapName(type));
-		object.addProperty("type", SafeOperations.safeUnwrapReturnType(type));
-		if(type instanceof ParameterizedType parameterizedType) {
+		object.addProperty("type", SafeOperations.safeUnwrapReturnTypeName(type));
+
+		attachGenericAndArrayData(object, type);
+
+		return object;
+	}
+
+	public static void attachGenericAndArrayData(JsonObject object, Supplier<Type> typeSupplier) {
+		SafeOperations.tryGet(typeSupplier).ifPresent((type) -> attachGenericAndArrayData(object, type));
+	}
+
+	public static void attachGenericAndArrayData(JsonObject object, Type type) {
+		if(type instanceof ParameterizedType parameterizedType){
 			var arguments = new JsonArray();
 			var typeArguments = SafeOperations.tryGet(parameterizedType::getActualTypeArguments);
 			if(typeArguments.isEmpty())
-				return object;
+				return;
 			for(var typeArgument : typeArguments.get()) {
 				var argument = of(typeArgument);
 				if(argument == null)
@@ -31,26 +43,19 @@ public class TypeJSON {
 			if(arguments.size() > 0)
 				object.add("args", arguments);
 		}
-		if(type instanceof Class<?> clazz) {
-			if(clazz.isArray()) {
+		if(type instanceof Class<?> subject) {
+			if(subject.isArray()) {
 				int arrayDepth = 0;
-				while (clazz.isArray()) {
+				while (subject.isArray()) {
 					arrayDepth++;
-					clazz = clazz.getComponentType();
+					subject = subject.getComponentType();
 				}
 				if (arrayDepth > 0) {
 					object.addProperty("arrayDepth", arrayDepth);
 					object.addProperty("isArray", true);
 				}
-
-				var component = of(clazz);
-				if(component != null) {
-					object.addProperty("componentType", component.get("id").getAsInt());
-					object.addProperty("type", SafeOperations.safeUnwrapReturnType(clazz));
-				}
+				type = subject;
 			}
 		}
-
-		return object;
 	}
 }

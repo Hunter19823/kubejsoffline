@@ -1,6 +1,5 @@
 package pie.ilikepiefoo.util;
 
-import com.google.gson.JsonObject;
 import dev.latvian.mods.rhino.mod.util.RemappingHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,7 +27,7 @@ public class SafeOperations {
 	 * @param obj Object to get the name of.
 	 * @return Name of the object.
 	 */
-	public static String safeUnwrapReturnType(Object obj) {
+	public static String safeUnwrapReturnTypeName(Object obj) {
 		if(obj == null)
 			return null;
 		if(obj instanceof String out)
@@ -37,7 +36,7 @@ public class SafeOperations {
 			else
 				return out;
 		if(obj instanceof Field field) {
-			return safeUnwrapReturnType(
+			return safeUnwrapReturnTypeName(
 					tryGetFirst(
 							field::getGenericType,
 							field::getType,
@@ -45,7 +44,7 @@ public class SafeOperations {
 					).orElse(null));
 		}
 		if(obj instanceof Method method) {
-			return safeUnwrapReturnType(
+			return safeUnwrapReturnTypeName(
 					tryGetFirst(
 							method::getGenericReturnType,
 							method::getReturnType,
@@ -53,7 +52,7 @@ public class SafeOperations {
 					).orElse(null));
 		}
 		if(obj instanceof Parameter parameter) {
-			return safeUnwrapReturnType(
+			return safeUnwrapReturnTypeName(
 					tryGetFirst(
 							parameter::getParameterizedType,
 							parameter::getType,
@@ -61,13 +60,13 @@ public class SafeOperations {
 					).orElse(null));
 		}
 		if(obj instanceof ParameterizedType parameterizedType){
-			return safeUnwrapReturnType(
+			return safeUnwrapReturnTypeName(
 					tryGetFirst(
 							parameterizedType::getRawType
 					).orElse(null));
 		}
 		if(obj instanceof Class<?> clazz) {
-			return safeUnwrapReturnType(
+			return safeUnwrapReturnTypeName(
 					tryGetFirst(
 							clazz::getName,
 							clazz::getCanonicalName,
@@ -75,19 +74,63 @@ public class SafeOperations {
 					).orElse(null));
 		}
 		if(obj instanceof Type type) {
-			return safeUnwrapReturnType(
+			return safeUnwrapReturnTypeName(
 					tryGetFirst(
 							type::getTypeName
 					).orElse(null));
 		}
 		if(obj instanceof AnnotatedType annotatedType) {
-			return safeUnwrapReturnType(
+			return safeUnwrapReturnTypeName(
 					tryGetFirst(
 							annotatedType::getType
 					).orElse(null));
 		}
 
 		return obj.toString();
+	}
+
+	public static Type safeUnwrapReturnType(Object obj) {
+		if(obj == null)
+			return null;
+		if(obj instanceof Field field) {
+			return (Type) tryGetFirst(
+							field::getType,
+							field::getAnnotatedType,
+							field::getGenericType
+					).orElse(null);
+		}
+		if(obj instanceof Method method) {
+			return (Type) (
+					tryGetFirst(
+							method::getReturnType,
+							method::getAnnotatedReturnType,
+							method::getGenericReturnType
+					).orElse(null));
+		}
+		if(obj instanceof Parameter parameter) {
+			return (Type) (
+					tryGetFirst(
+							parameter::getType,
+							parameter::getAnnotatedType,
+							parameter::getParameterizedType
+					).orElse(null));
+		}
+		if(obj instanceof ParameterizedType parameterizedType){
+			return parameterizedType;
+		}
+		if(obj instanceof Class<?> clazz) {
+			return clazz;
+		}
+		if(obj instanceof AnnotatedType annotatedType) {
+			return (Type) tryGetFirst(
+					annotatedType::getType
+			).orElse(null);
+		}
+		if(obj instanceof Type type) {
+			return type;
+		}
+
+		return null;
 	}
 
 	/**
@@ -162,6 +205,9 @@ public class SafeOperations {
 		}
 		return obj.toString();
 	}
+
+
+
 	// tryGet(Object::toString) -> Optional<String>
 	// tryGet(Method::getFields) -> Optional<Field[]>
 	public static <T> Optional<T> tryGet(Supplier<T> supplier) {

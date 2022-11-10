@@ -85,112 +85,76 @@ public class ClassFinder {
 		CLASS_SEARCH.put(subject, SearchState.BEING_SEARCHED);
 
 		// Search ComponentType
-		try{
-			addToQueue(subject.getComponentType(), RelationType.COMPONENT_OF, subject);
-		} catch (Throwable e) {
-			if(DEBUG)
-				LOG.error(e);
-		}
+		SafeOperations.tryGet(subject::getComponentType).ifPresent((componentType) -> addToQueue(componentType, RelationType.COMPONENT_OF, subject));
 
 		// Search Declared and Inner Classes
-		try{
-			safeAddArray(subject.getClasses(), RelationType.INNER_TYPE_OF, subject);
-		} catch (Throwable e) {
-			if(DEBUG)
-				LOG.error(e);
-		}
+		SafeOperations.tryGet(subject::getClasses).ifPresent((classes)-> safeAddArray(classes, RelationType.INNER_TYPE_OF, subject));
 
 		// Search Interfaces
-		try {
-			safeAddArray(subject.getInterfaces(), RelationType.IMPLEMENTATION_OF, subject);
-		} catch (Throwable e) {
-			if(DEBUG)
-				LOG.error(e);
-		}
+		SafeOperations.tryGet(subject::getInterfaces).ifPresent((interfaces)-> safeAddArray(interfaces, RelationType.IMPLEMENTATION_OF, subject));
+
+		// Search Generic Interfaces
+		SafeOperations.tryGet(subject::getGenericInterfaces).ifPresent((interfaces)-> safeAddAllGeneric(interfaces, RelationType.GENERIC_IMPLEMENTATION_OF, subject));
 
 		// Search Nest Members
-		try{
-			safeAddArray(subject.getNestMembers(), RelationType.NEST_MEMBER_OF, subject);
-		} catch (Throwable e) {
-			if(DEBUG)
-				LOG.error(e);
-		}
+		SafeOperations.tryGet(subject::getNestMembers).ifPresent((nestMembers)-> safeAddArray(nestMembers, RelationType.NEST_MEMBER_OF, subject));
 
 		// Add Nest Host
-		try{
-			addToQueue(subject.getNestHost(), RelationType.NEST_HOST_OF, subject);
-		} catch (Throwable e) {
-			if(DEBUG)
-				LOG.error(e);
-		}
+		SafeOperations.tryGet(subject::getNestHost).ifPresent((nestHost)-> addToQueue(nestHost, RelationType.NEST_HOST_OF, subject));
 
 		// Add Super Class
-		try {
-			addToQueue(subject.getSuperclass(), RelationType.SUPER_CLASS_OF, subject);
-		} catch (Throwable e) {
-			if(DEBUG)
-				LOG.error(e);
-		}
+		SafeOperations.tryGet(subject::getSuperclass).ifPresent((superClass)-> addToQueue(superClass, RelationType.SUPER_CLASS_OF, subject));
+
+		// Add Generic Super Class
+		SafeOperations.tryGet(subject::getGenericSuperclass).ifPresent((superClass)-> safeAddGeneric(superClass, RelationType.GENERIC_SUPER_CLASS_OF, subject));
 
 		// Search Permitted Subclasses
-		safeAddArray(subject.getPermittedSubclasses(), RelationType.PERMITTED_SUBCLASS_OF, subject);
+		SafeOperations.tryGet(subject::getPermittedSubclasses).ifPresent((permittedSubclasses)-> safeAddArray(permittedSubclasses, RelationType.PERMITTED_SUBCLASS_OF, subject));
 
 		// Search Annotations
-		safeAddAllAnnotation(subject.getAnnotations(), RelationType.ANNOTATION_OF, subject);
+		SafeOperations.tryGet(subject::getAnnotations).ifPresent((annotations)-> safeAddAllAnnotation(annotations, RelationType.ANNOTATION_OF, subject));
 
 		// Add All Generic Type Parameters
-		try{
-			for(var type : subject.getTypeParameters())
-				addToQueue(type.getGenericDeclaration(), RelationType.GENERIC_CLASS_PARAMETER_OF, subject);
-		} catch (Throwable e) {
-			if(DEBUG)
-				LOG.error(e);
-		}
+		SafeOperations.tryGet(subject::getTypeParameters).ifPresent((typeParameters) -> {
+			for(var type : typeParameters){
+				SafeOperations.tryGet(type::getGenericDeclaration).ifPresent((genericDeclaration) -> addToQueue(genericDeclaration, RelationType.GENERIC_CLASS_PARAMETER_OF, subject));
+			}
+		});
 
 		// Add Fields
-		try{
-			for(var field : subject.getDeclaredFields()) {
-				addToQueue(field.getType(), RelationType.DECLARED_FIELD_TYPE_OF, subject);
-				addAllGenericTypes(field.getGenericType(), RelationType.DECLARED_GENERIC_FIELD_TYPE_OF, subject);
-				safeAddAllAnnotation(field.getAnnotations(), RelationType.UNKNOWN, subject);
+		SafeOperations.tryGet(subject::getDeclaredFields).ifPresent((fields) -> {
+			for(var field : fields) {
+				SafeOperations.tryGet(field::getType).ifPresent((type) -> addToQueue(type, RelationType.DECLARED_FIELD_TYPE_OF, subject));
+				SafeOperations.tryGet(field::getGenericType).ifPresent((type) -> safeAddGeneric(type, RelationType.DECLARED_GENERIC_FIELD_TYPE_OF, subject));
+				SafeOperations.tryGet(field::getAnnotations).ifPresent((annotations) -> safeAddAllAnnotation(annotations, RelationType.UNKNOWN, subject));
 			}
-		} catch (Throwable e) {
-			if(DEBUG)
-				LOG.error(e);
-		}
+		});
 
 		// Add Declared Methods
-		try{
-			for(var method : subject.getDeclaredMethods()) {
-				addToQueue(method.getReturnType(), RelationType.DECLARED_METHOD_RETURN_TYPE_OF, subject);
-				safeAddArray(method.getParameterTypes(), RelationType.DECLARED_METHOD_PARAMETER_TYPE_OF, subject);
-				safeAddArray(method.getExceptionTypes(), RelationType.DECLARED_METHOD_EXCEPTION_TYPE_OF, subject);
-				addAllGenericTypes(method.getGenericReturnType(), RelationType.DECLARED_GENERIC_METHOD_RETURN_TYPE_OF, subject);
-				safeAddAllGeneric(method.getGenericParameterTypes(), RelationType.DECLARED_GENERIC_METHOD_PARAMETER_TYPE_OF, subject);
-				safeAddAllGeneric(method.getGenericExceptionTypes(), RelationType.DECLARED_GENERIC_METHOD_EXCEPTION_TYPE_OF, subject);
-				safeAddAllAnnotation(method.getAnnotations(), RelationType.UNKNOWN, subject);
-				safeAddAllAnnotation(method.getParameterAnnotations(), RelationType.UNKNOWN, subject);
+		SafeOperations.tryGet(subject::getDeclaredMethods).ifPresent((methods) -> {
+			for (var method : methods) {
+				SafeOperations.tryGet(method::getReturnType).ifPresent((type) -> addToQueue(type, RelationType.DECLARED_METHOD_RETURN_TYPE_OF, subject));
+				SafeOperations.tryGet(method::getParameterTypes).ifPresent((types) -> safeAddArray(types, RelationType.DECLARED_METHOD_PARAMETER_TYPE_OF, subject));
+				SafeOperations.tryGet(method::getExceptionTypes).ifPresent((types) -> safeAddArray(types, RelationType.DECLARED_METHOD_EXCEPTION_TYPE_OF, subject));
+				SafeOperations.tryGet(method::getGenericReturnType).ifPresent((type) -> safeAddGeneric(type, RelationType.DECLARED_GENERIC_METHOD_RETURN_TYPE_OF, subject));
+				SafeOperations.tryGet(method::getGenericParameterTypes).ifPresent((types) -> safeAddAllGeneric(types, RelationType.DECLARED_GENERIC_METHOD_PARAMETER_TYPE_OF, subject));
+				SafeOperations.tryGet(method::getGenericExceptionTypes).ifPresent((types) -> safeAddAllGeneric(types, RelationType.DECLARED_GENERIC_METHOD_EXCEPTION_TYPE_OF, subject));
+				SafeOperations.tryGet(method::getAnnotations).ifPresent((annotations) -> safeAddAllAnnotation(annotations, RelationType.UNKNOWN, subject));
+				SafeOperations.tryGet(method::getParameterAnnotations).ifPresent((annotations) -> safeAddAllAnnotation(annotations, RelationType.UNKNOWN, subject));
 			}
-		} catch (Throwable e) {
-			if(DEBUG)
-				LOG.error(e);
-		}
+		});
 
 		// Add Constructors
-		try{
-			for(var constructor : subject.getConstructors()) {
-				addToQueue(constructor.getDeclaringClass(), subject);
-				safeAddArray(constructor.getParameterTypes(), RelationType.CONSTRUCTOR_PARAMETER_TYPE_OF, subject);
-				safeAddArray(constructor.getExceptionTypes(), RelationType.CONSTRUCTOR_EXCEPTION_TYPE_OF, subject);
-				safeAddAllGeneric(constructor.getGenericParameterTypes(), RelationType.CONSTRUCTOR_GENERIC_PARAMETER_TYPE_OF, subject);
-				safeAddAllGeneric(constructor.getGenericExceptionTypes(), RelationType.CONSTRUCTOR_GENERIC_EXCEPTION_TYPE_OF, subject);
-				safeAddAllAnnotation(constructor.getAnnotations(), RelationType.UNKNOWN, subject);
-				safeAddAllAnnotation(constructor.getParameterAnnotations(), RelationType.UNKNOWN, subject);
+		SafeOperations.tryGet(subject::getDeclaredConstructors).ifPresent((constructors) -> {
+			for (var constructor : constructors) {
+				SafeOperations.tryGet(constructor::getParameterTypes).ifPresent((types) -> safeAddArray(types, RelationType.CONSTRUCTOR_PARAMETER_TYPE_OF, subject));
+				SafeOperations.tryGet(constructor::getExceptionTypes).ifPresent((types) -> safeAddArray(types, RelationType.CONSTRUCTOR_EXCEPTION_TYPE_OF, subject));
+				SafeOperations.tryGet(constructor::getGenericParameterTypes).ifPresent((types) -> safeAddAllGeneric(types, RelationType.CONSTRUCTOR_GENERIC_PARAMETER_TYPE_OF, subject));
+				SafeOperations.tryGet(constructor::getGenericExceptionTypes).ifPresent((types) -> safeAddAllGeneric(types, RelationType.CONSTRUCTOR_EXCEPTION_TYPE_OF, subject));
+				SafeOperations.tryGet(constructor::getAnnotations).ifPresent((annotations) -> safeAddAllAnnotation(annotations, RelationType.UNKNOWN, subject));
+				SafeOperations.tryGet(constructor::getParameterAnnotations).ifPresent((annotations) -> safeAddAllAnnotation(annotations, RelationType.UNKNOWN, subject));
 			}
-		} catch (Throwable e) {
-			if(DEBUG)
-				LOG.error(e);
-		}
+		});
 
 		CLASS_SEARCH.put(subject, SearchState.SEARCHED);
 		for(Consumer<Class<?>> handler : HANDLERS) {
@@ -206,26 +170,16 @@ public class ClassFinder {
 	private void safeAddAllAnnotation(Annotation[][] parameterAnnotations, RelationType relationType, Class<?> subject) {
 		if(parameterAnnotations == null)
 			return;
-		try {
-			for (Annotation[] parameterAnnotation : parameterAnnotations) {
-				safeAddAllAnnotation(parameterAnnotation, relationType, subject);
-			}
-		} catch (Throwable e) {
-			if(DEBUG)
-				LOG.error(e);
+		for (Annotation[] parameterAnnotation : parameterAnnotations) {
+			safeAddAllAnnotation(parameterAnnotation, relationType, subject);
 		}
 	}
 
 	private void safeAddAllAnnotation(Annotation[] annotations, RelationType relationType, Class<?> subject) {
 		if(annotations == null)
 			return;
-		try {
-			for(var annotation : annotations) {
-				addToQueue(annotation.annotationType(), relationType, subject);
-			}
-		} catch (Throwable e) {
-			if(DEBUG)
-				LOG.error(e);
+		for(var annotation : annotations) {
+			SafeOperations.tryGet(annotation::annotationType).ifPresent((type) -> addToQueue(type, relationType, subject));
 		}
 	}
 
@@ -237,32 +191,33 @@ public class ClassFinder {
 		if(target == null)
 			return;
 		if(!CLASS_SEARCH.containsKey(target)) {
-			NEXT_DEPTH.add(target);
-			CLASS_SEARCH.put(target, SearchState.IN_QUEUE);
+			synchronized (this) {
+				NEXT_DEPTH.add(target);
+				CLASS_SEARCH.put(target, SearchState.IN_QUEUE);
+			}
 		}
 		if(target != subject && RelationType.UNKNOWN != relationType) {
 			RELATIONSHIPS.add(new Relation(target, relationType, subject));
 		}
 	}
 
-	private void addAllGenericTypes(Type type, Class<?> subject) {
-		addAllGenericTypes(type, RelationType.UNKNOWN, subject);
+	private void safeAddGeneric(Type type, Class<?> subject) {
+		safeAddGeneric(type, RelationType.UNKNOWN, subject);
 	}
 
-	private void addAllGenericTypes(Type type, RelationType relationType, Class<?> subject) {
+	private void safeAddGeneric(Type type, RelationType relationType, Class<?> subject) {
 		if(type == null)
 			return;
 		if(type instanceof ParameterizedType parameterizedType) {
-			try {
-				for (var possibleType : parameterizedType.getActualTypeArguments()) {
-					if (possibleType instanceof Class<?> target) {
-						addToQueue(target, relationType, subject);
-					}
+			SafeOperations.tryGet(parameterizedType::getRawType).ifPresent((rawType) -> addToQueue((Class<?>) rawType, RelationType.UNKNOWN, subject));
+			SafeOperations.tryGet(parameterizedType::getActualTypeArguments).ifPresent((types) ->  {
+				for(var possibleType : types) {
+					safeAddGeneric(possibleType, relationType, subject);
 				}
-			} catch (Throwable e) {
-				if(DEBUG)
-					LOG.error(e);
-			}
+			});
+		}
+		if(type instanceof Class<?> clazz) {
+			addToQueue(clazz, relationType, subject);
 		}
 	}
 
@@ -273,12 +228,7 @@ public class ClassFinder {
 		if(targets == null)
 			return;
 		for(var target : targets) {
-			try {
-				addAllGenericTypes(target, relationType, subject);
-			} catch (Throwable e){
-				if(DEBUG)
-					LOG.error(e);
-			}
+			safeAddGeneric(target, relationType, subject);
 		}
 	}
 
@@ -290,12 +240,7 @@ public class ClassFinder {
 		if(targets == null)
 			return;
 		for(var target : targets) {
-			try {
-				addToQueue(target, relationType, subject);
-			} catch (Throwable e){
-				if(DEBUG)
-					LOG.error(e);
-			}
+			addToQueue(target, relationType, subject);
 		}
 	}
 

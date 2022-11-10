@@ -13,9 +13,13 @@ public class ParameterJSON {
 		var temp = SafeOperations.safeUnwrapName(parameter);
 		if(temp != null)
 			object.addProperty("name", temp);
-		temp = SafeOperations.safeUnwrapReturnType(parameter);
-		if(temp != null)
-			object.addProperty("type", ClassJSONManager.getInstance().getTypeID(temp));
+
+		var type = TypeJSON.of(SafeOperations.safeUnwrapReturnType(parameter));
+		if(type != null && type.has("id")) {
+			object.addProperty("type", type.get("id").getAsInt());
+			TypeJSON.attachGenericAndArrayData(type, parameter::getType);
+			TypeJSON.attachGenericAndArrayData(type, parameter::getParameterizedType);
+		}
 
 		var annotations = AnnotationJSON.of(parameter);
 		if(annotations.size() > 0)

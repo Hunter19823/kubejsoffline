@@ -15,7 +15,7 @@ import java.util.stream.StreamSupport;
 
 public class ClassJSONManager {
 	private JsonArray typeData;
-	private AtomicInteger typeIDs;
+	private final AtomicInteger typeIDs;
 	private ConcurrentHashMap<String, Integer> typeIDMap;
 	private static ClassJSONManager INSTANCE;
 
@@ -34,12 +34,12 @@ public class ClassJSONManager {
 	public void clear() {
 		typeIDMap.clear();
 		typeData = new JsonArray();
-		typeIDs = new AtomicInteger(-1);
+		typeIDs.set(-1);
 		typeIDMap = new ConcurrentHashMap<>();
 	}
 
 	public Integer getTypeID(Type type) {
-		return getTypeID(SafeOperations.safeUnwrapReturnType(type));
+		return getTypeID(SafeOperations.safeUnwrapReturnTypeName(type));
 	}
 
 	public Integer getTypeID(String typeName) {
@@ -47,18 +47,19 @@ public class ClassJSONManager {
 			return null;
 		if(typeIDMap.containsKey(typeName))
 			return typeIDMap.get(typeName);
-		int id = typeIDs.getAcquire() + 1;
-		typeIDMap.put(typeName, id);
-		JsonObject object = new JsonObject();
-		object.addProperty("id", id);
-		object.addProperty("name", typeName);
-		typeData.add(object);
-		typeIDs.setRelease(id);
-		return id;
+		synchronized (this) {
+			int id = typeIDs.incrementAndGet();
+			typeIDMap.put(typeName, id);
+			JsonObject object = new JsonObject();
+			object.addProperty("id", id);
+			object.addProperty("name", typeName);
+			typeData.add(object);
+			return id;
+		}
 	}
 
 	public JsonObject getTypeData(Type type) {
-		return getTypeData(SafeOperations.safeUnwrapReturnType(type));
+		return getTypeData(SafeOperations.safeUnwrapReturnTypeName(type));
 	}
 
 	public JsonObject getTypeData(String typeName) {
@@ -72,7 +73,7 @@ public class ClassJSONManager {
 	}
 
 	public JsonArray findAllRelationsOf(Type type, RelationType... relations) {
-		return findAllRelationsOf(SafeOperations.safeUnwrapReturnType(type), relations);
+		return findAllRelationsOf(SafeOperations.safeUnwrapReturnTypeName(type), relations);
 	}
 
 	public JsonArray findAllRelationsOf(String typeName, RelationType... relations) {

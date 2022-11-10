@@ -9,6 +9,7 @@ import pie.ilikepiefoo.util.SafeOperations;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.function.Supplier;
 
@@ -17,9 +18,16 @@ public class ClassJSON {
 
 	private static final Logger LOG = LogManager.getLogger();
 
-	public static void of(Class<?> subject) {
-		if(subject == null)
+	public static void of(Type sub) {
+		if(sub == null)
 			return;
+		Class<?> subject = null;
+		if(sub instanceof Class<?>)
+			subject = (Class<?>) sub;
+		if(subject == null) {
+			TypeJSON.of(sub);
+			return;
+		}
 		JsonObject object = TypeJSON.of(subject);
 		if(object == null)
 			return;

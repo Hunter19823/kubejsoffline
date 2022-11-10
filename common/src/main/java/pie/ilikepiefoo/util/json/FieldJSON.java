@@ -5,22 +5,21 @@ import com.google.gson.JsonObject;
 import pie.ilikepiefoo.util.SafeOperations;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-import java.util.Optional;
 
 public class FieldJSON {
 	public static JsonObject of(Field field) {
 		JsonObject object = new JsonObject();
-		Optional<?> type = SafeOperations.tryGetFirst(
-				field::getGenericType,
-				field::getType
-		);
-		if(type.isEmpty())
+		var type = SafeOperations.safeUnwrapReturnType(field);
+		if(type == null)
 			return object;
-		var typeJson = TypeJSON.of((Type) type.get());
+		var typeJson = TypeJSON.of(type);
 		if(typeJson == null)
 			return object;
+		// Add the name of the field
+		object.addProperty("name", SafeOperations.safeUnwrapName(field));
 		object.addProperty("type", typeJson.get("id").getAsInt());
+		TypeJSON.attachGenericAndArrayData(typeJson, field::getType);
+		TypeJSON.attachGenericAndArrayData(typeJson, field::getGenericType);
 
 		// Annotations of the field.
 		var annotations = AnnotationJSON.of(field);

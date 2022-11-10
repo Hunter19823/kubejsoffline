@@ -10,7 +10,7 @@ import java.lang.reflect.AnnotatedElement;
 public class AnnotationJSON {
 	public static JsonObject of(Annotation annotation) {
 		JsonObject object = new JsonObject();
-		var type = SafeOperations.safeUnwrapReturnType(SafeOperations.tryGet(annotation::annotationType).orElse(null));
+		var type = SafeOperations.safeUnwrapReturnTypeName(SafeOperations.tryGet(annotation::annotationType).orElse(null));
 		if(type != null)
 			object.addProperty("type", type);
 		var description = SafeOperations.tryGet(annotation::toString);

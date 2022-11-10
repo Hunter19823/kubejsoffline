@@ -17,15 +17,13 @@ public class MethodJSON {
 			object.addProperty("name", temp);
 
 		// Return type of the method
-		Optional<?> type = SafeOperations.tryGetFirst(
-				method::getGenericReturnType,
-				method::getReturnType
-		);
-		if(type.isPresent()) {
-			var typeObject = TypeJSON.of((Type) type.get());
+		var type = SafeOperations.safeUnwrapReturnType(method);
+		if(type != null) {
+			var typeObject = TypeJSON.of(type);
 			if(typeObject == null)
 				return new JsonObject();
-
+			TypeJSON.attachGenericAndArrayData(typeObject, method::getReturnType);
+			TypeJSON.attachGenericAndArrayData(typeObject, method::getGenericReturnType);
 			object.addProperty("type", typeObject.get("id").getAsInt());
 		}else{
 			return new JsonObject();
