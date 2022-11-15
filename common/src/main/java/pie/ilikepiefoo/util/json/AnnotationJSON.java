@@ -10,11 +10,16 @@ import java.lang.reflect.AnnotatedElement;
 public class AnnotationJSON {
 	public static JsonObject of(Annotation annotation) {
 		JsonObject object = new JsonObject();
-		var type = SafeOperations.safeUnwrapReturnTypeName(SafeOperations.tryGet(annotation::annotationType).orElse(null));
-		if(type != null)
-			object.addProperty("type", type);
+		var annotationType = SafeOperations.tryGet(annotation::annotationType);
+		if(annotationType.isEmpty())
+			return null;
+		var type = ClassJSONManager.getInstance().getTypeData(annotationType.get());
+		if(type != null && type.has("id"))
+			object.addProperty("type", type.get("id").getAsInt());
+
 		var description = SafeOperations.tryGet(annotation::toString);
 		description.ifPresent(s -> object.addProperty("toString", s));
+
 		return object;
 	}
 

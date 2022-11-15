@@ -250,7 +250,7 @@ function span(text) {
 function createShortLink(id){
 	let out = document.createElement('span');
 	let data = getClassData(id);
-	let type = span(data['type'].substring(data['type'].lastIndexOf('.')+1));
+	let type = span(data['name'].substring(data['name'].lastIndexOf('.')+1));
 	type.onclick = () => {
 		loadClass(id);
 	}
@@ -278,7 +278,7 @@ function createShortLink(id){
 function createFullSignature(id) {
 	let data = getClassData(id);
 	let out = document.createElement('span');
-	let type = span(data['type']);
+	let type = span(data['name']);
 	type.onclick = () => {
 		loadClass(id);
 	}
@@ -399,9 +399,9 @@ function loadClass(id){
 			document.body.append(', ');
 		}
 	}
-	createRelationshipTable(id);
 	createMethodTable(id);
 	createFieldTable(id);
+	createRelationshipTable(id);
 }
 
 

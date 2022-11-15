@@ -39,7 +39,7 @@ public class ClassJSONManager {
 	}
 
 	public Integer getTypeID(Type type) {
-		return getTypeID(SafeOperations.safeUnwrapReturnTypeName(type));
+		return getTypeID(SafeOperations.safeUniqueTypeName(type));
 	}
 
 	public Integer getTypeID(String typeName) {
@@ -52,14 +52,14 @@ public class ClassJSONManager {
 			typeIDMap.put(typeName, id);
 			JsonObject object = new JsonObject();
 			object.addProperty("id", id);
-			object.addProperty("name", typeName);
+			object.addProperty("type", typeName);
 			typeData.add(object);
 			return id;
 		}
 	}
 
 	public JsonObject getTypeData(Type type) {
-		return getTypeData(SafeOperations.safeUnwrapReturnTypeName(type));
+		return getTypeData(SafeOperations.safeUniqueTypeName(type));
 	}
 
 	public JsonObject getTypeData(String typeName) {

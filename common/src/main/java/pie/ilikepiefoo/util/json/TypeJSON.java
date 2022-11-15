@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import pie.ilikepiefoo.util.SafeOperations;
 
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.function.Supplier;
@@ -15,8 +16,9 @@ public class TypeJSON {
 		JsonObject object = ClassJSONManager.getInstance().getTypeData(type);
 		if(object == null)
 			return null;
-		object.addProperty("name", SafeOperations.safeUnwrapName(type));
-		object.addProperty("type", SafeOperations.safeUnwrapReturnTypeName(type));
+		var typeName = SafeOperations.safeUnwrapName(type);
+		if(typeName != null)
+			object.addProperty("name", typeName);
 
 		attachGenericAndArrayData(object, type);
 
@@ -28,34 +30,46 @@ public class TypeJSON {
 	}
 
 	public static void attachGenericAndArrayData(JsonObject object, Type type) {
-		if(type instanceof ParameterizedType parameterizedType){
-			var arguments = new JsonArray();
-			var typeArguments = SafeOperations.tryGet(parameterizedType::getActualTypeArguments);
-			if(typeArguments.isEmpty())
-				return;
-			for(var typeArgument : typeArguments.get()) {
-				var argument = of(typeArgument);
-				if(argument == null)
-					continue;
-				if(argument.size() > 0)
-					arguments.add(argument.get("id").getAsInt());
-			}
-			if(arguments.size() > 0)
-				object.add("args", arguments);
-		}
+		int arrayDepth = 0;
 		if(type instanceof Class<?> subject) {
 			if(subject.isArray()) {
-				int arrayDepth = 0;
 				while (subject.isArray()) {
 					arrayDepth++;
 					subject = subject.getComponentType();
 				}
-				if (arrayDepth > 0) {
-					object.addProperty("arrayDepth", arrayDepth);
-					object.addProperty("isArray", true);
-				}
-				type = subject;
+				attachGenericAndArrayData(object, subject);
+			}
+		} else if(type instanceof GenericArrayType genericArrayType) {
+			var comp = SafeOperations.tryGet(genericArrayType::getGenericComponentType);
+			if(comp.isPresent()){
+				attachGenericAndArrayData(object, comp.get());
+				arrayDepth++;
 			}
 		}
+		if(type instanceof ParameterizedType parameterizedType) {
+			addGenericData(object, parameterizedType::getActualTypeArguments);
+		}
+
+
+		if (arrayDepth > 0) {
+			object.addProperty("arrayDepth", arrayDepth);
+			object.addProperty("isArray", true);
+		}
+	}
+
+	public static void addGenericData(JsonObject obj, Supplier<Type[]> typeArgs) {
+		var arguments = new JsonArray();
+		var typeArguments = SafeOperations.tryGet(typeArgs);
+		if(typeArguments.isEmpty())
+			return;
+		for(var typeArgument : typeArguments.get()) {
+			var argument = of(typeArgument);
+			if(argument == null || !argument.has("id"))
+				continue;
+			if(argument.size() > 0)
+				arguments.add(argument.get("id").getAsInt());
+		}
+		if(arguments.size() > 0)
+			obj.add("args", arguments);
 	}
 }

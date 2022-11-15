@@ -1,20 +1,33 @@
 package pie.ilikepiefoo.util;
 
+import dev.latvian.mods.rhino.mod.util.MinecraftRemapper;
 import dev.latvian.mods.rhino.mod.util.RemappingHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
 import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.function.Supplier;
 
 public class SafeOperations {
 	private static final Logger LOG = LogManager.getLogger();
+	private static boolean loadedRemap = false;
+	private static MinecraftRemapper remapper = null;
+	private static Optional<MinecraftRemapper> getRemap() {
+		if(!loadedRemap){
+			remapper = tryGet(RemappingHelper::getMinecraftRemapper).orElse(null);
+			loadedRemap = true;
+		}
+		return Optional.ofNullable(remapper);
+	}
 
 	/**
 	 * Returns the full name of the object if it is a class,
@@ -65,28 +78,85 @@ public class SafeOperations {
 							parameterizedType::getRawType
 					).orElse(null));
 		}
-		if(obj instanceof Class<?> clazz) {
-			return safeUnwrapReturnTypeName(
-					tryGetFirst(
-							clazz::getName,
-							clazz::getCanonicalName,
-							clazz::getTypeName
-					).orElse(null));
-		}
 		if(obj instanceof Type type) {
-			return safeUnwrapReturnTypeName(
-					tryGetFirst(
-							type::getTypeName
-					).orElse(null));
-		}
-		if(obj instanceof AnnotatedType annotatedType) {
-			return safeUnwrapReturnTypeName(
-					tryGetFirst(
-							annotatedType::getType
-					).orElse(null));
+			return safeUniqueTypeName(type);
 		}
 
 		return obj.toString();
+	}
+
+	public static String safeUniqueTypeName(Type type) {
+		if(type == null)
+			return null;
+		int arraySize = 0;
+		StringJoiner joiner = new StringJoiner("");
+		if(type instanceof WildcardType wild) {
+			var lowerBounds = tryGet(wild::getLowerBounds).orElse(null);
+			var upperBounds = tryGet(wild::getUpperBounds).orElse(null);
+			StringJoiner boundsJoiner = new StringJoiner(" ");
+			boundsJoiner.add("?");
+			if(lowerBounds!=null && lowerBounds.length>0) {
+				if(lowerBounds[0] != Object.class) {
+					boundsJoiner.add("super");
+					boundsJoiner.add(safeUniqueTypeName(lowerBounds[0]));
+				}
+			} else if(upperBounds!=null && upperBounds.length>0) {
+				boundsJoiner.add("extends");
+				boundsJoiner.add(safeUniqueTypeName(upperBounds[0]));
+			}
+			return boundsJoiner.toString();
+		}
+		if(type instanceof Class<?> clazz) {
+			while(clazz.isArray())
+			{
+				arraySize++;
+				clazz = clazz.getComponentType();
+			}
+			type = clazz;
+			var name = tryGet(clazz::getName);
+			if(name.isEmpty() || name.get().isBlank())
+				return null;
+			if(getRemap().isPresent()){
+				var remapped = getRemap().get().remapClass(clazz, name.get());
+				if(remapped != null && !remapped.isBlank()) {
+					joiner.add(remapped);
+				}else {
+					joiner.add(name.get());
+				}
+			}else{
+				joiner.add(name.get());
+			}
+		}else if(type instanceof GenericArrayType genericArrayType) {
+			var componentType = tryGet(genericArrayType::getGenericComponentType).orElse(null);
+			if(componentType == null)
+				return null;
+			joiner.add(safeUniqueTypeName(componentType));
+			arraySize++;
+		}
+		if(type instanceof ParameterizedType parameterizedType) {
+			var rawType = tryGet(parameterizedType::getRawType).orElse(null);
+			if(rawType == null)
+				return null;
+			var args = tryGet(parameterizedType::getActualTypeArguments).orElse(null);
+			if(args == null)
+				return null;
+			joiner.add(safeUniqueTypeName(rawType));
+			if(args.length > 0) {
+				StringJoiner paramJoiner = new StringJoiner(",");
+				for (Type ptype : args) {
+					var out = safeUniqueTypeName(ptype);
+					if(out == null)
+						return null;
+					paramJoiner.add(out);
+				}
+				joiner.add("<"+paramJoiner.toString()+">");
+			}
+			return safeUniqueTypeName(parameterizedType.getRawType());
+		}
+
+		for(int i = 0; i < arraySize; i++)
+			joiner.add("[]");
+		return joiner.toString();
 	}
 
 	public static Type safeUnwrapReturnType(Object obj) {
@@ -110,9 +180,9 @@ public class SafeOperations {
 		if(obj instanceof Parameter parameter) {
 			return (Type) (
 					tryGetFirst(
+							parameter::getParameterizedType,
 							parameter::getType,
-							parameter::getAnnotatedType,
-							parameter::getParameterizedType
+							parameter::getAnnotatedType
 					).orElse(null));
 		}
 		if(obj instanceof ParameterizedType parameterizedType){
@@ -156,26 +226,10 @@ public class SafeOperations {
 			else
 				return out;
 		if(obj instanceof Field field) {
-			var out = tryGet(field::getName);
-			if(out.isEmpty()) {
-				LOG.warn("Unable to get name of field: " + field);
-				return null;
-			}
-			var remapped = RemappingHelper.getMinecraftRemapper().remapField(field.getDeclaringClass(), field, out.get());
-			if(remapped.isBlank())
-				return out.get();
-			return remapped;
+			return safeRemap(field);
 		}
 		if(obj instanceof Method method) {
-			var out = tryGet(method::getName);
-			if(out.isEmpty()) {
-				LOG.warn("Unable to get name of method: " + method);
-				return null;
-			}
-			var remapped = RemappingHelper.getMinecraftRemapper().remapMethod(method.getDeclaringClass(), method, out.get());
-			if(remapped.isBlank())
-				return out.get();
-			return remapped;
+			return safeRemap(method);
 		}
 		if(obj instanceof Parameter parameter) {
 			return safeUnwrapName(
@@ -183,27 +237,64 @@ public class SafeOperations {
 							parameter::getName
 					).orElse(null));
 		}
-		if(obj instanceof Class<?> clazz) {
-			var name = tryGet(clazz::getName);
-			if(name.isEmpty() || name.get().isBlank())
-				return safeUnwrapName(
-					tryGetFirst(
-							clazz::getCanonicalName,
-							clazz::getTypeName,
-							clazz::getSimpleName
-					).orElse(null));
-			var remapped = RemappingHelper.getMinecraftRemapper().remapClass(clazz, name.get());
-			if(remapped.isBlank())
-				return name.get();
-			return remapped;
-		}
 		if(obj instanceof Type type) {
-			return safeUnwrapName(
-					tryGetFirst(
-							type::getTypeName
-					).orElse(null));
+			while((type instanceof GenericArrayType) || (type instanceof Class<?> clazz && clazz.isArray())){
+				while (type instanceof GenericArrayType genericArrayType)
+					type = genericArrayType.getGenericComponentType();
+				while (type instanceof Class<?> clazz && clazz.isArray())
+					type = clazz.getComponentType();
+			}
+
+			return safeUniqueTypeName(type);
 		}
 		return obj.toString();
+	}
+
+	public static String safeRemap(Method method) {
+		if(method == null)
+			return null;
+		var name = tryGet(method::getName);
+		if(getRemap().isEmpty()) {
+			if (name.isEmpty())
+				return null;
+			if(name.get().isBlank())
+				return null;
+			return name.get();
+		}
+		var remap = getRemap().get().remapMethod(method.getDeclaringClass(), method, name.get());
+		if(remap.isBlank())
+			return name.get();
+		return remap;
+	}
+
+	public static String safeRemap(Field field) {
+		if(field == null)
+			return null;
+		var name = tryGet(field::getName);
+		if(getRemap().isEmpty()) {
+			if (name.isEmpty())
+				return null;
+			if(name.get().isBlank())
+				return null;
+			return name.get();
+		}
+		var remap = getRemap().get().remapField(field.getDeclaringClass(), field, name.get());
+		if(remap.isBlank())
+			return name.get();
+		return remap;
+	}
+
+	public static String safeRemap(Class<?> clazz) {
+		if(clazz == null)
+			return null;
+		var name = tryGet(clazz::getName);
+		if(getRemap().isEmpty() || name.isEmpty()) {
+			return safeUniqueTypeName(clazz);
+		}
+		var remap = getRemap().get().remapClass(clazz, name.get());
+		if(remap.isBlank())
+			return safeUniqueTypeName(clazz);
+		return remap;
 	}
 
 

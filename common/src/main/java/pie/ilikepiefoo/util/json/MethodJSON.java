@@ -5,8 +5,6 @@ import com.google.gson.JsonObject;
 import pie.ilikepiefoo.util.SafeOperations;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.Optional;
 
 public class MethodJSON {
 	public static JsonObject of(Method method) {

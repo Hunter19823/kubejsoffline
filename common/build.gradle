@@ -19,6 +19,11 @@ dependencies {
 	implementation "org.reflections:reflections:${project.reflections_version}"
 }
 
+
+tasks.withType(Test) {
+	useJUnitPlatform();
+}
+
 publishing {
     publications {
         mavenCommon(MavenPublication) {
