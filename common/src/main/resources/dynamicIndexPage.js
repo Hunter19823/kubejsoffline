@@ -1,4 +1,4 @@
-const MODIFIER = {
+let MODIFIER = {
 	PUBLIC: 1,
 	PRIVATE: 2,
 	PROTECTED: 4,
@@ -167,6 +167,47 @@ function getClassName(id) {
 	return getClassData(id).name;
 }
 
+let HISTORY = [];
+let FUTURE = [];
+let CURRENT;
+
+function back() {
+	console.log(HISTORY);
+	if(HISTORY.length>=1){
+		let temp = HISTORY.pop();
+		FUTURE.push(temp);
+		temp();
+	}
+}
+
+function forward() {
+	console.log(FUTURE);
+	if(FUTURE.length>0){
+		FUTURE.pop()();
+	}
+}
+
+
+function createBackButton() {
+	let button = document.createElement('button');
+	button.innerText = 'Back';
+	button.onclick = () => {
+		back();
+		console.log("Back");
+	};
+	return button;
+}
+
+function createForwardButton() {
+	let button = document.createElement('button');
+	button.innerText = 'Forward';
+	button.onclick = () => {
+		forward();
+		console.log("Forward");
+	};
+	return button;
+}
+
 function getParameterizedArgs(id) {
 	let data = getClassData(id);
 	if(!data['args']) {
@@ -251,7 +292,13 @@ function createShortLink(id){
 	let out = document.createElement('span');
 	let data = getClassData(id);
 	let type = span(data['name'].substring(data['name'].lastIndexOf('.')+1));
+	type.style.textDecoration = 'underline';
+	type.style.color = '#8cb4ff';
+	type.style.cursor = 'pointer';
 	type.onclick = () => {
+		if(CURRENT) {
+			HISTORY.push(CURRENT);
+		}
 		loadClass(id);
 	}
 	out.append(type);
@@ -278,11 +325,35 @@ function createShortLink(id){
 function createFullSignature(id) {
 	let data = getClassData(id);
 	let out = document.createElement('span');
-	let type = span(data['name']);
-	type.onclick = () => {
-		loadClass(id);
+	let parts = data['type'].split('.');
+	for(let i=0; i<parts.length; i++){
+		let part = parts[i];
+		let sp = span(part);
+		out.appendChild(sp);
+		if(i<parts.length-1){
+			out.append('.');
+		}else{
+			sp.style.textDecoration = 'underline';
+			sp.style.color = '#8cb4ff';
+			sp.style.cursor = 'pointer';
+			sp.onclick = () => {
+				if(CURRENT) {
+					HISTORY.push(CURRENT);
+				}
+				loadClass(id);
+			}
+		}
 	}
-	out.appendChild(type);
+	// let type = span(data['type']);
+	// // Underline the type
+	// type.style.cursor = 'pointer';
+	// type.onclick = () => {
+	// 	if(CURRENT) {
+	// 		HISTORY.push(CURRENT);
+	// 	}
+	// 	loadClass(id);
+	// }
+	// out.appendChild(type);
 
 	if(data['args']){
 		let args = data['args'];
@@ -295,21 +366,20 @@ function createFullSignature(id) {
 		}
 		out.append('>');
 	}
-	if(data['isArray']){
-		for (let i = 0; i < data['arrayDepth']; i++) {
-			out.append('[]');
-		}
-	}
+	// if(data['isArray']){
+	// 	for (let i = 0; i < data['arrayDepth']; i++) {
+	// 		out.append('[]');
+	// 	}
+	// }
 
 	return out;
 }
 
 
-
 function createMethodSignature(method_data) {
 	let out = document.createElement('span');
 	out.append(span(MODIFIER.toString(method_data['mod'])+" "));
-	out.append(createFullSignature(method_data['type']));
+	out.append(createShortLink(method_data['type']));
 	out.append(' ');
 	out.append(method_data['name']);
 	out.append('(');
@@ -338,6 +408,13 @@ function createFieldSignature(field_data) {
 
 function createEventTable() {
 	wipePage();
+	if(CURRENT) {
+		HISTORY.push(CURRENT);
+	}
+
+	CURRENT = () => {
+		createEventTable();
+	}
 	let keys = Object.keys(EVENTS)
 	for(let i=0; i<keys.length; i++){
 		let span = document.createElement('span');
@@ -358,6 +435,18 @@ function createMethodTable(id) {
 			let method = methods[i];
 			addRow(table, createMethodSignature(method), createFullSignature(method['type']));
 		}
+		let parents = new Set();
+		parents.add(id);
+		while(data['superclass'] && !parents.has(data['superclass'])) {
+			data = getClassData(data['superclass']);
+			parents.add(data['id']);
+			if(data['meth']) {
+				for (let i = 0; i < data['meth'].length; i++) {
+					let method = data['meth'][i];
+					addRow(table, createMethodSignature(method), createFullSignature(method['type']));
+				}
+			}
+		}
 	}
 }
 
@@ -376,31 +465,47 @@ function createFieldTable(id) {
 function createRelationshipTable(id) {
 	let data = getClassData(id);
 	let table = createTableWithHeaders(createTable(), 'RelatedClass', 'Relationship');
+	let seen = new Set();
 	for(let i=0; i<RELATIONS.length; i++){
 		if(data[""+i]) {
 			for(let j=0; j<data[""+i].length; j++){
-				addRow(table, createFullSignature(data[""+i][j]), span(RELATIONS[i]));
+				if(!seen.has(data[""+i][j])) {
+					addRow(table, createFullSignature(data["" + i][j]), span(RELATIONS[i]));
+					seen.add(data["" + i][j]);
+				}
 			}
 		}
 	}
 }
 
 
-function loadClass(id){
+
+function loadClass(id) {
 	wipePage();
-	document.body.append(createFullSignature(id));
-	document.body.append(span(" extends "));
-	document.body.append(createFullSignature(getClassData(id)['superclass']));
-	document.body.append(span(" implements "));
-	let interfaces = getClassData(id)['interfaces'];
-	for(let i=0; i<interfaces.length; i++){
-		document.body.append(createFullSignature(interfaces[i]));
-		if(i<interfaces.length-1){
-			document.body.append(', ');
+
+	CURRENT = () => {
+		loadClass(id);
+	}
+	let data = getClassData(id);
+	let h1 = document.createElement('h3');
+	document.body.append(h1);
+	h1.append(createFullSignature(data.id));
+	if (data['superclass']) {
+		h1.append(span(" extends "));
+		h1.append(createFullSignature(data['superclass']));
+	}
+	if(data['interfaces']) {
+		h1.append(span(" implements "));
+		let interfaces = data['interfaces'];
+		for (let i = 0; i < interfaces.length; i++) {
+			h1.append(createFullSignature(interfaces[i]));
+			if (i < interfaces.length - 1) {
+				h1.append(', ');
+			}
 		}
 	}
-	createMethodTable(id);
 	createFieldTable(id);
+	createMethodTable(id);
 	createRelationshipTable(id);
 }
 
@@ -408,5 +513,18 @@ function loadClass(id){
 // Clear the page of all content
 function wipePage() {
 	document.body.innerHTML = '';
+	document.body.append(createBackButton());
+	document.body.append(createForwardButton());
 }
 //createEventTable();
+
+
+
+
+
+
+window.onload = () => {
+	createEventTable();
+}
+
+createEventTable();

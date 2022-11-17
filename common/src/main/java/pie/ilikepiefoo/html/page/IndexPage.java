@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import pie.ilikepiefoo.KubeJSOffline;
 import pie.ilikepiefoo.html.tag.CustomTag;
+import pie.ilikepiefoo.html.tag.LocalScriptTag;
 import pie.ilikepiefoo.html.tag.collection.JSONDataTag;
 import pie.ilikepiefoo.util.RelationType;
 import pie.ilikepiefoo.util.json.BindingsJSON;
@@ -21,6 +22,7 @@ public class IndexPage extends HTMLFile {
 		HEADER_TAG.add(new JSONDataTag("EVENTS", object, gson));
 		HEADER_TAG.add(new JSONDataTag("RELATIONS", RelationType.getRelationTypeData(), gson));
 		HEADER_TAG.add(new JSONDataTag("BINDINGS", BindingsJSON.get(), gson));
+		HEADER_TAG.add(new LocalScriptTag("dynamicIndexPage.js"));
 	}
 
 
