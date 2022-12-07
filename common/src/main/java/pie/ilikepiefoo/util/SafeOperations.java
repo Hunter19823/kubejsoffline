@@ -302,6 +302,8 @@ public class SafeOperations {
 	// tryGet(Object::toString) -> Optional<String>
 	// tryGet(Method::getFields) -> Optional<Field[]>
 	public static <T> Optional<T> tryGet(Supplier<T> supplier) {
+		if(supplier == null)
+			return Optional.empty();
 		try {
 			return Optional.of(supplier.get());
 		} catch (Throwable e) {
@@ -310,6 +312,8 @@ public class SafeOperations {
 	}
 
 	public static Optional<?> tryGetFirst(Supplier<?>... suppliers) {
+		if(suppliers == null)
+			return Optional.empty();
 		for (Supplier<?> supplier : suppliers) {
 			var out = tryGet(supplier);
 			if(out.isPresent())

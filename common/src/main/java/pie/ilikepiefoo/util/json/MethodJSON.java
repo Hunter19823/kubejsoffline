@@ -4,10 +4,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import pie.ilikepiefoo.util.SafeOperations;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 
 public class MethodJSON {
-	public static JsonObject of(Method method) {
+	@Nullable
+	public static JsonObject of(@Nonnull Method method) {
 		JsonObject object = new JsonObject();
 		// Name of the method
 		var temp = SafeOperations.safeUnwrapName(method);
@@ -16,29 +19,36 @@ public class MethodJSON {
 
 		// Return type of the method
 		var type = SafeOperations.safeUnwrapReturnType(method);
-		if(type != null) {
-			var typeObject = TypeJSON.of(type);
-			if(typeObject == null)
-				return new JsonObject();
-			TypeJSON.attachGenericAndArrayData(typeObject, method::getReturnType);
-			TypeJSON.attachGenericAndArrayData(typeObject, method::getGenericReturnType);
-			object.addProperty("type", typeObject.get("id").getAsInt());
-		}else{
-			return new JsonObject();
-		}
+		if(type == null) // Throw out any methods that don't have a return type.
+			return null;
+
+		var typeObject = TypeJSON.of(type);
+		if(typeObject == null) // Throw out any methods that don't have a return type.
+			return null;
+
+		TypeJSON.attachGenericAndArrayData(typeObject, method::getReturnType);
+		TypeJSON.attachGenericAndArrayData(typeObject, method::getGenericReturnType);
+
+		object.addProperty(JSONProperty.METHOD_RETURN_TYPE.jsName, typeObject.get(JSONProperty.TYPE_ID.jsName).getAsInt());
 
 		// Attach Parameters, annotations, and modifiers.
 		ExecutableJSON.attach(object, method);
+		if(!object.has(JSONProperty.PARAMETERS.jsName)) // Throw out any methods that have brocken parameters.
+			return null;
 
 		return object;
 	}
 
-	public static JsonArray of(Method[] methods) {
+	@Nonnull
+	public static JsonArray of(@Nullable Method[] methods) {
 		if(methods == null)
 			return new JsonArray();
 		JsonArray object = new JsonArray();
-		for(var method : methods)
-			object.add(of(method));
+		for(var method : methods) {
+			var methodJson = of(method);
+			if(methodJson != null)
+				object.add(methodJson);
+		}
 		return object;
 	}
 }

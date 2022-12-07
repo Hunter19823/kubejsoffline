@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 import pie.ilikepiefoo.util.RelationType;
 import pie.ilikepiefoo.util.SafeOperations;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 import java.util.Set;
 import java.util.Stack;
@@ -14,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.StreamSupport;
 
 public class ClassJSONManager {
+
 	private JsonArray typeData;
 	private final AtomicInteger typeIDs;
 	private ConcurrentHashMap<String, Integer> typeIDMap;
@@ -38,12 +41,14 @@ public class ClassJSONManager {
 		typeIDMap = new ConcurrentHashMap<>();
 	}
 
-	public Integer getTypeID(Type type) {
+	@Nullable
+	public Integer getTypeID(@Nullable Type type) {
 		return getTypeID(SafeOperations.safeUniqueTypeName(type));
 	}
 
-	public Integer getTypeID(String typeName) {
-		if(typeName == null)
+	@Nullable
+	public Integer getTypeID(@Nullable String typeName) {
+		if(typeName == null || typeName.isBlank())
 			return null;
 		if(typeIDMap.containsKey(typeName))
 			return typeIDMap.get(typeName);
@@ -51,32 +56,40 @@ public class ClassJSONManager {
 			int id = typeIDs.incrementAndGet();
 			typeIDMap.put(typeName, id);
 			JsonObject object = new JsonObject();
-			object.addProperty("id", id);
-			object.addProperty("type", typeName);
+			object.addProperty(JSONProperty.TYPE_ID.jsName, id);
 			typeData.add(object);
+			object.addProperty(JSONProperty.TYPE_IDENTIFIER.jsName, typeName);
 			return id;
 		}
 	}
 
-	public JsonObject getTypeData(Type type) {
+	@Nullable
+	public JsonObject getTypeData(@Nullable Type type) {
 		return getTypeData(SafeOperations.safeUniqueTypeName(type));
 	}
 
-	public JsonObject getTypeData(String typeName) {
+	@Nullable
+	public JsonObject getTypeData(@Nullable String typeName) {
 		if(typeName == null)
 			return null;
-		return typeData.get(getTypeID(typeName)).getAsJsonObject();
+		Integer id = getTypeID(typeName);
+		if(id == null)
+			return null;
+		return typeData.get(id).getAsJsonObject();
 	}
 
+	@Nonnull
 	public JsonArray getTypeData() {
 		return typeData;
 	}
 
-	public JsonArray findAllRelationsOf(Type type, RelationType... relations) {
+	@Nonnull
+	public JsonArray findAllRelationsOf(@Nonnull Type type, @Nonnull RelationType... relations) {
 		return findAllRelationsOf(SafeOperations.safeUnwrapReturnTypeName(type), relations);
 	}
 
-	public JsonArray findAllRelationsOf(String typeName, RelationType... relations) {
+	@Nonnull
+	public JsonArray findAllRelationsOf(@Nonnull String typeName, @Nonnull RelationType... relations) {
 		JsonArray array = new JsonArray();
 		Set<Integer> ids = ConcurrentHashMap.newKeySet();
 		Stack<Integer> to_search = new Stack<>();

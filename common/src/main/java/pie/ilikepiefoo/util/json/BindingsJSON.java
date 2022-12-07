@@ -4,9 +4,11 @@ import com.google.gson.JsonObject;
 import dev.latvian.mods.kubejs.script.ScriptType;
 import pie.ilikepiefoo.FakeBindingsEvent;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
 
 public class BindingsJSON {
+	@Nonnull
 	public static JsonObject get() {
 		var obj = new JsonObject();
 		for (Map.Entry<ScriptType, JsonObject> entry : FakeBindingsEvent.bindingsJSON.entrySet()) {
