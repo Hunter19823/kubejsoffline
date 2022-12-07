@@ -14,8 +14,8 @@ loom {
     forge {
         convertAccessWideners = true
         extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
-		mixinConfig "${mod_id}.mixins.json"
-		mixinConfig "${mod_id}-common.mixins.json"
+		mixinConfig project.forge_mixin
+		mixinConfig project.common_mixin
     }
 }
 
@@ -28,7 +28,7 @@ configurations {
 }
 
 dependencies {
-    forge "net.minecraftforge:forge:${rootProject.forge_version}"
+    forge "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
     // Remove the next line if you don't want to depend on the API
     modApi "dev.architectury:architectury-forge:${rootProject.architectury_version}"
 
@@ -43,16 +43,8 @@ dependencies {
 
 }
 
-processResources {
-    inputs.property "version", project.version
-
-    filesMatching("META-INF/mods.toml") {
-        expand "version": project.version
-    }
-}
-
 shadowJar {
-    exclude "fabric.mod.json"
+    exclude "${rootProject.fabric_config}"
     exclude "architectury.common.json"
 
 
@@ -131,7 +123,7 @@ unifiedPublishing {
 			modrinth {
 				token = mt
 				id = project.modrinth_id
-				version = "$project.version+$project.name"
+				version = "$project.name+$project.version"
 			}
 		}
 	}

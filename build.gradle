@@ -24,6 +24,16 @@ subprojects {
         // Loom (Fabric / Quilt / Architectury )
 
     }
+
+	tasks.withType(ProcessResources) {
+		processResources {
+			inputs.property 'version', project.version
+
+			filesMatching([rootProject.forge_config, rootProject.fabric_config, "pack.mcmeta"]) {
+				expand project.properties
+			}
+		}
+	}
 }
 
 allprojects {

@@ -22,7 +22,7 @@ configurations {
 
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
-    modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
+    modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}+${rootProject.minecraft_version}"
     // Remove the next line if you don't want to depend on the API
     modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
 
@@ -34,15 +34,6 @@ dependencies {
 
 	//implementation "org.reflections:reflections:${project.reflections_version}"
 	shadow(implementation("org.reflections:reflections:${project.reflections_version}"))
-
-}
-
-processResources {
-    inputs.property "version", project.version
-
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
-    }
 }
 
 shadowJar {
@@ -106,6 +97,9 @@ unifiedPublishing {
 			depends {
 				curseforge = modrinth = "rhino"
 			}
+			depends {
+				curseforge = modrinth = "kubejs"
+			}
 		}
 
 		var CF = System.getenv("CURSEFORGE_KEY")
@@ -120,7 +114,7 @@ unifiedPublishing {
 			modrinth {
 				token = mt
 				id = project.modrinth_id
-				version = "$project.version+$project.name"
+				version = "$project.name+$project.version"
 			}
 		}
 	}

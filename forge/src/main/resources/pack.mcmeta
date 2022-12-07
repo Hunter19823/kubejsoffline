@@ -1,6 +1,6 @@
 {
   "pack": {
-    "description": "KubeJS Offline",
+    "description": "${mod_name}v${mod_version}",
     "pack_format": 6
   }
 }

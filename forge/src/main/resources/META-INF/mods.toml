@@ -1,35 +1,35 @@
 modLoader = "javafml"
 loaderVersion = "[36,)"
 #issueTrackerURL = ""
-license = "Insert License Here"
+license = "${license}"
 
 [[mods]]
-modId = "kubejsoffline"
-version = "${version}"
-displayName = "KubeJS Offline (Forge)"
-authors = "ILIKEPIEFOO2"
+modId = "${mod_id}"
+version = "${mod_version}"
+displayName = "${mod_name} (Forge)"
+authors = "${mod_author}"
 description = '''
-A mod that makes KubeJS documentation available offline.
+${mod_description}
 '''
 #logoFile = ""
 
-[[dependencies.kubejsoffline]]
+[[dependencies.${mod_id}]]
 modId = "forge"
 mandatory = true
 versionRange = "[36,)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.kubejsoffline]]
+[[dependencies.${mod_id}]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.16.5,)"
+versionRange = "[${minecraft_version},)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.kubejsoffline]]
+[[dependencies.${mod_id}]]
 modId = "architectury"
 mandatory = true
-versionRange = "[1.32.63,)"
+versionRange = "[${architectury_version},)"
 ordering = "AFTER"
 side = "BOTH"

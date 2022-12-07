@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "id": "kubejsoffline",
-  "version": "${version}",
-  "name": "KubeJS Additions (Fabric)",
-  "description": "A mod that makes KubeJS documentation available offline.",
+  "id": "${mod_id}",
+  "version": "${mod_version}",
+  "name": "${mod_name} (Fabric)",
+  "description": "${mod_description}",
   "authors": [
-    "ILIKEPIEFOO2"
+    "${mod_author}"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "${mod_homepage}",
+    "sources": "${mod_source}"
   },
-  "license": "All Rights Reserved",
+  "license": "${license}",
   "icon": "assets/kubejsoffline/kubejs_logo.png",
   "environment": "*",
   "entrypoints": {
@@ -20,12 +20,12 @@
     ]
   },
   "mixins": [
-    "kubejsoffline.mixins.json",
-    "kubejsoffline-common.mixins.json"
+    "${fabric_mixin}",
+    "${common_mixin}"
   ],
   "depends": {
     "fabric": "*",
-    "minecraft": ">=1.18.2",
-    "architectury": ">=4.4.70"
+    "minecraft": ">=${minecraft_version}",
+    "architectury": ">=${architectury_version}"
   }
 }
