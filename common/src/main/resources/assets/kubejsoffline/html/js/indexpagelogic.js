@@ -19,6 +19,14 @@ function createTableWithHeaders(table, ...headers) {
 	return tbody;
 }
 
+function sortTable(table, comparison) {
+	let rows = Array.from(table.rows);
+	rows.sort(comparison);
+	for (let i = 0; i < rows.length; i++) {
+		table.appendChild(rows[i]);
+	}
+}
+
 function addRow(table, ...data) {
 	let tr = document.createElement('tr');
 	let td = null;
@@ -191,7 +199,6 @@ function createFieldSignature(field_data) {
 	out.append(field.name());
 	return out;
 }
-
 
 function createHomePage() {
 	wipePage();

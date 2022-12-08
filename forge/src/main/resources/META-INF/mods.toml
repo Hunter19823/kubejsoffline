@@ -8,10 +8,10 @@ modId = "${mod_id}"
 version = "${mod_version}"
 displayName = "${mod_name} (Forge)"
 authors = "${mod_author}"
+logoFile= "assets/${mod_id}/${mod_logo}"
 description = '''
 ${mod_description}
 '''
-#logoFile = ""
 
 [[dependencies.${mod_id}]]
 modId = "forge"

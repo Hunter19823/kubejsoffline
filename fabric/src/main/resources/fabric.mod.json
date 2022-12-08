@@ -12,7 +12,7 @@
     "sources": "${mod_source}"
   },
   "license": "${license}",
-  "icon": "assets/kubejsoffline/kubejs_logo.png",
+  "icon": "assets/${mod_id}/${mod_logo}",
   "environment": "*",
   "entrypoints": {
     "main": [
