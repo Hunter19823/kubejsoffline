@@ -283,3 +283,45 @@ function getField(fieldData) {
 
 	return output;
 }
+
+function getConstructor(constructorData) {
+	let output = {};
+	output.data = constructorData;
+
+	output.modifiers = function () {
+		return this.data[PROPERTY.MODIFIERS];
+	}
+
+	output.annotations = function () {
+		let annotations = this.data[PROPERTY.CONSTRUCTOR_ANNOTATIONS];
+		if (annotations === null || annotations === undefined || annotations.length === 0) {
+			return null;
+		}
+		return new Set(annotations);
+	}
+
+	output.parameters = function () {
+		let parameters = this.data[PROPERTY.PARAMETERS];
+		if (parameters === null || parameters === undefined || parameters.length === 0) {
+			return [];
+		}
+		return parameters;
+	}
+
+	return output;
+}
+
+function getAnnotation(annotationData) {
+	let output = {};
+	output.data = annotationData;
+
+	output.type = function () {
+		return this.data[PROPERTY.ANNOTATION_TYPE];
+	}
+
+	output.string = function () {
+		return this.data[PROPERTY.ANNOTATION_STRING];
+	}
+
+	return output;
+}

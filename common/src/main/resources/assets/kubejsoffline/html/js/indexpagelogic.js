@@ -1,7 +1,9 @@
-function createTable() {
+function createTable(id) {
+	breakLine();
 	let table = document.createElement('table');
 	document.body.appendChild(table);
-
+	if(id && typeof id === 'string')
+		table.id = id;
 	return table;
 }
 
@@ -19,14 +21,6 @@ function createTableWithHeaders(table, ...headers) {
 	return tbody;
 }
 
-function sortTable(table, comparison) {
-	let rows = Array.from(table.rows);
-	rows.sort(comparison);
-	for (let i = 0; i < rows.length; i++) {
-		table.appendChild(rows[i]);
-	}
-}
-
 function addRow(table, ...data) {
 	let tr = document.createElement('tr');
 	let td = null;
@@ -40,6 +34,7 @@ function addRow(table, ...data) {
 			td.appendChild(data[i]);
 		}
 	}
+	return tr;
 }
 
 function span(text) {
@@ -49,8 +44,11 @@ function span(text) {
 }
 
 function breakLine(){
-	let br = document.createElement('br');
-	document.body.appendChild(br);
+	document.body.appendChild(br());
+}
+
+function br() {
+	return document.createElement('br');
 }
 
 function option(text, action, group) {
@@ -97,6 +95,18 @@ function createOptions(...args) {
 		}
 	}
 	return output;
+}
+
+function appendAnnotationToolTip(tag, annotations) {
+	if(!annotations || annotations.size === 0)
+		return;
+	tag.classList.add('tooltip');
+	let tooltip = document.createElement('div');
+	tooltip.classList.add('tooltiptext');
+	for (let annotation of annotations) {
+		tooltip.appendChild(createAnnotationSignature(annotation));
+	}
+	tag.appendChild(tooltip);
 }
 
 function createShortLink(id) {
@@ -152,6 +162,7 @@ function createFullSignature(id) {
 			sp.onclick = () => {
 				location.hash = "#" + id;
 			}
+			appendAnnotationToolTip(sp, data.annotations());
 		}
 	}
 	if (args) {
@@ -173,15 +184,20 @@ function createMethodSignature(method_data) {
 	let method = getMethod(method_data);
 	let parameters = method.parameters();
 	let param = null;
+	let name = span(method.name());
+	appendAnnotationToolTip(name, method.annotations());
 	out.append(span(MODIFIER.toString(method.modifiers()) + " "));
 	out.append(createShortLink(method.returnType()));
 	out.append(' ');
-	out.append(method.name());
+	out.append(name);
 	out.append('(');
 	for (let i = 0; i < parameters.length; i++) {
 		param = getParameter(parameters[i]);
 		out.appendChild(createShortLink(param.type()));
-		out.append(' ' + param.name());
+		name = span(param.name());
+		appendAnnotationToolTip(name, param.annotations());
+		out.append(' ');
+		out.append(name);
 		if (i < parameters.length - 1) {
 			out.append(', ');
 		}
@@ -193,10 +209,46 @@ function createMethodSignature(method_data) {
 function createFieldSignature(field_data) {
 	let field = getField(field_data);
 	let out = document.createElement('span');
+	let name = span(field.name());
+	appendAnnotationToolTip(name, field.annotations());
 	out.append(span(MODIFIER.toString(field.modifiers()) + " "));
 	out.append(createShortLink(field.type()));
 	out.append(' ');
-	out.append(field.name());
+	out.append(name);
+	return out;
+}
+
+function createConstructorSignature(constructor_data, classID) {
+	let class_type = getClass(classID);
+	let constructor = getConstructor(constructor_data);
+	let out = document.createElement('span');
+	let parameters = constructor.parameters();
+	let param = null;
+	let name = null;
+	out.append(span(MODIFIER.toString(constructor.modifiers()) + " "));
+	out.append(createShortLink(class_type.id()));
+	out.append('(');
+	for (let i = 0; i < parameters.length; i++) {
+		param = getParameter(parameters[i]);
+		out.appendChild(createShortLink(param.type()));
+		name = param.name();
+		appendAnnotationToolTip(name, param.annotations());
+		out.append(' ');
+		out.append(name);
+		if (i < parameters.length - 1) {
+			out.append(', ');
+		}
+	}
+	out.append(')');
+	return out;
+}
+
+function createAnnotationSignature(annotation_data) {
+	let annotation = getAnnotation(annotation_data);
+	let out = document.createElement('span');
+	out.append(span(getClass(annotation.type()).simplename()));
+	out.append(br());
+	out.append(annotation.string());
 	return out;
 }
 
@@ -208,7 +260,8 @@ function createHomePage() {
 	for (let i = 0; i < keys.length; i++) {
 		span = document.createElement('span');
 		span.innerHTML = keys[i];
-		table = createTableWithHeaders(createTable(), span);
+		let period = keys[i]?.lastIndexOf('.');
+		table = createTableWithHeaders(createTable(period === -1 ? keys[i] : keys[i].substring(period+1)), span);
 		for (let j = 0; j < EVENTS[keys[i]].length; j++) {
 			addRow(table, EVENTS[keys[i]][j]);
 		}
@@ -219,10 +272,17 @@ function createMethodTable(id) {
 	let methods = getClass(id).methods();
 	let table = null;
 	let method = null;
+	let meth = null;
+	let row = null;
 	if (methods) {
-		table = createTableWithHeaders(createTable(), 'MethodSignature', 'Return Type');
+		table = createTableWithHeaders(createTable('methods'), 'Methods', 'Return Type');
 		for (method of methods) {
-			addRow(table, createMethodSignature(method), createFullSignature(getMethod(method).returnType()));
+			meth = getMethod(method);
+			row = addRow(table, createMethodSignature(method), createFullSignature(getMethod(method).returnType()));
+			row.setAttribute('name', meth.name());
+			row.setAttribute('returnType', meth.returnType());
+			row.setAttribute('mod', meth.modifiers());
+			row.setAttribute('params', meth.parameters());
 		}
 	}
 }
@@ -231,17 +291,23 @@ function createFieldTable(id) {
 	let fields = getClass(id).fields();
 	let table = null;
 	let field = null;
+	let row = null;
+	let data = null;
 	if (fields) {
-		table = createTableWithHeaders(createTable(), 'Field Signature', 'Type');
+		table = createTableWithHeaders(createTable('method'), 'Fields', 'Type');
 		for (field of fields) {
-			addRow(table, createFieldSignature(field), createFullSignature(getField(field).type()));
+			data = getField(field);
+			row = addRow(table, createFieldSignature(field), createFullSignature(getField(field).type()));
+			row.setAttribute('name', data.name());
+			row.setAttribute('type', data.type());
+			row.setAttribute('mod', data.modifiers());
 		}
 	}
 }
 
 function createRelationshipTable(id) {
 	let data = getClass(id);
-	let table = createTableWithHeaders(createTable(), 'Relationship', 'RelatedClass');
+	let table = createTableWithHeaders(createTable('relations'), 'Relationships', 'RelatedClass');
 	let seen = new Set();
 	let relation = null;
 	for (let i = 0; i < RELATIONS.length; i++) {
@@ -257,6 +323,23 @@ function createRelationshipTable(id) {
 	}
 	if(seen.size === 0) {
 		table.parentNode.removeChild(table);
+	}
+}
+
+function createConstructorTable(id) {
+	let constructors = getClass(id).constructors();
+	let table = null;
+	let constructor = null;
+	let row = null;
+	let cons = null;
+	if (constructors) {
+		table = createTableWithHeaders(createTable('constructors'), 'Constructors');
+		for (constructor of constructors) {
+			cons = getConstructor(constructor);
+			row = addRow(table, createConstructorSignature(constructor, id));
+			row.setAttribute('mod', cons.modifiers());
+			row.setAttribute('params', cons.parameters());
+		}
 	}
 }
 
@@ -286,25 +369,33 @@ function loadClass(id) {
 			i++;
 		}
 	}
-	breakLine();
+	createConstructorTable(id);
 	createFieldTable(id);
-	breakLine();
 	createMethodTable(id);
-	breakLine();
 	createRelationshipTable(id);
 }
 
 function createPageHeader() {
 	let header = document.createElement('div');
+	let title = document.createElement('h1');
+	let img = document.createElement('img');
 	header.id = 'page-header';
 	header.style.textDecoration = 'underline';
 	header.style.color = '#8cb4ff';
 	header.style.cursor = 'pointer';
-	header.onclick = () => {
+	title.onclick = () => {
 		location.hash = "";
 	};
-	let title = document.createElement('h1');
+	img.onclick = () => {
+		location.hash = "";
+	};
 	title.innerHTML = 'KubeJS Offline';
+	img.src = 'https://raw.githubusercontent.com/Hunter19823/kubejsoffline/master/kubejs_offline_logo.png';
+	img.style.height = '7em';
+	img.onerror = () => {
+		img.style.display = 'none';
+	};
+	header.appendChild(img);
 	header.appendChild(title);
 	document.body.append(header);
 }
@@ -320,14 +411,32 @@ function loadPageFromHash(hash) {
 		let id = hash.split('#')[1];
 		if(id?.length > 0) {
 			loadClass(id);
+			window.scrollTo(0, 0);
 			return;
 		}
 	}
 	createHomePage();
+	window.scrollTo(0, 0);
 }
 
 window.onload = () => {
 	loadPageFromHash(location.hash);
+}
+
+function addFieldSorter() {
+	let fieldTable = document.getElementById('fields');
+	if (fieldTable) {
+		let headers = fieldTable.getElementsByTagName('th');
+		// Add options tag to the header
+		// createOptions(
+		// 		option('Name', () => {
+		// 			sortTable(fieldTable, 0, false);
+		// 		}, 'Signature')
+		// )
+		// headers[1].onclick = () => {
+		// 	sortTable(fieldTable, 1);
+		// };
+	}
 }
 
 addEventListener('hashchange', (event) => {
