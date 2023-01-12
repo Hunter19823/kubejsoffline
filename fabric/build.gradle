@@ -18,6 +18,7 @@ configurations {
     compileClasspath.extendsFrom common
     runtimeClasspath.extendsFrom common
     developmentFabric.extendsFrom common
+	implementation.extendsFrom shadowImplementation
 }
 
 dependencies {
@@ -33,13 +34,16 @@ dependencies {
 
 
 	//implementation "org.reflections:reflections:${project.reflections_version}"
-	shadow(implementation("org.reflections:reflections:${project.reflections_version}"))
+	shadowImplementation("org.reflections:reflections:${project.reflections_version}")
 }
 
 shadowJar {
     exclude "architectury.common.json"
 
-    configurations = [project.configurations.shadowCommon]
+    configurations = [
+			project.configurations.shadowCommon,
+			project.configurations.shadowImplementation
+	]
     classifier "dev-shadow"
 }
 
