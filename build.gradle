@@ -80,3 +80,30 @@ allprojects {
         withSourcesJar()
     }
 }
+class MoveDocumentationFiles extends DefaultTask {
+	// Store references to the forge and fabric html file directories
+	private final File forgeHtmlDir = new File("${project.projectDir}/forge/run/kubejs/documentation/index.html")
+	private final File fabricHtmlDir = new File("${project.projectDir}/fabric/run/kubejs/documentation/index.html")
+
+	// Store references to the forge and fabric output directories
+	private final File forgeOutputDir = new File("${project.projectDir}/docs/${project.minecraft_version}/forge/index.html")
+	private final File fabricOutputDir = new File("${project.projectDir}/docs/${project.minecraft_version}/fabric/index.html")
+
+	@TaskAction
+	void moveFiles() {
+		// If the forge file exists, move it to the forge output directory
+		if (forgeHtmlDir.exists()) {
+			forgeHtmlDir.renameTo(forgeOutputDir)
+		}
+
+		// If the fabric file exists, move it to the fabric output directory
+		if (fabricHtmlDir.exists()) {
+			fabricHtmlDir.renameTo(fabricOutputDir)
+		}
+	}
+}
+
+task updateDocumentation(type: MoveDocumentationFiles) {
+	group = 'documentation'
+	description = 'Moves the documentation files to the docs directory'
+}
