@@ -175,7 +175,6 @@ img.tooltip, div.tooltip {
 
 .tooltip .tooltiptext {
     visibility: hidden;
-    max-width: 20em;
     background-color: #2d2a2a;
     color: #ead8da;
     border-radius: 6px;
