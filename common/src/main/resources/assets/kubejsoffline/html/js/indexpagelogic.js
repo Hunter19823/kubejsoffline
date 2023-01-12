@@ -423,6 +423,45 @@ window.onload = () => {
 	loadPageFromHash(location.hash);
 }
 
+async function swapTags(a, b){
+	let parent = a.parentNode;
+	let t = document.createElement('div');
+	parent.append(t);
+	parent.insertBefore(t, a);
+	parent.replaceChild(a, b);
+	parent.replaceChild(b, t);
+}
+
+// Sort the table using insertion sort, ignore the first row
+async function sortTable(table, comparator) {
+	// Get the rows as an array
+	let trs = table.getElementsByTagName('tr');
+	// Loop through the rows
+	// Starting at the second row, index 2
+	for(let i=2; i<trs.length; i++) {
+		// Get the current row
+		let row = trs[i];
+		// Store the last element needed to be swapped.
+		let toSwap = null;
+		// Loop through the rows before the current row
+		for(let j=i-1; j>=1; j--) {
+			// Get the row before the current row
+			let prev = trs[j];
+			// If the current row is less than the previous row
+			if(comparator(row, prev) < 0) {
+				// Swap the rows
+				toSwap = prev;
+			} else {
+				// The row is in the correct position
+				break;
+			}
+		}
+		if(toSwap) {
+			await swapTags(row, toSwap);
+		}
+	}
+}
+
 function addFieldSorter() {
 	let fieldTable = document.getElementById('fields');
 	if (fieldTable) {
