@@ -294,7 +294,7 @@ function createFieldTable(id) {
 	let row = null;
 	let data = null;
 	if (fields) {
-		table = createTableWithHeaders(createTable('method'), 'Fields', 'Type');
+		table = createTableWithHeaders(createTable('fields'), 'Fields', 'Type');
 		for (field of fields) {
 			data = getField(field);
 			row = addRow(table, createFieldSignature(field), createFullSignature(getField(field).type()));
@@ -411,19 +411,19 @@ function loadPageFromHash(hash) {
 		let id = hash.split('#')[1];
 		if(id?.length > 0) {
 			loadClass(id);
-			window.scrollTo(0, 0);
+			document.getElementById('page-header').scrollIntoView();
 			return;
 		}
 	}
 	createHomePage();
-	window.scrollTo(0, 0);
+	document.getElementById('page-header').scrollIntoView();
 }
 
 window.onload = () => {
 	loadPageFromHash(location.hash);
 }
 
-async function swapTags(a, b){
+function swapTags(a, b){
 	let parent = a.parentNode;
 	let t = document.createElement('div');
 	parent.append(t);
@@ -432,10 +432,21 @@ async function swapTags(a, b){
 	parent.replaceChild(b, t);
 }
 
+function checkTableSorted(trs, comparator) {
+	// Get the rows as an array
+	for (let i = 2; i < trs.length; i++) {
+		if (comparator(trs[i - 1], trs[i]) > 0) {
+			return false;
+		}
+	}
+	return true;
+}
+
 // Sort the table using insertion sort, ignore the first row
-async function sortTable(table, comparator) {
+function sortTable(table, comparator) {
 	// Get the rows as an array
 	let trs = table.getElementsByTagName('tr');
+	while(!checkTableSorted(trs, comparator))
 	// Loop through the rows
 	// Starting at the second row, index 2
 	for(let i=2; i<trs.length; i++) {
@@ -457,27 +468,176 @@ async function sortTable(table, comparator) {
 			}
 		}
 		if(toSwap) {
-			await swapTags(row, toSwap);
+			swapTags(row, toSwap);
 		}
 	}
 }
 
-function addFieldSorter() {
-	let fieldTable = document.getElementById('fields');
-	if (fieldTable) {
-		let headers = fieldTable.getElementsByTagName('th');
-		// Add options tag to the header
-		// createOptions(
-		// 		option('Name', () => {
-		// 			sortTable(fieldTable, 0, false);
-		// 		}, 'Signature')
-		// )
-		// headers[1].onclick = () => {
-		// 	sortTable(fieldTable, 1);
-		// };
+function sortByAttribute(attribute) {
+	return (a, b) => {
+		let aAttr = a.getAttribute(attribute);
+		let bAttr = b.getAttribute(attribute);
+		if(aAttr < bAttr) {
+			return -1;
+		}
+		if(aAttr > bAttr) {
+			return 1;
+		}
+		return 0;
+	}
+}
+
+function sortByModifiedAttribute(attribute, mutator) {
+	return (a, b) => {
+		let aAttr = mutator(a.getAttribute(attribute));
+		let bAttr = mutator(b.getAttribute(attribute));
+		if(aAttr < bAttr) {
+			return -1;
+		}
+		if(aAttr > bAttr) {
+			return 1;
+		}
+		return 0;
+	}
+}
+
+function defaultSort(a,b) {
+	// Sorting order:
+	// 1. public/protected/private
+	// 2. static/non-static
+	// 3. alphabetical
+	// Get the mod attribute of the rows
+	let aMod = a.getAttribute('mod');
+	let bMod = b.getAttribute('mod');
+	// Get the name attribute of the rows
+	let aName = a.getAttribute('name');
+	let bName = b.getAttribute('name');
+
+	if(a === b) {
+		return 0;
+	}
+
+	// If a is public and b is not
+	if(MODIFIER.isPublic(aMod) && !MODIFIER.isPublic(bMod)) {
+		// a goes before b
+		return -1;
+	}
+	// If b is public and a is not
+	if(MODIFIER.isPublic(bMod) && !MODIFIER.isPublic(aMod)) {
+		// b goes before a
+		return 1;
+	}
+
+	// If a is protected and b is not
+	if(MODIFIER.isProtected(aMod) && !MODIFIER.isProtected(bMod)) {
+		// a goes before b
+		return -1;
+	}
+	// If b is protected and a is not
+	if(MODIFIER.isProtected(bMod) && !MODIFIER.isProtected(aMod)) {
+		// b goes before a
+		return 1;
+	}
+
+	// If a is private and b is not
+	if(MODIFIER.isPrivate(aMod) && !MODIFIER.isPrivate(bMod)) {
+		// a goes before b
+		return -1;
+	}
+	// If b is private and a is not
+	if(MODIFIER.isPrivate(bMod) && !MODIFIER.isPrivate(aMod)) {
+		// b goes before a
+		return 1;
+	}
+
+	// if a is static and b is not
+	if(MODIFIER.isStatic(aMod) && !MODIFIER.isStatic(bMod)) {
+		// a goes before b
+		return -1;
+	}
+	// if b is static and a is not
+	if(MODIFIER.isStatic(bMod) && !MODIFIER.isStatic(aMod)) {
+		// b goes before a
+		return 1;
+	}
+	// if a and b are both static
+	if(MODIFIER.isStatic(aMod) && MODIFIER.isStatic(bMod)) {
+		// Compare the names
+		if(aName < bName) {
+			return -1;
+		}
+		if(aName > bName) {
+			return 1;
+		}
+		return 0;
+	}
+}
+
+const SORT_FUNCTIONS = {
+	'default': defaultSort,
+	'name': sortByAttribute('name'),
+	'public': sortByModifiedAttribute('mod', (mod) => {
+		return MODIFIER.isPublic(mod);
+	}),
+	'protected': sortByModifiedAttribute('mod', (mod) => {
+		return MODIFIER.isProtected(mod);
+	}),
+	'private': sortByModifiedAttribute('mod', (mod) => {
+		return MODIFIER.isPrivate(mod);
+	}),
+	'final': sortByModifiedAttribute('mod', (mod) => {
+		return MODIFIER.isFinal(mod);
+	}),
+	'static': sortByModifiedAttribute('mod', (mod) => {
+		return MODIFIER.isStatic(mod);
+	}),
+	'super class': sortByModifiedAttribute('type', (type) => {
+		return getClass(type).superclass();
+	}),
+	'return type simplename': sortByModifiedAttribute('type', (type) => {
+		return getClass(type).simplename();
+	})
+}
+
+function addSortTables() {
+	let tables = [document.getElementById('fields'), document.getElementById('methods')];
+	for (let i = 0; i < tables.length; i++) {
+		let table = tables[i];
+		if(table){
+			let options = createOptions(
+					option('default', SORT_FUNCTIONS.default,'Default'),
+					option('Name', () => {
+						sortTable(table, SORT_FUNCTIONS.name);
+					}, 'Signature'),
+					option('Access', () => {
+						sortTable(table, SORT_FUNCTIONS.public);
+						sortTable(table, SORT_FUNCTIONS.protected);
+						sortTable(table, SORT_FUNCTIONS.private);
+						sortTable(table, SORT_FUNCTIONS.static);
+					}, 'Access Modifier'),
+					option('Public', () => {
+						sortTable(table, SORT_FUNCTIONS.public);
+					}, 'Access Modifier'),
+					option('Protected', () => {
+						sortTable(table, SORT_FUNCTIONS.protected);
+					}, 'Access Modifier'),
+					option('Private', () => {
+						sortTable(table, SORT_FUNCTIONS.private);
+					}, 'Access Modifier'),
+			);
+			let sortDiv = document.createElement('div');
+			let sortLabel = document.createElement('label');
+			sortLabel.setAttribute('for', 'sort');
+			sortLabel.textContent = 'Sort by: ';
+			sortDiv.appendChild(sortLabel);
+			sortDiv.appendChild(options);
+			table.parentNode.insertBefore(sortDiv, table);
+			sortTable(table, SORT_FUNCTIONS.default);
+		}
 	}
 }
 
 addEventListener('hashchange', (event) => {
 	loadPageFromHash(event.newURL);
+	addSortTables();
 });

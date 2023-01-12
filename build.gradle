@@ -1,3 +1,6 @@
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption
+
 plugins {
     id "architectury-plugin" version "3.4-SNAPSHOT"
     id "dev.architectury.loom" version "0.12.0-SNAPSHOT" apply false
@@ -90,16 +93,27 @@ class MoveDocumentationFiles extends DefaultTask {
 	private final File fabricOutputDir = new File("${project.projectDir}/docs/${project.minecraft_version}/fabric/index.html")
 
 	@TaskAction
-	void moveFiles() {
+	def moveFiles() {
 		// If the forge file exists, move it to the forge output directory
 		if (forgeHtmlDir.exists()) {
-			forgeHtmlDir.renameTo(forgeOutputDir)
+			Files.move(forgeHtmlDir.toPath(), forgeOutputDir.toPath(), StandardCopyOption.REPLACE_EXISTING)
+			println "Moved Forge documentation file to ${forgeOutputDir}"
+		}else{
+			println "Forge documentation file does not exist!"
 		}
 
 		// If the fabric file exists, move it to the fabric output directory
 		if (fabricHtmlDir.exists()) {
-			fabricHtmlDir.renameTo(fabricOutputDir)
+			Files.move(fabricHtmlDir.toPath(), fabricOutputDir.toPath(), StandardCopyOption.REPLACE_EXISTING)
+			println "Moved Fabric documentation file to ${fabricOutputDir}"
+		}else{
+			println "Fabric documentation file does not exist!"
 		}
+	}
+
+	@TaskAction
+	def greet() {
+		moveFiles()
 	}
 }
 
