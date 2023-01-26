@@ -16,7 +16,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "pie.ilikepiefoo.fabric.KubeJSOfflineFabric"
+      "pie.ilikepiefoo.kubejsoffline.fabric.KubeJSOfflineFabric"
     ]
   },
   "mixins": [

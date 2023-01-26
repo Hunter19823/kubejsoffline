@@ -1,1 +1,1 @@
-pie.ilikepiefoo.OfflinePlugin
+pie.ilikepiefoo.kubejsoffline.OfflinePlugin
