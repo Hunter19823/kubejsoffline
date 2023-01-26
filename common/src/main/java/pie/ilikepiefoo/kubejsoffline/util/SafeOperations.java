@@ -149,7 +149,7 @@ public class SafeOperations {
 						return null;
 					paramJoiner.add(out);
 				}
-				joiner.add("<"+paramJoiner.toString()+">");
+				joiner.add("<"+ paramJoiner +">");
 			}
 			return safeUniqueTypeName(parameterizedType.getRawType());
 		}

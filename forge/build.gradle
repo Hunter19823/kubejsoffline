@@ -39,7 +39,7 @@ dependencies {
 
 
 	minecraftLibraries("org.reflections:reflections:${project.reflections_version}")
-
+	minecraftLibraries("org.javassist:javassist:${project.javassist_version}")
 }
 
 shadowJar {

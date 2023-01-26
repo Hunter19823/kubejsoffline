@@ -38,6 +38,9 @@ shadowJar {
 			project.configurations.shadowImplementation
 	]
 	classifier "dev-shadow"
+
+//	relocate "org.reflections", "${project.group}.kubejsoffline.reflections"
+//	relocate "javassist", "${project.group}.kubejsoffline.javassist"
 }
 
 remapJar {
@@ -59,7 +62,7 @@ jar {
 
 
 tasks.withType(Test) {
-	useJUnitPlatform();
+	useJUnitPlatform()
 }
 
 publishing {
