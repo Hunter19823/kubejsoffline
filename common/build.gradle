@@ -1,9 +1,17 @@
+plugins {
+	id "com.github.johnrengelman.shadow" version "7.1.2"
+}
+
 architectury {
     common(rootProject.enabled_platforms.split(","))
 }
 
 loom {
     accessWidenerPath = file("src/main/resources/${mod_id}.accesswidener")
+}
+
+configurations {
+	shadowImplementation.extendsFrom implementation
 }
 
 dependencies {
@@ -16,8 +24,38 @@ dependencies {
     modApi "dev.architectury:architectury:${rootProject.architectury_version}"
 	modImplementation("dev.latvian.mods:kubejs:${kubejs_version}")
 
-	implementation "org.reflections:reflections:${project.reflections_version}"
+	shadowImplementation "org.reflections:reflections:${project.reflections_version}"
 }
+
+
+shadowJar {
+	exclude "javax/"
+	exclude "org/slf4j/"
+	exclude "org/opentest4j/"
+	exclude "org/junit/"
+	exclude "org/apiguardian/"
+	configurations = [
+			project.configurations.shadowImplementation
+	]
+	classifier "dev-shadow"
+}
+
+remapJar {
+	input.set shadowJar.archiveFile
+	dependsOn shadowJar
+	classifier null
+}
+
+sourcesJar {
+	dependsOn remapJar
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	from remapJar.archiveFile.map { zipTree(it) }
+}
+
+jar {
+	classifier "dev"
+}
+
 
 
 tasks.withType(Test) {

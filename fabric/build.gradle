@@ -18,7 +18,7 @@ configurations {
     compileClasspath.extendsFrom common
     runtimeClasspath.extendsFrom common
     developmentFabric.extendsFrom common
-	implementation.extendsFrom shadowImplementation
+	shadowImplementation
 }
 
 dependencies {
@@ -34,15 +34,15 @@ dependencies {
 
 
 	//implementation "org.reflections:reflections:${project.reflections_version}"
-	shadowImplementation("org.reflections:reflections:${project.reflections_version}")
+	implementation("org.reflections:reflections:${project.reflections_version}")
 }
 
 shadowJar {
     exclude "architectury.common.json"
 
-    configurations = [
-			project.configurations.shadowCommon,
-			project.configurations.shadowImplementation
+
+	configurations = [
+			project.configurations.shadowCommon
 	]
     classifier "dev-shadow"
 }
@@ -51,6 +51,9 @@ remapJar {
     injectAccessWidener = true
     input.set shadowJar.archiveFile
     dependsOn shadowJar
+	def commonSources = project(":common").sourcesJar
+	dependsOn commonSources
+	from commonSources.archiveFile.map { zipTree(it) }
     classifier null
 }
 
@@ -61,6 +64,7 @@ jar {
 sourcesJar {
     def commonSources = project(":common").sourcesJar
     dependsOn commonSources
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from commonSources.archiveFile.map { zipTree(it) }
 }
 
