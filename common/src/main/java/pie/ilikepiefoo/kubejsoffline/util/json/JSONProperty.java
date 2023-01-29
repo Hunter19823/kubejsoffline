@@ -37,7 +37,17 @@ public enum JSONProperty {
 	FIELD_TYPE(TYPE_ID.jsName),
 
 	ANNOTATION_TYPE(TYPE_ID.jsName),
-	ANNOTATION_STRING("s")
+	ANNOTATION_STRING("s"),
+
+	BINDING_TYPE("btype"),
+
+	BINDING_TYPE_CLASS("class"),
+	BINDING_TYPE_ENUM("enum"),
+	BINDING_TYPE_MAP("map"),
+	BINDING_TYPE_PRIMITIVE("primitive"),
+	BINDING_STRING("s"),
+	BINDING_FUNCTION("f"),
+	BINDING_OBJECT("o"),
 	;
 	public final String jsName;
 	JSONProperty(String jsName) {
