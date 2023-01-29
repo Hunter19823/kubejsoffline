@@ -2,9 +2,13 @@ function getAnySuperClass(id) {
 	data = null;
 
 	if (typeof id === "number") {
-		data = getClass(id);
+		data = getClass(id).data;
 	} else if (typeof id === "object") {
-		data = id;
+		if(id['data'] !== null && id['data'] !== undefined){
+			data = id.data;
+		}else{
+			data = id;
+		}
 	}
 
 	if(data === null || data === undefined){
@@ -175,11 +179,10 @@ function getClass(id) {
 	output._follow_inheritance = function (action) {
 		let seen = new Set();
 		let current = this.id();
-		action(DATA[current]);
-		seen.add(current);
-		while ((current = getAnySuperClass(current)) !== null && !seen.has(current)) {
+		while (current !== null && current !== undefined && !seen.has(current)) {
 			action(DATA[current]);
 			seen.add(current);
+			current = getAnySuperClass(current);
 		}
 	}
 
