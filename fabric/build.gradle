@@ -45,6 +45,9 @@ shadowJar {
 			project.configurations.shadowCommon
 	]
     classifier "dev-shadow"
+
+	relocate "org.reflections", "${project.group}.kubejsoffline.reflections"
+	relocate "javassist", "${project.group}.kubejsoffline.javassist"
 }
 
 remapJar {

@@ -419,10 +419,6 @@ function loadPageFromHash(hash) {
 	document.getElementById('page-header').scrollIntoView();
 }
 
-window.onload = () => {
-	loadPageFromHash(location.hash);
-}
-
 function swapTags(a, b){
 	let parent = a.parentNode;
 	let t = document.createElement('div');
@@ -637,7 +633,33 @@ function addSortTables() {
 	}
 }
 
-addEventListener('hashchange', (event) => {
-	loadPageFromHash(event.newURL);
+function onHashChange(url) {
+	let class_id = null;
+	let jump_to = null;
+	if(url?.contains('#')){
+		url = url.substring(url.indexOf('#') + 1);
+		if(url.contains('?')){
+			class_id = url.substring(0, url.indexOf('?'));
+		}else{
+			class_id = url;
+		}
+	}
+	loadPageFromHash(url);
 	addSortTables();
+}
+
+addEventListener('hashchange', (event) => {
+	onHashChange(event.newURL);
 });
+
+// TODO: Add searching using example code snippet below
+// addEventListener('hashchange', (event) => {
+// 	console.log("Hash",window.location.hash);
+// 	console.log("Search",window.location.search);
+// });
+
+
+
+window.onload = () => {
+	onHashChange(location.hash);
+}
