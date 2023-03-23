@@ -2,7 +2,7 @@ function createTable(id) {
 	breakLine();
 	let table = document.createElement('table');
 	document.body.appendChild(table);
-	if(id && typeof id === 'string')
+	if (id && typeof id === 'string')
 		table.id = id;
 	return table;
 }
@@ -43,7 +43,7 @@ function span(text) {
 	return span;
 }
 
-function breakLine(){
+function breakLine() {
 	document.body.appendChild(br());
 }
 
@@ -64,33 +64,33 @@ function createOptions(...args) {
 	let option = null;
 	let groupMap = new Map();
 	let actionMap = new Map();
-	for(let opt of args){
+	for (let opt of args) {
 		option = document.createElement('option');
 		option.value = opt.text;
 		option.innerText = opt.text;
 		actionMap.set(opt.text, opt.action);
-		if(opt.group && opt.group !== 'Misc') {
-			if(!groupMap.has(opt.group)){
+		if (opt.group && opt.group !== 'Misc') {
+			if (!groupMap.has(opt.group)) {
 				groupMap.set(opt.group, document.createElement('optgroup'));
 				groupMap.get(opt.group).label = opt.group;
 				output.appendChild(groupMap.get(opt.group));
 			}
 			groupMap.get(opt.group).appendChild(option);
-		}else {
-			if(!groupMap.has('Misc')){
+		} else {
+			if (!groupMap.has('Misc')) {
 				groupMap.set('Misc', document.createElement('optgroup'));
 				groupMap.get('Misc').label = 'Misc';
 			}
 			groupMap.get('Misc').appendChild(option);
 		}
 	}
-	if(groupMap.has('Misc')){
+	if (groupMap.has('Misc')) {
 		output.appendChild(groupMap.get('Misc'));
 	}
 	output.onchange = () => {
-		if(actionMap.has(output.value)) {
+		if (actionMap.has(output.value)) {
 			actionMap.get(output.value)();
-		}else{
+		} else {
 			console.error('No action for ' + output.value);
 		}
 	}
@@ -98,8 +98,9 @@ function createOptions(...args) {
 }
 
 function appendAnnotationToolTip(tag, annotations) {
-	if(!annotations || annotations.size === 0)
+	if (!annotations || annotations.size === 0)
 		return;
+
 	tag.classList.add('tooltip');
 	let tooltip = document.createElement('div');
 	tooltip.classList.add('tooltiptext');
@@ -109,7 +110,14 @@ function appendAnnotationToolTip(tag, annotations) {
 	tag.appendChild(tooltip);
 }
 
-function createShortLink(id) {
+function createShortLink(id, parents) {
+	if (!parents) {
+		parents = new Set();
+	}
+	if (parents.has(id)) {
+		return span(getClass(id).simplename());
+	}
+	parents.add(id);
 	let out = document.createElement('span');
 	let data = getClass(id);
 	let type = span(data.simplename());
@@ -125,7 +133,7 @@ function createShortLink(id) {
 	if (args) {
 		out.append('<');
 		for (let i = 0; i < args.length; i++) {
-			out.appendChild(createShortLink(args[i]));
+			out.appendChild(createShortLink(args[i], parents));
 			if (i < args.length - 1) {
 				out.append(', ');
 			}
@@ -238,7 +246,7 @@ function createConstructorSignature(constructor_data, classID) {
 	for (let i = 0; i < parameters.length; i++) {
 		param = getParameter(parameters[i]);
 		out.appendChild(createShortLink(param.type()));
-		name = param.name();
+		name = span(param.name());
 		appendAnnotationToolTip(name, param.annotations());
 		out.append(' ');
 		out.append(name);
@@ -268,7 +276,7 @@ function createHomePage() {
 		span = document.createElement('span');
 		span.innerHTML = keys[i];
 		let period = keys[i]?.lastIndexOf('.');
-		table = createTableWithHeaders(createTable(period === -1 ? keys[i] : keys[i].substring(period+1)), span);
+		table = createTableWithHeaders(createTable(period === -1 ? keys[i] : keys[i].substring(period + 1)), span);
 		for (let j = 0; j < EVENTS[keys[i]].length; j++) {
 			addRow(table, EVENTS[keys[i]][j]);
 		}
@@ -328,7 +336,7 @@ function createRelationshipTable(id) {
 			}
 		}
 	}
-	if(seen.size === 0) {
+	if (seen.size === 0) {
 		table.parentNode.removeChild(table);
 	}
 }
@@ -368,7 +376,7 @@ function loadClass(id) {
 
 	if (interfaces) {
 		h1.append(span(" implements "));
-		let i=0;
+		let i = 0;
 		for (_interface of interfaces) {
 			h1.append(createFullSignature(_interface));
 			if (i < interfaces.size - 1) {
@@ -443,7 +451,7 @@ function loadClassIDWithQueryString(classID, queryString) {
 	}
 }
 
-function swapTags(a, b){
+function swapTags(a, b) {
 	let parent = a.parentNode;
 	let t = document.createElement('div');
 	parent.append(t);
@@ -466,41 +474,41 @@ function checkTableSorted(trs, comparator) {
 function sortTable(table, comparator) {
 	// Get the rows as an array
 	let trs = table.getElementsByTagName('tr');
-	while(!checkTableSorted(trs, comparator))
-	// Loop through the rows
-	// Starting at the second row, index 2
-	for(let i=2; i<trs.length; i++) {
-		// Get the current row
-		let row = trs[i];
-		// Store the last element needed to be swapped.
-		let toSwap = null;
-		// Loop through the rows before the current row
-		for(let j=i-1; j>=1; j--) {
-			// Get the row before the current row
-			let prev = trs[j];
-			// If the current row is less than the previous row
-			if(comparator(row, prev) < 0) {
-				// Swap the rows
-				toSwap = prev;
-			} else {
-				// The row is in the correct position
-				break;
+	while (!checkTableSorted(trs, comparator))
+			// Loop through the rows
+			// Starting at the second row, index 2
+		for (let i = 2; i < trs.length; i++) {
+			// Get the current row
+			let row = trs[i];
+			// Store the last element needed to be swapped.
+			let toSwap = null;
+			// Loop through the rows before the current row
+			for (let j = i - 1; j >= 1; j--) {
+				// Get the row before the current row
+				let prev = trs[j];
+				// If the current row is less than the previous row
+				if (comparator(row, prev) < 0) {
+					// Swap the rows
+					toSwap = prev;
+				} else {
+					// The row is in the correct position
+					break;
+				}
+			}
+			if (toSwap) {
+				swapTags(row, toSwap);
 			}
 		}
-		if(toSwap) {
-			swapTags(row, toSwap);
-		}
-	}
 }
 
 function sortByAttribute(attribute) {
 	return (a, b) => {
 		let aAttr = a.getAttribute(attribute);
 		let bAttr = b.getAttribute(attribute);
-		if(aAttr < bAttr) {
+		if (aAttr < bAttr) {
 			return -1;
 		}
-		if(aAttr > bAttr) {
+		if (aAttr > bAttr) {
 			return 1;
 		}
 		return 0;
@@ -511,17 +519,17 @@ function sortByModifiedAttribute(attribute, mutator) {
 	return (a, b) => {
 		let aAttr = mutator(a.getAttribute(attribute));
 		let bAttr = mutator(b.getAttribute(attribute));
-		if(aAttr < bAttr) {
+		if (aAttr < bAttr) {
 			return -1;
 		}
-		if(aAttr > bAttr) {
+		if (aAttr > bAttr) {
 			return 1;
 		}
 		return 0;
 	}
 }
 
-function defaultSort(a,b) {
+function defaultSort(a, b) {
 	// Sorting order:
 	// 1. public/protected/private
 	// 2. static/non-static
@@ -533,60 +541,60 @@ function defaultSort(a,b) {
 	let aName = a.getAttribute('name');
 	let bName = b.getAttribute('name');
 
-	if(a === b) {
+	if (a === b) {
 		return 0;
 	}
 
 	// If a is public and b is not
-	if(MODIFIER.isPublic(aMod) && !MODIFIER.isPublic(bMod)) {
+	if (MODIFIER.isPublic(aMod) && !MODIFIER.isPublic(bMod)) {
 		// a goes before b
 		return -1;
 	}
 	// If b is public and a is not
-	if(MODIFIER.isPublic(bMod) && !MODIFIER.isPublic(aMod)) {
+	if (MODIFIER.isPublic(bMod) && !MODIFIER.isPublic(aMod)) {
 		// b goes before a
 		return 1;
 	}
 
 	// If a is protected and b is not
-	if(MODIFIER.isProtected(aMod) && !MODIFIER.isProtected(bMod)) {
+	if (MODIFIER.isProtected(aMod) && !MODIFIER.isProtected(bMod)) {
 		// a goes before b
 		return -1;
 	}
 	// If b is protected and a is not
-	if(MODIFIER.isProtected(bMod) && !MODIFIER.isProtected(aMod)) {
+	if (MODIFIER.isProtected(bMod) && !MODIFIER.isProtected(aMod)) {
 		// b goes before a
 		return 1;
 	}
 
 	// If a is private and b is not
-	if(MODIFIER.isPrivate(aMod) && !MODIFIER.isPrivate(bMod)) {
+	if (MODIFIER.isPrivate(aMod) && !MODIFIER.isPrivate(bMod)) {
 		// a goes before b
 		return -1;
 	}
 	// If b is private and a is not
-	if(MODIFIER.isPrivate(bMod) && !MODIFIER.isPrivate(aMod)) {
+	if (MODIFIER.isPrivate(bMod) && !MODIFIER.isPrivate(aMod)) {
 		// b goes before a
 		return 1;
 	}
 
 	// if a is static and b is not
-	if(MODIFIER.isStatic(aMod) && !MODIFIER.isStatic(bMod)) {
+	if (MODIFIER.isStatic(aMod) && !MODIFIER.isStatic(bMod)) {
 		// a goes before b
 		return -1;
 	}
 	// if b is static and a is not
-	if(MODIFIER.isStatic(bMod) && !MODIFIER.isStatic(aMod)) {
+	if (MODIFIER.isStatic(bMod) && !MODIFIER.isStatic(aMod)) {
 		// b goes before a
 		return 1;
 	}
 	// if a and b are both static
-	if(MODIFIER.isStatic(aMod) && MODIFIER.isStatic(bMod)) {
+	if (MODIFIER.isStatic(aMod) && MODIFIER.isStatic(bMod)) {
 		// Compare the names
-		if(aName < bName) {
+		if (aName < bName) {
 			return -1;
 		}
-		if(aName > bName) {
+		if (aName > bName) {
 			return 1;
 		}
 		return 0;
@@ -623,9 +631,9 @@ function addSortTables() {
 	let tables = [document.getElementById('fields'), document.getElementById('methods')];
 	for (let i = 0; i < tables.length; i++) {
 		let table = tables[i];
-		if(table){
+		if (table) {
 			let options = createOptions(
-					option('default', SORT_FUNCTIONS.default,'Default'),
+					option('default', SORT_FUNCTIONS.default, 'Default'),
 					option('Name', () => {
 						sortTable(table, SORT_FUNCTIONS.name);
 					}, 'Signature'),
@@ -679,7 +687,6 @@ function onHashChange() {
 addEventListener('hashchange', (event) => {
 	onHashChange();
 });
-
 
 
 window.onload = () => {
