@@ -127,7 +127,7 @@ unifiedPublishing {
 		var MT = System.getenv("MODRINTH_TOKEN")
 		if (MT != null) {
 			modrinth {
-				token = mt
+				token = MT
 				id = project.modrinth_id
 				version = "$project.name+$project.version"
 			}
