@@ -5,13 +5,13 @@ import com.google.gson.GsonBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.TextComponent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import pie.ilikepiefoo.kubejsoffline.html.page.IndexPage;
 import pie.ilikepiefoo.kubejsoffline.html.tag.Tag;
 import pie.ilikepiefoo.kubejsoffline.util.ClassFinder;
+import pie.ilikepiefoo.kubejsoffline.util.ComponentUtils;
 import pie.ilikepiefoo.kubejsoffline.util.json.ClassJSON;
 import pie.ilikepiefoo.kubejsoffline.util.json.ClassJSONManager;
 import pie.ilikepiefoo.kubejsoffline.util.json.RelationsJSON;
@@ -126,11 +126,11 @@ public class DocumentationThread extends Thread {
 	}
 
 	private static void sendMessage(String message) {
-		Minecraft.getInstance().gui.getChat().addMessage(new TextComponent(message));
+		Minecraft.getInstance().gui.getChat().addMessage(ComponentUtils.create(message));
 	}
 
 	private static void sendLink(String message, String linkText, String link) {
-		Minecraft.getInstance().gui.getChat().addMessage(new TextComponent(message).append(new TextComponent(linkText).withStyle((style) -> {
+		Minecraft.getInstance().gui.getChat().addMessage(ComponentUtils.create(message).append(ComponentUtils.create(linkText).withStyle((style) -> {
 			return style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, link)).withUnderlined(true).withColor(ChatFormatting.AQUA);
 		})));
 	}

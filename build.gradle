@@ -94,19 +94,27 @@ class MoveDocumentationFiles extends DefaultTask {
 
 	@TaskAction
 	def moveFiles() {
+		// Create the forge output directories if they do not exist
+		if (!forgeOutputDir.exists()) {
+			forgeOutputDir.mkdirs()
+		}
 		// If the forge file exists, move it to the forge output directory
 		if (forgeHtmlDir.exists()) {
 			Files.move(forgeHtmlDir.toPath(), forgeOutputDir.toPath(), StandardCopyOption.REPLACE_EXISTING)
 			println "Moved Forge documentation file to ${forgeOutputDir}"
-		}else{
+		} else {
 			println "Forge documentation file does not exist!"
 		}
 
+		// Create the fabric output directories if they do not exist
+		if (!fabricOutputDir.exists()) {
+			fabricOutputDir.mkdirs()
+		}
 		// If the fabric file exists, move it to the fabric output directory
 		if (fabricHtmlDir.exists()) {
 			Files.move(fabricHtmlDir.toPath(), fabricOutputDir.toPath(), StandardCopyOption.REPLACE_EXISTING)
 			println "Moved Fabric documentation file to ${fabricOutputDir}"
-		}else{
+		} else {
 			println "Fabric documentation file does not exist!"
 		}
 	}
