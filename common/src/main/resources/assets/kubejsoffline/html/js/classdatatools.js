@@ -147,14 +147,13 @@ function getClass(id) {
 
 	output.constructors = function () {
 		let constructors = new Set();
-		this._follow_inheritance((data) => {
-			if (data[PROPERTY.CONSTRUCTORS] !== null && data[PROPERTY.CONSTRUCTORS] !== undefined) {
-				for (let i = 0; i < data[PROPERTY.CONSTRUCTORS].length; i++) {
-					constructors.add(data[PROPERTY.CONSTRUCTORS][i]);
-				}
+		if (this.data[PROPERTY.CONSTRUCTORS] !== null && this.data[PROPERTY.CONSTRUCTORS] !== undefined) {
+			for (let i = 0; i < this.data[PROPERTY.CONSTRUCTORS].length; i++) {
+				constructors.add(this.data[PROPERTY.CONSTRUCTORS][i]);
 			}
-		});
-		if(constructors.size === 0){
+		}
+
+		if (constructors.size === 0) {
 			return null;
 		}
 		return constructors;
@@ -169,6 +168,8 @@ function getClass(id) {
 				}
 			}
 		});
+
+
 		return annotations;
 	}
 

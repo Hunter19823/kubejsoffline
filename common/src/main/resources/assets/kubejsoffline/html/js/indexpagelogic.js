@@ -120,7 +120,6 @@ function createShortLink(id) {
 	type.style.cursor = 'pointer';
 	type.onclick = () => {
 		location.hash = "#" + id;
-		loadClass(id);
 	}
 	out.append(type);
 	if (args) {
@@ -142,7 +141,15 @@ function createShortLink(id) {
 	return out;
 }
 
-function createFullSignature(id) {
+function createFullSignature(id, parents) {
+	if (!parents) {
+		parents = new Set();
+	} else {
+		if (parents.has(id)) {
+			return span(getClass(id).simplename());
+		}
+	}
+	parents.add(id);
 	let data = getClass(id);
 	let out = document.createElement('span');
 	let parts = data.type().split('.');
@@ -168,7 +175,7 @@ function createFullSignature(id) {
 	if (args) {
 		out.append('<');
 		for (let i = 0; i < args.length; i++) {
-			out.appendChild(createFullSignature(args[i]));
+			out.appendChild(createFullSignature(args[i], parents));
 			if (i < args.length - 1) {
 				out.append(', ');
 			}
@@ -345,6 +352,7 @@ function createConstructorTable(id) {
 
 function loadClass(id) {
 	wipePage();
+	console.log("Loading class " + id);
 	let data = getClass(id);
 	let superClass = data.superclass();
 	let interfaces = data.interfaces();
@@ -406,17 +414,33 @@ function wipePage() {
 	createPageHeader();
 }
 
-function loadPageFromHash(hash) {
-	if (hash?.includes('#')) {
-		let id = hash.split('#')[1];
-		if(id?.length > 0) {
-			loadClass(id);
-			document.getElementById('page-header').scrollIntoView();
+function loadClassIDWithQueryString(classID, queryString) {
+	if (!classID) {
+		console.error("No classID provided (1)");
+		return;
+	}
+	console.log("Loading page from hash: '" + classID + "' and Query String '" + queryString + "'.");
+	let id = "0";
+	if (classID?.includes('?')) {
+		idString = classID.split('?')[0];
+		if (idString?.length > 0) {
+			id = idString;
+		} else {
+			console.error("No classID provided (2)");
 			return;
 		}
+
+		queryString = classID.split('?')[1];
+	} else {
+		id = classID;
 	}
-	createHomePage();
-	document.getElementById('page-header').scrollIntoView();
+	if (id?.length > 0) {
+		loadClass(id);
+		document.getElementById('page-header').scrollIntoView();
+	} else {
+		console.error("No classID provided (3)");
+
+	}
 }
 
 function swapTags(a, b){
@@ -633,33 +657,31 @@ function addSortTables() {
 	}
 }
 
-function onHashChange(url) {
+function onHashChange() {
 	let class_id = null;
-	let jump_to = null;
-	if(url?.contains('#')){
-		url = url.substring(url.indexOf('#') + 1);
-		if(url.contains('?')){
-			class_id = url.substring(0, url.indexOf('?'));
-		}else{
-			class_id = url;
-		}
+	let queryString = null;
+	if (window.location.hash?.length > 0) {
+		class_id = window.location.hash.substring(1);
 	}
-	loadPageFromHash(url);
+	if (window.location.search?.length > 0) {
+		queryString = window.location.search.substring(1);
+	}
+	// TODO: Add searching
+	if (class_id) {
+		loadClassIDWithQueryString(class_id, queryString);
+	} else {
+		createHomePage();
+		document.getElementById('page-header').scrollIntoView();
+	}
 	addSortTables();
 }
 
 addEventListener('hashchange', (event) => {
-	onHashChange(event.newURL);
+	onHashChange();
 });
-
-// TODO: Add searching using example code snippet below
-// addEventListener('hashchange', (event) => {
-// 	console.log("Hash",window.location.hash);
-// 	console.log("Search",window.location.search);
-// });
 
 
 
 window.onload = () => {
-	onHashChange(location.hash);
+	onHashChange();
 }

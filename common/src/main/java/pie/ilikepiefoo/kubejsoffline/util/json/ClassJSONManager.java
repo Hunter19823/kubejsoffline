@@ -53,13 +53,17 @@ public class ClassJSONManager {
 		if(typeIDMap.containsKey(typeName))
 			return typeIDMap.get(typeName);
 		synchronized (this) {
-			int id = typeIDs.incrementAndGet();
-			typeIDMap.put(typeName, id);
-			JsonObject object = new JsonObject();
-			object.addProperty(JSONProperty.TYPE_ID.jsName, id);
-			typeData.add(object);
-			object.addProperty(JSONProperty.TYPE_IDENTIFIER.jsName, typeName);
-			return id;
+			synchronized (typeIDMap) {
+				synchronized (typeData) {
+					int id = typeIDs.incrementAndGet();
+					typeIDMap.put(typeName, id);
+					JsonObject object = new JsonObject();
+					object.addProperty(JSONProperty.TYPE_ID.jsName, id);
+					typeData.add(object);
+					object.addProperty(JSONProperty.TYPE_IDENTIFIER.jsName, typeName);
+					return id;
+				}
+			}
 		}
 	}
 
