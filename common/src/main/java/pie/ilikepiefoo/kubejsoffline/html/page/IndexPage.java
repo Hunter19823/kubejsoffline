@@ -13,6 +13,7 @@ import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 public class IndexPage extends HTMLFile {
 
 	public IndexPage(Gson gson) {
+		HEADER_TAG.add(new CustomAssetTag("title","html/title.txt"));
 		HEADER_TAG.add(new CustomAssetTag("style","html/css/styling.css"));
 		HEADER_TAG.add(new JSONDataTag("DATA", ClassJSONManager.getInstance().getTypeData(), gson));
 		JsonObject object = new JsonObject();
