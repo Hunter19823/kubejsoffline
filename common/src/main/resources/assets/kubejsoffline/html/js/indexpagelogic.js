@@ -62,7 +62,7 @@ function option(text, action, group) {
 
 function changeURL(url) {
 	history.pushState("", document.title, window.location.pathname + url);
-	history.back();
+	onHashChange();
 }
 
 function createOptions(...args) {
