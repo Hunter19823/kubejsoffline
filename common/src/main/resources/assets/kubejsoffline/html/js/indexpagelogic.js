@@ -628,7 +628,7 @@ const SORT_FUNCTIONS = {
 }
 
 function addSortTables() {
-	let tables = [document.getElementById('fields'), document.getElementById('methods')];
+	let tables = [document.getElementById('fields'), document.getElementById('methods'), document.getElementById('matches')];
 	for (let i = 0; i < tables.length; i++) {
 		let table = tables[i];
 		if (table) {
@@ -665,6 +665,197 @@ function addSortTables() {
 	}
 }
 
+function addNoMatchesFound(search_query) {
+	document.body.append(span("No matches found for "+search_query+"! :("));
+}
+
+function searchByClassName(class_name) {
+	let table = createTableWithHeaders(createTable('matches'), 'ID', 'Class Name', 'Package', 'Qualified Name');
+
+	let onClassFound = (id) => {
+		let clazz = getClass(id);
+		let row = addRow(table, span(id), createShortLink(id), span(clazz.package()), createFullSignature(id));
+		row.setAttribute('mod', clazz.modifiers());
+		row.setAttribute('name', clazz.name());
+		row.setAttribute('type', clazz.type());
+		row.setAttribute('simple-name', clazz.simplename());
+	};
+
+	let lower_class_name = class_name.toLowerCase();
+	applyToAllClasses((subject) => {
+		if(subject.name().toLowerCase().includes(lower_class_name)){
+			onClassFound(subject.id());
+		}
+	});
+}
+
+function searchByFieldName(field_name) {
+	let table = createTableWithHeaders(createTable('matches'), 'Class-ID', 'Field Signature', 'Field-Type', 'Declared In');
+
+	let onFieldFound = (id, field) => {
+		let row = addRow(table, span(id), createFieldSignature(field.data), createShortLink(field.type()), createFullSignature(id));
+		row.setAttribute('mod', field.modifiers());
+		row.setAttribute('name', field.name());
+		row.setAttribute('type', field.type());
+		row.setAttribute('declared-in', getClass(id).name());
+	}
+
+	let lower_field_name = field_name.toLowerCase();
+	applyToAllClasses((subject) => {
+		let fields = subject.fields();
+		if(!fields)
+			return;
+		for (let f of fields) {
+			let field = getField(f);
+			if (field.name().toLowerCase().includes(lower_field_name)) {
+				onFieldFound(subject.id(), field);
+			}
+		}
+	});
+}
+
+
+function searchByFieldType(field_type) {
+
+	let table = createTableWithHeaders(createTable('matches'), 'Class-ID', 'Field Signature', 'Declared In');
+
+	let onFieldFound = (id, field) => {
+		let row = addRow(table, span(id), createFieldSignature(field.data), createFullSignature(id));
+		row.setAttribute('mod', field.modifiers());
+		row.setAttribute('name', field.name());
+		row.setAttribute('type', field.type());
+		row.setAttribute('declared-in', getClass(id).name());
+	}
+
+	let lower_field_type = field_type.toLowerCase();
+
+	applyToAllClasses((subject) => {
+		let fields = subject.fields();
+		if(!fields)
+			return;
+		for (let f of fields) {
+			let field = getField(f);
+			if (getClass(field.type()).name().toLowerCase().includes(lower_field_type)) {
+				onFieldFound(subject.id(), field);
+			}
+		}
+	});
+}
+
+function searchByMethodName(method_name) {
+	let table = createTableWithHeaders(createTable('matches'), 'Class-ID', 'Method Signature', 'Declared In');
+
+	let onMethodFound = (id, method) => {
+		let row = addRow(table, span(id), createMethodSignature(method.data), createFullSignature(id));
+		row.setAttribute('mod', method.modifiers());
+		row.setAttribute('name', method.name());
+		row.setAttribute('type', method.type());
+		row.setAttribute('declared-in', getClass(id).name());
+	};
+
+	let lower_method_name = method_name.toLowerCase();
+	applyToAllClasses((subject) => {
+		let methods = subject.methods();
+		if(!methods)
+			return;
+		for (let m of methods) {
+			let method = getMethod(m);
+			if (method.name().toLowerCase().includes(lower_method_name)) {
+				onMethodFound(subject.id(), method);
+			}
+		}
+	});
+}
+
+function searchByMethodReturnType(method_type) {
+
+	let table = createTableWithHeaders(createTable('matches'), 'Class-ID', 'Method Signature', 'Declared In');
+
+	let onMethodFound = (id, method) => {
+		let row = addRow(table, span(id), createMethodSignature(method.data), createFullSignature(id));
+		row.setAttribute('mod', method.modifiers());
+		row.setAttribute('name', method.name());
+		row.setAttribute('type', method.type());
+		row.setAttribute('declared-in', getClass(id).name());
+	};
+
+	let lower_method_type = method_type.toLowerCase();
+
+	applyToAllClasses((subject) => {
+		let methods = subject.methods();
+		if(!methods)
+			return;
+		for (let m of methods) {
+			let method = getMethod(m);
+			if (getClass(method.returnType()).simplename().toLowerCase().includes(lower_method_type)) {
+				onMethodFound(subject.id(), method);
+			}
+		}
+	});
+
+}
+
+
+function searchByMethodParameterType(param_type) {
+	let table = createTableWithHeaders(createTable('matches'), 'Class-ID', 'Method Signature', 'Declared In');
+
+	let onMethodFound = (id, method) => {
+		let row = addRow(table, span(id), createMethodSignature(method.data), createFullSignature(id));
+		row.setAttribute('mod', method.modifiers());
+		row.setAttribute('name', method.name());
+		row.setAttribute('type', method.type());
+		row.setAttribute('declared-in', getClass(id).name());
+	};
+
+	let lower_param_type = param_type.toLowerCase();
+
+	applyToAllClasses((subject) => {
+		let methods = subject.methods();
+		if(!methods)
+			return;
+		for (let m of methods) {
+			let method = getMethod(m);
+			if(!method.parameters()){
+				continue;
+			}
+			for (let param of method.parameters()) {
+				if (getClass(getParameter(param).type()).name().toLowerCase().includes(lower_param_type)) {
+					onMethodFound(subject.id(), method);
+				}
+			}
+		}
+	});
+}
+
+function li(content) {
+	let tag = document.createElement('li');
+	tag.innerText = content;
+	return tag;
+}
+
+function searchHelp() {
+	// List valid search types
+	document.body.append(span("Valid search parameters:"));
+	let ul = document.createElement('ul');
+	document.body.append(ul);
+	ul.append(li('search'));
+	ul.append(li('query'));
+	document.body.append(br());
+	document.body.append(span("Valid search types:"));
+	ul = document.createElement('ul');
+	document.body.append(ul);
+	ul.append(li('class-name'));
+	ul.append(li('field-name'));
+	ul.append(li('field-type'));
+	ul.append(li('method-name'));
+	ul.append(li('method-return-type'));
+	ul.append(li('method-parameter-type'));
+
+	document.body.append(br());
+	document.body.append(span("Query is the term to be searched for in the search type."));
+	// ul.append(li('method-parameter-type'));
+}
+
 function onHashChange() {
 	let class_id = null;
 	let queryString = null;
@@ -674,9 +865,43 @@ function onHashChange() {
 	if (window.location.search?.length > 0) {
 		queryString = window.location.search.substring(1);
 	}
-	// TODO: Add searching
+	// TODO: Improve searching
 	if (class_id) {
 		loadClassIDWithQueryString(class_id, queryString);
+	} else if(queryString) {
+		let searchParams = new URLSearchParams(queryString);
+		if(searchParams.has('search')){
+			if(!searchParams.has('query')){
+				document.body.append(span("No query provided! :("));
+				searchHelp();
+				return;
+			}
+			let query = searchParams.get('query');
+			switch (searchParams.get('search')) {
+				case 'class-name':
+					searchByClassName(query);
+					break;
+				case 'field-name':
+					searchByFieldName(query);
+					break;
+				case 'field-type':
+					searchByFieldType(query);
+					break;
+				case 'method-name':
+					searchByMethodName(query);
+					break;
+				case 'method-return-type':
+					searchByMethodReturnType(query);
+					break;
+				case 'method-parameter-type':
+					searchByMethodParameterType(query);
+					break;
+				default:
+					document.body.append(span("Invalid search type! :("));
+					searchHelp();
+					break;
+			}
+		}
 	} else {
 		createHomePage();
 		document.getElementById('page-header').scrollIntoView();

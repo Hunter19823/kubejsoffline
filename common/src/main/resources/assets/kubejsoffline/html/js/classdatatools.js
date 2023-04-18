@@ -329,3 +329,19 @@ function getAnnotation(annotationData) {
 
 	return output;
 }
+
+function applyToAllClasses(action) {
+	for (let i = 0; i < DATA.length; i++) {
+		action(getClass(i));
+	}
+}
+
+function findAllClassesThatMatch(predicate) {
+	let output = [];
+	applyToAllClasses((class_data) => {
+		if (predicate(class_data)) {
+			output.push(class_data.id());
+		}
+	});
+	return output;
+}
