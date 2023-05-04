@@ -63,7 +63,7 @@ function createFullSignature(id, parents) {
 	parents.add(id);
 	let data = getClass(id);
 	let out = document.createElement('span');
-	let parts = data.type().split('.');
+	let parts = data.name().split('.');
 	let part = null;
 	let sp = null;
 	let args = data.paramargs();
