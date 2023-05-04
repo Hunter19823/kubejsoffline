@@ -56,8 +56,13 @@ function getClass(id) {
 
 	output.simplename = function () {
 		let fullName = this.type();
+		// Remove any Generics
+		let index = fullName.indexOf("<");
+		if (index !== -1) {
+			fullName = fullName.substring(0, index);
+		}
 		// Remove package name
-		let index = fullName.lastIndexOf(".");
+		index = fullName.lastIndexOf(".");
 		if (index !== -1) {
 			fullName = fullName.substring(index + 1);
 		}
@@ -71,7 +76,25 @@ function getClass(id) {
 
 	output.package = function () {
 		let pkg = this.data[PROPERTY.PACKAGE_NAME];
-		if (pkg === null || pkg === undefined) return null;
+		if (pkg === null || pkg === undefined) {
+			let fullName = this.type();
+			// Remove any Generics
+			let index = fullName.indexOf("<");
+			if (index !== -1) {
+				fullName = fullName.substring(0, index);
+			}
+			// Remove any array brackets
+			index = fullName.indexOf("[");
+			if (index !== -1) {
+				fullName = fullName.substring(0, index);
+			}
+			// Remove class name
+			index = fullName.lastIndexOf(".");
+			if (index !== -1) {
+				pkg = fullName.substring(0, index);
+			}
+			return fullName;
+		}
 		return pkg;
 	}
 
