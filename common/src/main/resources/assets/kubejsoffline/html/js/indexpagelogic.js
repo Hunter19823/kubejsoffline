@@ -109,6 +109,19 @@ addEventListener('popstate', (event) => {
 });
 
 
+// let count = 0;
+// addEventListener('contextmenu', (event) => {
+// 	if(count++ % 2 === 0){
+// 		event.preventDefault();
+// 	}
+// });
+// addEventListener('click', (event) => {
+// 	if(count++ % 2 === 0){
+// 		event.preventDefault();
+// 	}
+// });
+// TODO: Create a custom right click menu for the page.
+
 window.onload = () => {
 	onHashChange();
 }
