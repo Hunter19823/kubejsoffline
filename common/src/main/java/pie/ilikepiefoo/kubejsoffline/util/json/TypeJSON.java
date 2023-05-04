@@ -69,6 +69,15 @@ public class TypeJSON {
 			}
 		}
 		if (type instanceof ParameterizedType parameterizedType) {
+			SafeOperations.tryGet(parameterizedType::getRawType)
+					.ifPresent((rawType) -> {
+						final var typeObject = of(rawType);
+						if (null != typeObject && 0 != typeObject.size()) {
+							object.addProperty(
+									JSONProperty.RAW_PARAMETERIZED_TYPE.jsName,
+									typeObject.get(JSONProperty.TYPE_ID.jsName).getAsInt());
+						}
+					});
 			addGenericData(object, parameterizedType::getActualTypeArguments);
 		}
 

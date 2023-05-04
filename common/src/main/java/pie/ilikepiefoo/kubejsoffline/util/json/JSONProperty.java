@@ -20,6 +20,7 @@ public enum JSONProperty {
 
 	ARRAY_DEPTH("ad"),
 	PARAMETERIZED_ARGUMENTS("pa"),
+	RAW_PARAMETERIZED_TYPE("rpt"),
 
 	PARAMETER_NAME(BASE_CLASS_NAME.jsName),
 	PARAMETER_TYPE(TYPE_ID.jsName),
@@ -50,13 +51,14 @@ public enum JSONProperty {
 	BINDING_OBJECT("o"),
 	;
 	public final String jsName;
-	JSONProperty(String jsName) {
+
+	JSONProperty(final String jsName) {
 		this.jsName = jsName;
 	}
 
 	public static JsonObject createTranslation() {
-		JsonObject object = new JsonObject();
-		for (JSONProperty property : values()) {
+		final JsonObject object = new JsonObject();
+		for (final JSONProperty property : values()) {
 			object.addProperty(property.name(), property.jsName);
 		}
 		return object;

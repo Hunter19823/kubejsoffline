@@ -3,12 +3,25 @@ function changeURL(url) {
 	onHashChange();
 }
 
+function createLink(element, id, rawId) {
+	element.style.textDecoration = 'underline';
+	element.style.color = '#8cb4ff';
+	element.style.cursor = 'pointer';
+	if (!rawId) {
+		element.onclick = () => changeURL(`#${id}`);
+	} else {
+		element.onclick = () => changeURL(`#${rawId}`);
+	}
+}
+
 function createShortLink(id, parents) {
 	if (!parents) {
 		parents = new Set();
 	}
 	if (parents.has(id)) {
-		return span(getClass(id).simplename());
+		let rout = span(getClass(id).simplename());
+		createLink(rout, id, getClass(id).rawtype());
+		return rout;
 	}
 	parents.add(id);
 	let out = document.createElement('span');
@@ -16,12 +29,7 @@ function createShortLink(id, parents) {
 	let type = span(data.simplename());
 	let args = data.paramargs();
 	let depth = null;
-	type.style.textDecoration = 'underline';
-	type.style.color = '#8cb4ff';
-	type.style.cursor = 'pointer';
-	type.onclick = () => {
-		changeURL(`#${id}`);
-	}
+	createLink(type, id, data.rawtype());
 	out.append(type);
 	if (args) {
 		out.append('<');
@@ -47,7 +55,9 @@ function createFullSignature(id, parents) {
 		parents = new Set();
 	} else {
 		if (parents.has(id)) {
-			return span(getClass(id).simplename());
+			let rout = span(getClass(id).simplename());
+			createLink(rout, id, getClass(id).rawtype());
+			return rout;
 		}
 	}
 	parents.add(id);
@@ -64,12 +74,7 @@ function createFullSignature(id, parents) {
 		if (i < parts.length - 1) {
 			out.append('.');
 		} else {
-			sp.style.textDecoration = 'underline';
-			sp.style.color = '#8cb4ff';
-			sp.style.cursor = 'pointer';
-			sp.onclick = () => {
-				changeURL(`#${id}`);
-			}
+			createLink(sp, id, data.rawtype());
 			appendAnnotationToolTip(sp, data.annotations());
 		}
 	}

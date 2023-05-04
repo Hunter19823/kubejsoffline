@@ -54,6 +54,10 @@ function getClass(id) {
 		return this.data[PROPERTY.TYPE_IDENTIFIER];
 	}
 
+	output.rawtype = function () {
+		return this.data[PROPERTY.RAW_PARAMETERIZED_TYPE];
+	}
+
 	output.simplename = function () {
 		let fullName = this.type();
 		// Remove any Generics
