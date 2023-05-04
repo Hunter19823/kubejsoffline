@@ -9,10 +9,7 @@ function createMethodTable(id) {
 		for (method of methods) {
 			meth = getMethod(method);
 			row = addRow(table, createMethodSignature(method), createFullSignature(getMethod(method).returnType()));
-			row.setAttribute('name', meth.name());
-			row.setAttribute('returnType', meth.returnType());
-			row.setAttribute('mod', meth.modifiers());
-			row.setAttribute('params', meth.parameters());
+			appendAttributesToMethodTableRow(row, id, meth);
 		}
 	}
 }
@@ -28,9 +25,7 @@ function createFieldTable(id) {
 		for (field of fields) {
 			data = getField(field);
 			row = addRow(table, createFieldSignature(field), createFullSignature(getField(field).type()));
-			row.setAttribute('name', data.name());
-			row.setAttribute('type', data.type());
-			row.setAttribute('mod', data.modifiers());
+			appendAttributesToFieldTableRow(row, id, data);
 		}
 	}
 }

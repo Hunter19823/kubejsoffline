@@ -165,27 +165,42 @@ function createAnnotationSignature(annotation_data) {
 	return out;
 }
 
+function appendAttributesToClassTableRow(row, class_id) {
+	let clazz = getClass(class_id);
+	row.setAttribute('mod', clazz.modifiers());
+	row.setAttribute('name', clazz.name());
+	row.setAttribute('type', class_id);
+	// row.setAttribute('declared-in', clazz);
+}
+
+function appendAttributesToMethodTableRow(row, classID, method) {
+	row.setAttribute('mod', method.modifiers());
+	row.setAttribute('name', method.name());
+	row.setAttribute('type', method.returnType());
+	row.setAttribute('declared-in', classID);
+	row.setAttribute('parameters', method.parameters().length);
+}
+
+function appendAttributesToFieldTableRow(row, class_id, field) {
+	row.setAttribute('mod', field.modifiers());
+	row.setAttribute('name', field.name());
+	row.setAttribute('type', field.type());
+	row.setAttribute('declared-in', class_id);
+}
+
 function addClassToTable(table, class_id) {
 	let clazz = getClass(class_id);
 	let row = addRow(table, span(class_id), createShortLink(class_id), span(clazz.package()), createFullSignature(class_id));
-	row.setAttribute('mod', clazz.modifiers());
-	row.setAttribute('name', clazz.name());
-	row.setAttribute('type', clazz.type());
-	row.setAttribute('simple-name', clazz.simplename());
+	appendAttributesToClassTableRow(row, class_id);
 }
 
 function addMethodToTable(table, classID, method) {
 	let row = addRow(table, span(classID), createMethodSignature(method.data), createFullSignature(classID));
-	row.setAttribute('mod', method.modifiers());
-	row.setAttribute('name', method.name());
-	row.setAttribute('return-type', method.returnType());
-	row.setAttribute('declared-in', getClass(classID).name());
+	appendAttributesToMethodTableRow(row, classID, method);
+
 }
 
 function addFieldToTable(table, class_id, field) {
 	let row = addRow(table, span(class_id), createFieldSignature(field.data), createShortLink(field.type()), createFullSignature(class_id));
-	row.setAttribute('mod', field.modifiers());
-	row.setAttribute('name', field.name());
-	row.setAttribute('type', field.type());
-	row.setAttribute('declared-in', getClass(class_id).name());
+	appendAttributesToFieldTableRow(row, class_id, field);
 }

@@ -64,6 +64,19 @@ function sortByAttribute(attribute) {
 
 function sortByModifiedAttribute(attribute, mutator) {
 	return (a, b) => {
+		// If neither have the attribute, no change
+		if (!a.hasAttribute(attribute) && !b.hasAttribute(attribute)) {
+			return 0;
+		}
+		// If only a has the attribute, a is first
+		if (a.hasAttribute(attribute) && !b.hasAttribute(attribute)) {
+			return -1;
+		}
+		// If only b has the attribute, b is first
+		if (!a.hasAttribute(attribute) && b.hasAttribute(attribute)) {
+			return 1;
+		}
+		// If both have the attribute, compare the values
 		let aAttr = mutator(a.getAttribute(attribute));
 		let bAttr = mutator(b.getAttribute(attribute));
 		if (aAttr < bAttr) {
@@ -77,6 +90,34 @@ function sortByModifiedAttribute(attribute, mutator) {
 }
 
 function defaultSort(a, b) {
+	// First check if a or b do not have the mod attribute
+	if (!a.hasAttribute('mod') && !b.hasAttribute('mod')) {
+		// If neither have the mod attribute, no change
+		return 0;
+	}
+	if (a.hasAttribute('mod') && !b.hasAttribute('mod')) {
+		// If only a has the mod attribute, a is first
+		return -1;
+	}
+	if (!a.hasAttribute('mod') && b.hasAttribute('mod')) {
+		// If only b has the mod attribute, b is first
+		return 1;
+	}
+
+	// Repeat for the name attribute
+	if (!a.hasAttribute('name') && !b.hasAttribute('name')) {
+		// If neither have the name attribute, no change
+		return 0;
+	}
+	if (a.hasAttribute('name') && !b.hasAttribute('name')) {
+		// If only a has the name attribute, a is first
+		return -1;
+	}
+	if (!a.hasAttribute('name') && b.hasAttribute('name')) {
+		// If only b has the name attribute, b is first
+		return 1;
+	}
+
 	// Sorting order:
 	// 1. public/protected/private
 	// 2. static/non-static
@@ -166,12 +207,21 @@ const SORT_FUNCTIONS = {
 	'static': sortByModifiedAttribute('mod', (mod) => {
 		return MODIFIER.isStatic(mod);
 	}),
-	'super class': sortByModifiedAttribute('type', (type) => {
+	'super_class': sortByModifiedAttribute('type', (type) => {
 		return getClass(type).superclass();
 	}),
-	'return type simplename': sortByModifiedAttribute('type', (type) => {
+	'simple_name': sortByModifiedAttribute('type', (type) => {
 		return getClass(type).simplename();
-	})
+	}),
+	'type': sortByModifiedAttribute('type', (type) => {
+		return getClass(type).type();
+	}),
+	'declared': sortByModifiedAttribute('declared-in', (type) => {
+		return getClass(type).name();
+	}),
+	'parameter_count': sortByModifiedAttribute('parameters', (count) => {
+		return parseInt(count);
+	}),
 }
 
 function addSortTables() {
@@ -183,6 +233,21 @@ function addSortTables() {
 					option('default', SORT_FUNCTIONS.default, 'Default'),
 					option('Name', () => {
 						sortTable(table, SORT_FUNCTIONS.name);
+					}, 'Signature'),
+					option('Super Class', () => {
+						sortTable(table, SORT_FUNCTIONS.super_class);
+					}, 'Signature'),
+					option('Return Type (Simple Name)', () => {
+						sortTable(table, SORT_FUNCTIONS.simple_name);
+					}, 'Signature'),
+					option('Return Type (Full Name)', () => {
+						sortTable(table, SORT_FUNCTIONS.type);
+					}, 'Signature'),
+					option('Declared In', () => {
+						sortTable(table, SORT_FUNCTIONS.declared);
+					}, 'Signature'),
+					option('Parameter Count', () => {
+						sortTable(table, SORT_FUNCTIONS.parameter_count);
 					}, 'Signature'),
 					option('Access', () => {
 						sortTable(table, SORT_FUNCTIONS.public);
