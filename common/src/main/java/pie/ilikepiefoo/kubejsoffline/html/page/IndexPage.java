@@ -25,6 +25,7 @@ public class IndexPage extends HTMLFile {
 		this.HEADER_TAG.add(new JSONDataTag("BINDINGS", BindingsJSON.get(), gson));
 		this.HEADER_TAG.add(new JSONDataTag("PROPERTY", JSONProperty.createTranslation(), gson));
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/modifier.js"));
+		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/globalsettings.js"));
 //		HEADER_TAG.add(new CustomAssetTag("script","html/js/debugtools.js"));
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/classdatatools.js"));
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/createhtmltools.js"));
@@ -34,5 +35,6 @@ public class IndexPage extends HTMLFile {
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/sortingtools.js"));
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/searchingtools.js"));
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/indexpagelogic.js"));
+		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/contextmenu.js"));
 	}
 }
