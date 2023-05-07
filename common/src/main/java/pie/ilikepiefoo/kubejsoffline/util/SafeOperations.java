@@ -160,7 +160,6 @@ public class SafeOperations {
 		if (obj instanceof Field field) {
 			return (Type) tryGetFirst(
 					field::getGenericType,
-					field::getAnnotatedType,
 					field::getType
 			).orElse(null);
 		}
@@ -168,7 +167,6 @@ public class SafeOperations {
 			return (Type) (
 					tryGetFirst(
 							method::getGenericReturnType,
-							method::getAnnotatedReturnType,
 							method::getReturnType
 					).orElse(null));
 		}
@@ -176,7 +174,6 @@ public class SafeOperations {
 			return (Type) (
 					tryGetFirst(
 							parameter::getParameterizedType,
-							parameter::getAnnotatedType,
 							parameter::getType
 					).orElse(null));
 		}
