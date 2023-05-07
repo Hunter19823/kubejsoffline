@@ -120,8 +120,11 @@ public class DocumentationThread extends Thread {
 
 	private void jsonifyClasses() {
 		ClassFinder.INSTANCE.CLASS_SEARCH.entrySet().parallelStream().forEach((entry) -> {
-			if (ClassFinder.SearchState.SEARCHED == entry.getValue()) {
-				ClassJSON.of(entry.getKey());
+			try {
+				if (ClassFinder.SearchState.SEARCHED == entry.getValue()) {
+					ClassJSON.of(entry.getKey());
+				}
+			} catch (final Throwable ignored) {
 			}
 		});
 	}
