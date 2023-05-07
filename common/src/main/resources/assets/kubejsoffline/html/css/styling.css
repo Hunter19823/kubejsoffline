@@ -199,6 +199,27 @@ img.icon {
 .center-text {
     text-align: center;
 }
+
 .logo {
     height: 7em;
+}
+
+.context-menu {
+    position: fixed;
+    background-color: #2d2a2a;
+    color: #ead8da;
+    border-radius: 6px;
+    border: #101010 1px solid;
+    padding: 0.7em 1em;
+    z-index: 1;
+    display: none;
+}
+
+.context-menu-item {
+    cursor: pointer;
+}
+
+.context-menu-title {
+    font-weight: bold;
+    margin-bottom: 0.5em;
 }

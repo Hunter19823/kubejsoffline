@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 public class DocumentationThread extends Thread {
@@ -36,19 +37,19 @@ public class DocumentationThread extends Thread {
     public void run() {
 		// Wait for Helper to be initialized.
 		LOG.info("Starting Documentation Thread...");
-		while (KubeJSOffline.HELPER == null){
+		while (null == KubeJSOffline.HELPER) {
 			LOG.info("Documentation Thread idling until Helper becomes available...");
 			try {
 				this.wait(5000);
-			} catch (InterruptedException e) {
+			} catch (final InterruptedException e) {
 				LOG.error(e);
 			}
 		}
 		// Log the bindings.
 		int step = 0;
-		int totalSteps = 9;
+		final int totalSteps = 9;
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] Initializing ClassFinder and Reflections Library...", ++step, totalSteps));
-		long start = System.currentTimeMillis();
+		final long start = System.currentTimeMillis();
 		long timeMillis = System.currentTimeMillis();
 		// Setup the ClassFinder
 		ClassFinder.INSTANCE.addToSearch(KubeJSOffline.HELPER.getClasses());
@@ -68,7 +69,7 @@ public class DocumentationThread extends Thread {
 		// Dump connections.
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] Generating JSON with class dependencies...", ++step, totalSteps));
 		timeMillis = System.currentTimeMillis();
-		jsonifyConnections();
+		this.jsonifyConnections();
 		timeMillis = System.currentTimeMillis() - timeMillis;
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] JSON with class dependencies generated in %,dms", step, totalSteps, timeMillis));
 
@@ -76,23 +77,24 @@ public class DocumentationThread extends Thread {
 		// Dump ClassTree to JSON
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] Generating JSON with full list of class data..", ++step, totalSteps));
 		timeMillis = System.currentTimeMillis();
-		jsonifyClasses();
+		this.jsonifyClasses();
 		timeMillis = System.currentTimeMillis() - timeMillis;
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] JSON with full list of class data generated in %,dms", step, totalSteps, timeMillis));
 
 		// Create index.html
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] Generating index.html...", ++step, totalSteps));
 		timeMillis = System.currentTimeMillis();
-		var output = createIndexPage();
+		final var output = this.createIndexPage();
 		timeMillis = System.currentTimeMillis() - timeMillis;
-		if(output != null)
+		if (null != output) {
 			sendMessage(String.format("[KJS Offline] [Step %d/%d] index.html generated in %,dms", step, totalSteps, timeMillis));
-		else
+		} else {
 			sendMessage(String.format("[KJS Offline] [Step %d/%d] index.html failed to generate after %,dms!", step, totalSteps, timeMillis));
+		}
 
 
-		int totalClassSize = ClassFinder.INSTANCE.CLASS_SEARCH.size();
-		int totalRelationSize = ClassFinder.INSTANCE.RELATIONSHIPS.size();
+		final int totalClassSize = ClassFinder.INSTANCE.CLASS_SEARCH.size();
+		final int totalRelationSize = ClassFinder.INSTANCE.RELATIONSHIPS.size();
 		// Clear and de-reference any data that is no longer needed.
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] Clearing and de-referencing data...", ++step, totalSteps));
 		timeMillis = System.currentTimeMillis();
@@ -100,12 +102,13 @@ public class DocumentationThread extends Thread {
 		ClassJSONManager.getInstance().clear();
 		timeMillis = System.currentTimeMillis() - timeMillis;
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] Data cleared and dereferenced in %,dms", step, totalSteps, timeMillis));
-		long end = System.currentTimeMillis();
+		final long end = System.currentTimeMillis();
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] Documentation Thread finished in %,dms", ++step, totalSteps, end - start));
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] %,d classes found, %,d relationships found", ++step, totalSteps, totalClassSize, totalRelationSize));
-		if(output != null)
-			sendLink(String.format("[KJS Offline] [Step %d/%d] The Documentation page can be found at kubejs/documentation/index.html or by clicking ", step, totalSteps),"here", "kubejs/documentation/index.html");
-    }
+		if (null != output) {
+			sendLink(String.format("[KJS Offline] [Step %d/%d] The Documentation page can be found at kubejs/documentation/index.html or by clicking ", step, totalSteps), "here", "kubejs/documentation/index.html");
+		}
+	}
 
 	@Nullable
 	private File createIndexPage() {
@@ -118,8 +121,8 @@ public class DocumentationThread extends Thread {
 	}
 
 	private void jsonifyClasses() {
-		ClassFinder.INSTANCE.CLASS_SEARCH.entrySet().stream().forEach((entry) -> {
-			if (entry.getValue() == ClassFinder.SearchState.SEARCHED) {
+		ClassFinder.INSTANCE.CLASS_SEARCH.entrySet().parallelStream().forEach((entry) -> {
+			if (ClassFinder.SearchState.SEARCHED == entry.getValue()) {
 				ClassJSON.of(entry.getKey());
 			}
 		});
@@ -129,7 +132,7 @@ public class DocumentationThread extends Thread {
 		Minecraft.getInstance().gui.getChat().addMessage(ComponentUtils.create(message));
 	}
 
-	private static void sendLink(String message, String linkText, String link) {
+	private static void sendLink(final String message, final String linkText, final String link) {
 		Minecraft.getInstance().gui.getChat().addMessage(ComponentUtils.create(message).append(ComponentUtils.create(linkText).withStyle((style) -> {
 			return style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, link)).withUnderlined(true).withColor(ChatFormatting.AQUA);
 		})));
@@ -139,26 +142,27 @@ public class DocumentationThread extends Thread {
 		return KubeJSOffline.HELPER.getWorkingDirectory().resolve("kubejs/documentation");
 	}
 
-	@SuppressWarnings("ResultOfMethodCallIgnored")
-	private static File getFile() {
-		Path outputPath = getOutputPath().toAbsolutePath();
-		if(!outputPath.toFile().exists())
-			outputPath.toFile().mkdirs();
-
-		return outputPath.resolve("index.html").toFile();
-	}
-
 	@Nullable
-	private static File writeHTMLPage(Tag<?> content) {
-		File output = getFile();
+	private static File writeHTMLPage(final Tag<?> content) {
+		final File output = getFile();
 
-		try (Writer writer = new FileWriter(output)) {
+		try (final Writer writer = new FileWriter(output, StandardCharsets.UTF_8)) {
 			content.writeHTML(writer);
 			writer.flush();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			LOG.error("Failed to write file: " + "index.html" + " to " + output.getPath(), e);
 			return null;
 		}
 		return output;
+	}
+
+	@SuppressWarnings("ResultOfMethodCallIgnored")
+	private static File getFile() {
+		final Path outputPath = getOutputPath().toAbsolutePath();
+		if (!outputPath.toFile().exists()) {
+			outputPath.toFile().mkdirs();
+		}
+
+		return outputPath.resolve("index.html").toFile();
 	}
 }

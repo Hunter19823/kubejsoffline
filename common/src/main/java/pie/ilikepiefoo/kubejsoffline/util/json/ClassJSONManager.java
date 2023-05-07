@@ -3,6 +3,8 @@ package pie.ilikepiefoo.kubejsoffline.util.json;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import pie.ilikepiefoo.kubejsoffline.util.RelationType;
 import pie.ilikepiefoo.kubejsoffline.util.SafeOperations;
 
@@ -16,100 +18,104 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.StreamSupport;
 
 public class ClassJSONManager {
+	private static final Logger LOG = LogManager.getLogger();
 
 	private JsonArray typeData;
 	private final AtomicInteger typeIDs;
 	private ConcurrentHashMap<String, Integer> typeIDMap;
 	private static ClassJSONManager INSTANCE;
 
+	public ClassJSONManager() {
+		this.typeData = new JsonArray();
+		this.typeIDs = new AtomicInteger(-1);
+		this.typeIDMap = new ConcurrentHashMap<>();
+	}
+
 	public static ClassJSONManager getInstance() {
-		if(INSTANCE == null)
+		if (null == INSTANCE) {
 			INSTANCE = new ClassJSONManager();
+		}
 		return INSTANCE;
 	}
 
-	public ClassJSONManager() {
-		typeData = new JsonArray();
-		typeIDs = new AtomicInteger(-1);
-		typeIDMap = new ConcurrentHashMap<>();
-	}
-
-	public void clear() {
-		typeIDMap.clear();
-		typeData = new JsonArray();
-		typeIDs.set(-1);
-		typeIDMap = new ConcurrentHashMap<>();
+	public synchronized void clear() {
+		this.typeIDMap.clear();
+		this.typeData = new JsonArray();
+		this.typeIDs.set(-1);
+		this.typeIDMap = new ConcurrentHashMap<>();
 	}
 
 	@Nullable
-	public Integer getTypeID(@Nullable Type type) {
-		return getTypeID(SafeOperations.safeUniqueTypeName(type));
+	public Integer getTypeID(@Nullable final Type type) {
+		return this.getTypeID(SafeOperations.safeUniqueTypeName(type));
 	}
 
 	@Nullable
-	public Integer getTypeID(@Nullable String typeName) {
-		if(typeName == null || typeName.isBlank())
+	public synchronized Integer getTypeID(@Nullable final String typeName) {
+		if (null == typeName || typeName.isBlank()) {
 			return null;
-		if(typeIDMap.containsKey(typeName))
-			return typeIDMap.get(typeName);
-		synchronized (this) {
-			synchronized (typeIDMap) {
-				synchronized (typeData) {
-					int id = typeIDs.incrementAndGet();
-					typeIDMap.put(typeName, id);
-					JsonObject object = new JsonObject();
-					object.addProperty(JSONProperty.TYPE_ID.jsName, id);
-					typeData.add(object);
-					object.addProperty(JSONProperty.TYPE_IDENTIFIER.jsName, typeName);
-					return id;
-				}
-			}
 		}
+		final var obj = this.getTypeData(typeName);
+		if (null == obj) {
+			return null;
+		}
+		return obj.get(JSONProperty.TYPE_ID.jsName).getAsInt();
 	}
 
 	@Nullable
-	public JsonObject getTypeData(@Nullable Type type) {
-		return getTypeData(SafeOperations.safeUniqueTypeName(type));
+	public synchronized JsonObject getTypeData(@Nullable final String typeName) {
+		if (null == typeName || typeName.isBlank()) {
+			return null;
+		}
+		this.typeIDMap.computeIfAbsent(typeName, (key) -> {
+			final int id = this.typeIDs.incrementAndGet();
+			final JsonObject object = new JsonObject();
+			object.addProperty(JSONProperty.TYPE_ID.jsName, id);
+			this.typeData.add(object);
+			object.addProperty(JSONProperty.TYPE_IDENTIFIER.jsName, typeName);
+			return id;
+		});
+		final int id = this.typeIDMap.get(typeName);
+		return this.typeData.get(id).getAsJsonObject();
 	}
 
 	@Nullable
-	public JsonObject getTypeData(@Nullable String typeName) {
-		if(typeName == null)
-			return null;
-		Integer id = getTypeID(typeName);
-		if(id == null)
-			return null;
-		return typeData.get(id).getAsJsonObject();
+	public JsonObject getTypeData(@Nullable final Type type) {
+		return this.getTypeData(SafeOperations.safeUniqueTypeName(type));
 	}
 
 	@Nonnull
-	public JsonArray getTypeData() {
-		return typeData;
+	public synchronized JsonArray getTypeData() {
+		return this.typeData;
 	}
 
 	@Nonnull
-	public JsonArray findAllRelationsOf(@Nonnull Type type, @Nonnull RelationType... relations) {
-		return findAllRelationsOf(SafeOperations.safeUnwrapReturnTypeName(type), relations);
+	public JsonArray findAllRelationsOf(@Nonnull final Type type, @Nonnull final RelationType... relations) {
+		return this.findAllRelationsOf(SafeOperations.safeUnwrapReturnTypeName(type), relations);
 	}
 
 	@Nonnull
-	public JsonArray findAllRelationsOf(@Nonnull String typeName, @Nonnull RelationType... relations) {
-		JsonArray array = new JsonArray();
-		Set<Integer> ids = ConcurrentHashMap.newKeySet();
-		Stack<Integer> to_search = new Stack<>();
-		to_search.add(getTypeID(typeName));
-		while(!to_search.isEmpty()) {
-			int id = to_search.pop(); // Get the next id to search.
-			if(ids.contains(id)) // Skip if already searched.
+	public JsonArray findAllRelationsOf(@Nonnull final String typeName, @Nonnull final RelationType... relations) {
+		final JsonArray array = new JsonArray();
+		final Set<Integer> ids = ConcurrentHashMap.newKeySet();
+		final Stack<Integer> to_search = new Stack<>();
+		to_search.add(this.getTypeID(typeName));
+		while (!to_search.isEmpty()) {
+			final int id = to_search.pop(); // Get the next id to search.
+			if (ids.contains(id)) // Skip if already searched.
+			{
 				continue;
+			}
 			ids.add(id); // Mark as searched.
 			array.add(id); // Add to the array.
-			JsonObject object = typeData.get(id).getAsJsonObject(); // Get the object.
-			if(object == null) // Skip if null.
+			final JsonObject object = this.typeData.get(id).getAsJsonObject(); // Get the object.
+			if (null == object) // Skip if null.
+			{
 				continue;
-			for(RelationType relationType : relations) { // For each relation type.
-				var element = object.getAsJsonArray(relationType.getKeyName()); // Get the relation.
-				if(element != null){ // If the object has the relation type.
+			}
+			for (final RelationType relationType : relations) { // For each relation type.
+				final var element = object.getAsJsonArray(relationType.getKeyName()); // Get the relation.
+				if (null != element) { // If the object has the relation type.
 					to_search.addAll(
 							StreamSupport.stream(element.spliterator(), false)
 									.mapToInt(JsonElement::getAsInt)

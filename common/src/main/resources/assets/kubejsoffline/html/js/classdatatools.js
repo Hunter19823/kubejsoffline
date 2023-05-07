@@ -54,10 +54,19 @@ function getClass(id) {
 		return this.data[PROPERTY.TYPE_IDENTIFIER];
 	}
 
+	output.rawtype = function () {
+		return this.data[PROPERTY.RAW_PARAMETERIZED_TYPE];
+	}
+
 	output.simplename = function () {
 		let fullName = this.type();
+		// Remove any Generics
+		let index = fullName.indexOf("<");
+		if (index !== -1) {
+			fullName = fullName.substring(0, index);
+		}
 		// Remove package name
-		let index = fullName.lastIndexOf(".");
+		index = fullName.lastIndexOf(".");
 		if (index !== -1) {
 			fullName = fullName.substring(index + 1);
 		}
@@ -71,7 +80,25 @@ function getClass(id) {
 
 	output.package = function () {
 		let pkg = this.data[PROPERTY.PACKAGE_NAME];
-		if (pkg === null || pkg === undefined) return null;
+		if (pkg === null || pkg === undefined) {
+			let fullName = this.type();
+			// Remove any Generics
+			let index = fullName.indexOf("<");
+			if (index !== -1) {
+				fullName = fullName.substring(0, index);
+			}
+			// Remove any array brackets
+			index = fullName.indexOf("[");
+			if (index !== -1) {
+				fullName = fullName.substring(0, index);
+			}
+			// Remove class name
+			index = fullName.lastIndexOf(".");
+			if (index !== -1) {
+				pkg = fullName.substring(0, index);
+			}
+			return fullName;
+		}
 		return pkg;
 	}
 
@@ -100,11 +127,13 @@ function getClass(id) {
 		this._follow_inheritance((data) => {
 			if (data[PROPERTY.INTERFACES] !== null && data[PROPERTY.INTERFACES] !== undefined) {
 				for (let i = 0; i < data[PROPERTY.INTERFACES].length; i++) {
+					data[PROPERTY.INTERFACES][i].declaringClass = data[PROPERTY.TYPE_ID];
 					interfaces.add(data[PROPERTY.INTERFACES][i]);
 				}
 			}
 			if (data[PROPERTY.GENERIC_INTERFACES] !== null && data[PROPERTY.GENERIC_INTERFACES] !== undefined) {
 				for (let i = 0; i < data[PROPERTY.GENERIC_INTERFACES].length; i++) {
+					data[PROPERTY.GENERIC_INTERFACES][i].declaringClass = data[PROPERTY.TYPE_ID];
 					interfaces.add(data[PROPERTY.GENERIC_INTERFACES][i]);
 				}
 			}
@@ -120,6 +149,7 @@ function getClass(id) {
 		this._follow_inheritance((data) => {
 			if (data[PROPERTY.FIELDS] !== null && data[PROPERTY.FIELDS] !== undefined) {
 				for (let i = 0; i < data[PROPERTY.FIELDS].length; i++) {
+					data[PROPERTY.FIELDS][i].declaringClass = data[PROPERTY.TYPE_ID];
 					fields.add(data[PROPERTY.FIELDS][i]);
 				}
 			}
@@ -135,6 +165,7 @@ function getClass(id) {
 		this._follow_inheritance((data) => {
 			if (data[PROPERTY.METHODS] !== null && data[PROPERTY.METHODS] !== undefined) {
 				for (let i = 0; i < data[PROPERTY.METHODS].length; i++) {
+					data[PROPERTY.METHODS][i].declaringClass = data[PROPERTY.TYPE_ID];
 					methods.add(data[PROPERTY.METHODS][i]);
 				}
 			}
@@ -149,6 +180,7 @@ function getClass(id) {
 		let constructors = new Set();
 		if (this.data[PROPERTY.CONSTRUCTORS] !== null && this.data[PROPERTY.CONSTRUCTORS] !== undefined) {
 			for (let i = 0; i < this.data[PROPERTY.CONSTRUCTORS].length; i++) {
+				this.data[PROPERTY.CONSTRUCTORS][i].declaringClass = this.data[PROPERTY.TYPE_ID];
 				constructors.add(this.data[PROPERTY.CONSTRUCTORS][i]);
 			}
 		}

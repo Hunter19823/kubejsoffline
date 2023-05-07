@@ -16,6 +16,7 @@ function Props() {
 
 	this.ARRAY_DEPTH = "temp";
 	this.PARAMETERIZED_ARGUMENTS = "temp";
+	this.RAW_PARAMETERIZED_TYPE = "temp";
 
 	this.PARAMETER_NAME = "temp";
 	this.PARAMETER_TYPE = "temp";
