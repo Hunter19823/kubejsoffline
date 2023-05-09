@@ -1,5 +1,5 @@
 function searchByClassName(class_name) {
-	let table = createTableWithHeaders(createTable('matches'), 'ID', 'Class Name', 'Package', 'Qualified Name');
+	let table = createTableWithHeaders(createSortableTable('matches'), 'ID', 'Class Name', 'Package', 'Qualified Name');
 
 	let lower_class_name = class_name.toLowerCase();
 	applyToAllClasses((subject) => {
@@ -10,7 +10,7 @@ function searchByClassName(class_name) {
 }
 
 function searchByFieldName(field_name) {
-	let table = createTableWithHeaders(createTable('matches'), 'Class-ID', 'Field Signature', 'Field-Type', 'Declared In');
+	let table = createTableWithHeaders(createSortableTable('matches'), 'Class-ID', 'Field Signature', 'Field-Type', 'Declared In');
 
 	let lower_field_name = field_name.toLowerCase();
 	applyToAllClasses((subject) => {
@@ -29,7 +29,7 @@ function searchByFieldName(field_name) {
 
 function searchByFieldType(field_type) {
 
-	let table = createTableWithHeaders(createTable('matches'), 'Class-ID', 'Field Signature', 'Declared In');
+	let table = createTableWithHeaders(createSortableTable('matches'), 'Class-ID', 'Field Signature', 'Declared In');
 	let lower_field_type = field_type.toLowerCase();
 	applyToAllClasses((subject) => {
 		let fields = subject.fields();
@@ -45,7 +45,7 @@ function searchByFieldType(field_type) {
 }
 
 function searchByMethodName(method_name) {
-	let table = createTableWithHeaders(createTable('matches'), 'Class-ID', 'Method Signature', 'Declared In');
+	let table = createTableWithHeaders(createSortableTable('matches'), 'Class-ID', 'Method Signature', 'Declared In');
 
 	let lower_method_name = method_name.toLowerCase();
 	applyToAllClasses((subject) => {
@@ -63,7 +63,7 @@ function searchByMethodName(method_name) {
 
 function searchByMethodReturnType(method_type) {
 
-	let table = createTableWithHeaders(createTable('matches'), 'Class-ID', 'Method Signature', 'Declared In');
+	let table = createTableWithHeaders(createSortableTable('matches'), 'Class-ID', 'Method Signature', 'Declared In');
 
 	let lower_method_type = method_type.toLowerCase();
 
@@ -83,7 +83,7 @@ function searchByMethodReturnType(method_type) {
 
 
 function searchByMethodParameterType(param_type) {
-	let table = createTableWithHeaders(createTable('matches'), 'Class-ID', 'Method Signature', 'Declared In');
+	let table = createTableWithHeaders(createSortableTable('matches'), 'Class-ID', 'Method Signature', 'Declared In');
 
 	let lower_param_type = param_type.toLowerCase();
 
