@@ -27,9 +27,8 @@ public class DocumentationConfig {
 	}
 
 	private static synchronized Config reloadConfig() {
-		final Path config = Platform.getConfigFolder().resolve(KubeJSOffline.MOD_ID + "-config.json");
-		if (config.toFile().exists()) {
-			try (final FileReader reader = new FileReader(config.toFile(), StandardCharsets.UTF_8)) {
+		if (getPath().toFile().exists()) {
+			try (final FileReader reader = new FileReader(getPath().toFile(), StandardCharsets.UTF_8)) {
 				INSTANCE = GSON.fromJson(reader, Config.class);
 			} catch (final Exception e) {
 				LOGGER.error("Failed to load config file!", e);
@@ -37,13 +36,24 @@ public class DocumentationConfig {
 			}
 		} else {
 			INSTANCE = new Config();
-			try (final FileWriter writer = new FileWriter(config.toFile(), StandardCharsets.UTF_8)) {
-				GSON.toJson(INSTANCE, writer);
-			} catch (final Exception e) {
-				LOGGER.error("Failed to create config file!", e);
-			}
 		}
+		save();
 		return INSTANCE;
+	}
+
+	private static Path getPath() {
+		return Platform.getConfigFolder().resolve(KubeJSOffline.MOD_ID + "-config.json");
+	}
+
+	private static synchronized void save() {
+		if (null == INSTANCE) {
+			return;
+		}
+		try (final FileWriter writer = new FileWriter(getPath().toFile(), StandardCharsets.UTF_8)) {
+			GSON.toJson(INSTANCE, writer);
+		} catch (final Exception e) {
+			LOGGER.error("Failed to create config file!", e);
+		}
 	}
 
 	public static synchronized void clearInstance() {
