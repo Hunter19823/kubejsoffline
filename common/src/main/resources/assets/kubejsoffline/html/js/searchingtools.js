@@ -28,7 +28,6 @@ function searchByFieldName(field_name) {
 
 
 function searchByFieldType(field_type) {
-
 	let table = createTableWithHeaders(createSortableTable('matches'), 'Class-ID', 'Field Signature', 'Declared In');
 	let lower_field_type = field_type.toLowerCase();
 	applyToAllClasses((subject) => {
@@ -105,6 +104,55 @@ function searchByMethodParameterType(param_type) {
 	});
 }
 
+function searchByAny(query) {
+	let table = createTableWithHeaders(createSortableTable('matches'), 'Class-ID');
+
+	let lower_query = query.toLowerCase();
+
+	applyToAllClasses((subject) => {
+		// First check if the class name matches
+		// If so, add it to the table
+		if (subject.name().toLowerCase().includes(lower_query)) {
+			addClassToTable(table, subject.id());
+		}
+		// Then check if any of the fields match
+		// If so, add them to the table
+		let fields = subject.fields();
+		if (fields) {
+			for (let f of fields) {
+				let field = getField(f);
+				if (field.name().toLowerCase().includes(lower_query)) {
+					addFieldToTable(table, subject.id(), field);
+				}
+				if (getClass(field.type()).name().toLowerCase().includes(lower_query)) {
+					addFieldToTable(table, subject.id(), field);
+				}
+			}
+		}
+		// Then check if any of the methods match
+		// If so, add them to the table
+		let methods = subject.methods();
+		if (methods) {
+			for (let m of methods) {
+				let method = getMethod(m);
+				if (method.name().toLowerCase().includes(lower_query)) {
+					addMethodToTable(table, subject.id(), method);
+				}
+				if (getClass(method.returnType()).name().toLowerCase().includes(lower_query)) {
+					addMethodToTable(table, subject.id(), method);
+				}
+				if (method.parameters()) {
+					for (let param of method.parameters()) {
+						if (getClass(getParameter(param).type()).name().toLowerCase().includes(lower_query)) {
+							addMethodToTable(table, subject.id(), method);
+						}
+					}
+				}
+			}
+		}
+	});
+}
+
 function searchHelp() {
 	// List valid search types
 	document.body.append(span("Valid search parameters:"));
@@ -116,6 +164,7 @@ function searchHelp() {
 	document.body.append(span("Valid search types:"));
 	ul = document.createElement('ul');
 	document.body.append(ul);
+	ul.append(li('any'));
 	ul.append(li('class-name'));
 	ul.append(li('field-name'));
 	ul.append(li('field-type'));

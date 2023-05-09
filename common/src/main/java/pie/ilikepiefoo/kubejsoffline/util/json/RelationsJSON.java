@@ -2,7 +2,6 @@ package pie.ilikepiefoo.kubejsoffline.util.json;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import pie.ilikepiefoo.kubejsoffline.DocumentationConfig;
 import pie.ilikepiefoo.kubejsoffline.util.Relation;
 import pie.ilikepiefoo.kubejsoffline.util.RelationType;
 
@@ -19,9 +18,6 @@ public class RelationsJSON {
 	public static JsonArray of(@Nonnull final Set<Relation> relations) {
 		final ConcurrentHashMap<Integer, Map<RelationType, Set<Integer>>> uniqueRelations = new ConcurrentHashMap<>();
 		relations.forEach((connection) -> {
-			if (!DocumentationConfig.getInstance().enabledRelationTypes.contains(connection.relation())) {
-				return;
-			}
 			try {
 				final JsonObject from = ClassJSONManager.getInstance().getTypeData(connection.from());
 

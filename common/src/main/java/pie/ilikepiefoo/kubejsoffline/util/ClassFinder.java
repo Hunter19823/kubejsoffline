@@ -2,7 +2,6 @@ package pie.ilikepiefoo.kubejsoffline.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import pie.ilikepiefoo.kubejsoffline.DocumentationConfig;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
@@ -213,12 +212,6 @@ public class ClassFinder {
 		if (null == relation) {
 			return;
 		}
-		if (!DocumentationConfig.getInstance().saveAnyRelationTypeData) {
-			return;
-		}
-		if (!DocumentationConfig.getInstance().enabledRelationTypes.contains(relation.relation())) {
-			return;
-		}
 
 		this.RELATIONSHIPS.add(relation);
 	}
@@ -233,11 +226,7 @@ public class ClassFinder {
 		}
 		if (type instanceof ParameterizedType parameterizedType) {
 			SafeOperations.tryGet(parameterizedType::getRawType).ifPresent((rawType) -> this.addToQueue((Class<?>) rawType, RelationType.UNKNOWN, subject));
-			SafeOperations.tryGet(parameterizedType::getActualTypeArguments).ifPresent((types) -> {
-				for (final var possibleType : types) {
-					this.safeAddGeneric(possibleType, relationType, subject);
-				}
-			});
+			SafeOperations.tryGet(parameterizedType::getActualTypeArguments).ifPresent((types) -> this.safeAddAllGeneric(types, relationType, subject));
 		}
 		if (type instanceof Class<?> clazz) {
 			this.addToQueue(clazz, relationType, subject);

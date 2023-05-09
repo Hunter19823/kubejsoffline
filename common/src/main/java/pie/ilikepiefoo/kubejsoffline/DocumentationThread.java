@@ -116,9 +116,7 @@ public class DocumentationThread extends Thread {
 	}
 
 	private void jsonifyConnections() {
-		if (DocumentationConfig.getInstance().saveAnyRelationTypeData) {
-			RelationsJSON.of(ClassFinder.INSTANCE.getRelationships());
-		}
+		RelationsJSON.of(ClassFinder.INSTANCE.getRelationships());
 	}
 
 	private void jsonifyClasses() {

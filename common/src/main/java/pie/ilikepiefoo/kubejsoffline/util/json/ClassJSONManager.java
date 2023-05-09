@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import pie.ilikepiefoo.kubejsoffline.DocumentationConfig;
 import pie.ilikepiefoo.kubejsoffline.util.RelationType;
 import pie.ilikepiefoo.kubejsoffline.util.SafeOperations;
 
@@ -124,5 +125,27 @@ public class ClassJSONManager {
 			}
 		}
 		return array; // Return the array of ids.
+	}
+
+	public void filterRelationshipData() {
+		// Stream type data entries.
+		// Take the spliterator and stream it.
+		// Map each element to a JsonObject.
+		// For each JsonObject, remove all relation types that are not enabled.
+		StreamSupport.stream(this.typeData.spliterator(), true)
+				.map(JsonElement::getAsJsonObject)
+				.forEach((object -> {
+					if (!DocumentationConfig.getInstance().saveAnyRelationTypeData) {
+						for (final RelationType relationType : RelationType.values()) {
+							object.remove(relationType.getKeyName());
+						}
+					} else {
+						for (final RelationType relationType : RelationType.values()) {
+							if (!DocumentationConfig.getInstance().enabledRelationTypes.contains(relationType)) {
+								object.remove(relationType.getKeyName());
+							}
+						}
+					}
+				}));
 	}
 }
