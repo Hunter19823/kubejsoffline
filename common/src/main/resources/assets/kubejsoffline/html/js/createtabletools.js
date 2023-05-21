@@ -6,13 +6,14 @@ function createMethodTable(id) {
 	let row = null;
 	if (methods && GLOBAL_SETTINGS.showMethods) {
 		methods = [...methods].filter((method) => {
-			if (GLOBAL_SETTINGS.showPrivate === false && MODIFIER.isPrivate(getMethod(method).modifiers())) {
+			let m = getMethod(method);
+			if (GLOBAL_SETTINGS.showPrivate === false && MODIFIER.isPrivate(m.modifiers())) {
 				return false;
 			}
-			if (GLOBAL_SETTINGS.showProtected === false && MODIFIER.isProtected(getMethod(method).modifiers())) {
+			if (GLOBAL_SETTINGS.showProtected === false && MODIFIER.isProtected(m.modifiers())) {
 				return false;
 			}
-			if (GLOBAL_SETTINGS.showMethodsInherited === false && method.declaringClass !== id) {
+			if (GLOBAL_SETTINGS.showMethodsInherited === false && m.declaringClass() != id) {
 				return false;
 			}
 			return true;
@@ -24,7 +25,7 @@ function createMethodTable(id) {
 		for (method of methods) {
 			meth = getMethod(method);
 			row = addRow(table, createMethodSignature(method), createFullSignature(getMethod(method).returnType()));
-			appendAttributesToMethodTableRow(row, meth.declaringClass, meth);
+			appendAttributesToMethodTableRow(row, meth.declaringClass(), meth);
 		}
 	}
 }
@@ -37,13 +38,14 @@ function createFieldTable(id) {
 	let data = null;
 	if (fields && GLOBAL_SETTINGS.showFields) {
 		fields = [...fields].filter((field) => {
-			if (GLOBAL_SETTINGS.showPrivate === false && MODIFIER.isPrivate(getField(field).modifiers())) {
+			let f = getField(field);
+			if (GLOBAL_SETTINGS.showPrivate === false && MODIFIER.isPrivate(f.modifiers())) {
 				return false;
 			}
-			if (GLOBAL_SETTINGS.showProtected === false && MODIFIER.isProtected(getField(field).modifiers())) {
+			if (GLOBAL_SETTINGS.showProtected === false && MODIFIER.isProtected(f.modifiers())) {
 				return false;
 			}
-			if (GLOBAL_SETTINGS.showFieldsInherited === false && field.declaringClass !== id) {
+			if (GLOBAL_SETTINGS.showFieldsInherited === false && f.declaringClass() != id) {
 				return false;
 			}
 			return true;
@@ -55,7 +57,7 @@ function createFieldTable(id) {
 		for (field of fields) {
 			data = getField(field);
 			row = addRow(table, createFieldSignature(field), createFullSignature(getField(field).type()));
-			appendAttributesToFieldTableRow(row, field.declaringClass, data);
+			appendAttributesToFieldTableRow(row, field.declaringClass(), data);
 		}
 	}
 }
@@ -67,13 +69,14 @@ function createConstructorTable(id) {
 	let cons = null;
 	if (constructors && GLOBAL_SETTINGS.showConstructors) {
 		constructors = [...constructors].filter((constructor) => {
-			if (GLOBAL_SETTINGS.showPrivate === false && MODIFIER.isPrivate(getConstructor(constructor).modifiers())) {
+			let c = getConstructor(constructor);
+			if (GLOBAL_SETTINGS.showPrivate === false && MODIFIER.isPrivate(c.modifiers())) {
 				return false;
 			}
-			if (GLOBAL_SETTINGS.showProtected === false && MODIFIER.isProtected(getConstructor(constructor).modifiers())) {
+			if (GLOBAL_SETTINGS.showProtected === false && MODIFIER.isProtected(c.modifiers())) {
 				return false;
 			}
-			if (GLOBAL_SETTINGS.showConstructorsInherited === false && constructor.declaringClass !== id) {
+			if (GLOBAL_SETTINGS.showConstructorsInherited === false && c.declaringClass() !== id) {
 				return false;
 			}
 			return true;

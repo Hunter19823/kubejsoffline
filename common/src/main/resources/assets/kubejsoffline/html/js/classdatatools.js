@@ -358,6 +358,10 @@ function getMethod(methodData) {
 		return parameters;
 	}
 
+	output.declaringClass = function () {
+		return this.data.declaringClass;
+	}
+
 	return output;
 }
 
@@ -385,6 +389,10 @@ function getField(fieldData) {
 		return new Set(annotations);
 	}
 
+	output.declaringClass = function () {
+		return this.data.declaringClass;
+	}
+
 	return output;
 }
 
@@ -410,6 +418,10 @@ function getConstructor(constructorData) {
 			return [];
 		}
 		return parameters;
+	}
+
+	output.declaringClass = function () {
+		return this.data.declaringClass;
 	}
 
 	return output;
