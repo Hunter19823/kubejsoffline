@@ -32,15 +32,55 @@ function getClass(id) {
 		console.error("Invalid class id: " + id);
 		return null;
 	}
-	if (id < 0 || id >= DATA.length) {
-		console.error("Invalid class id: " + id);
-		return null;
+	switch (typeof (id)) {
+		case "number":
+			if (id < 0 || id >= DATA.length) {
+				console.error("Invalid class id: " + id);
+				return null;
+			}
+			if (DATA[id] === null || DATA[id] === undefined) {
+				console.error("Invalid class data: " + id);
+				return null;
+			}
+			output.data = DATA[id];
+			break;
+		case "object":
+			if (id['data'] !== null && id['data'] !== undefined) {
+				output.data = id.data;
+			} else if (id['id'] !== null && id['id'] !== undefined) {
+				output.data = DATA[id.id];
+			}
+			break;
+		case "string":
+			// See if the string is a number
+			let num = parseInt(id);
+			if (!isNaN(num)) {
+				return getClass(num);
+			}
+			let lowerID = id.toLowerCase();
+			// See if the string is a class name
+			for (let i = 0; i < DATA.length; i++) {
+				if (lowerID === DATA[i][PROPERTY.BASE_CLASS_NAME]?.toLowerCase()) {
+					return getClass(i);
+				}
+			}
+			// See if the string is a class type
+			for (let i = 0; i < DATA.length; i++) {
+				if (lowerID === DATA[i][PROPERTY.TYPE_IDENTIFIER]?.toLowerCase()) {
+					return getClass(i);
+				}
+			}
+			// See if the string is a class simple name
+			for (let i = 0; i < DATA.length; i++) {
+				if (lowerID === getClass(i)?.simplename()?.toLowerCase()) {
+					return getClass(i);
+				}
+			}
+			break;
+		default:
+			console.error("Unsupported class type provided to getClass: " + id + " (" + typeof (id) + ")");
+			return null;
 	}
-	if(DATA[id] === null || DATA[id] === undefined){
-		console.error("Invalid class data: " + id);
-		return null;
-	}
-	output.data = DATA[id];
 
 	output.id = function () {
 		return this.data[PROPERTY.TYPE_ID];
@@ -153,6 +193,15 @@ function getClass(id) {
 					fields.add(data[PROPERTY.FIELDS][i]);
 				}
 			}
+			getClass(data).interfaces()?.forEach((interfaceId) => {
+				let data = DATA[interfaceId];
+				if (data[PROPERTY.FIELDS] !== null && data[PROPERTY.FIELDS] !== undefined) {
+					for (let i = 0; i < data[PROPERTY.FIELDS].length; i++) {
+						data[PROPERTY.FIELDS][i].declaringClass = data[PROPERTY.TYPE_ID];
+						fields.add(data[PROPERTY.FIELDS][i]);
+					}
+				}
+			});
 		});
 		if(fields.size === 0){
 			return null;
@@ -169,6 +218,15 @@ function getClass(id) {
 					methods.add(data[PROPERTY.METHODS][i]);
 				}
 			}
+			getClass(data).interfaces()?.forEach((interfaceId) => {
+				let data = DATA[interfaceId];
+				if (data[PROPERTY.METHODS] !== null && data[PROPERTY.METHODS] !== undefined) {
+					for (let i = 0; i < data[PROPERTY.METHODS].length; i++) {
+						data[PROPERTY.METHODS][i].declaringClass = data[PROPERTY.TYPE_ID];
+						methods.add(data[PROPERTY.METHODS][i]);
+					}
+				}
+			});
 		});
 		if(methods.size === 0){
 			return null;
@@ -217,6 +275,7 @@ function getClass(id) {
 			seen.add(current);
 			current = getAnySuperClass(current);
 		}
+
 	}
 
 	output.relation = function (index) {
