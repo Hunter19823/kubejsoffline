@@ -32,7 +32,7 @@ subprojects {
 		processResources {
 			inputs.property 'version', project.version
 
-			filesMatching([rootProject.forge_config, rootProject.fabric_config, "pack.mcmeta"]) {
+			filesMatching([rootProject.forge_config, rootProject.fabric_config, "pack.mcmeta", "projectinfo.js"]) {
 				expand project.properties
 			}
 		}

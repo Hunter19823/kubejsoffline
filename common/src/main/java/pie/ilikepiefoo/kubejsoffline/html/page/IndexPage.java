@@ -24,6 +24,7 @@ public class IndexPage extends HTMLFile {
 		this.HEADER_TAG.add(new JSONDataTag("RELATIONS", RelationType.getRelationTypeData(), gson));
 		this.HEADER_TAG.add(new JSONDataTag("BINDINGS", BindingsJSON.get(), gson));
 		this.HEADER_TAG.add(new JSONDataTag("PROPERTY", JSONProperty.createTranslation(), gson));
+		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/projectinfo.js"));
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/modifier.js"));
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/globalsettings.js"));
 //		HEADER_TAG.add(new CustomAssetTag("script","html/js/debugtools.js"));
