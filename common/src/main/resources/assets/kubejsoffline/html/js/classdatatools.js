@@ -1,17 +1,26 @@
 function getAnySuperClass(id) {
-	data = null;
-
-	if (typeof id === "number") {
-		data = getClass(id).data;
-	} else if (typeof id === "object") {
-		if(id['data'] !== null && id['data'] !== undefined){
-			data = id.data;
-		}else{
-			data = id;
-		}
+	let data = null;
+	if (id === null || id === undefined) {
+		return null;
 	}
 
-	if(data === null || data === undefined){
+	switch (typeof (id)) {
+		case "number":
+			data = getClass(id).data;
+			break;
+		case "object":
+			if (id['data'] !== null && id['data'] !== undefined) {
+				data = id.data;
+			} else {
+				data = id;
+			}
+			break;
+		default:
+			console.error("Invalid class id passed to getAnySuperClass: " + id);
+			return null;
+	}
+
+	if (data === null || data === undefined) {
 		return null;
 	}
 
