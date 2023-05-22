@@ -38,9 +38,10 @@ function createHomePage() {
 		span = document.createElement('span');
 		span.innerHTML = keys[i];
 		let period = keys[i]?.lastIndexOf('.');
-		table = createTableWithHeaders(createTable(period === -1 ? keys[i] : keys[i].substring(period + 1)), span);
+		table = createTableWithHeaders(createSortableTable(period === -1 ? keys[i] : keys[i].substring(period + 1)), span);
 		for (let j = 0; j < EVENTS[keys[i]].length; j++) {
-			addRow(table, EVENTS[keys[i]][j]);
+			let row = addRow(table, EVENTS[keys[i]][j]);
+			appendAttributesToClassTableRow(row, EVENTS[keys[i]][j]);
 		}
 	}
 }

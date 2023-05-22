@@ -225,7 +225,7 @@ const SORT_FUNCTIONS = {
 }
 
 function addSortTables() {
-	let tables = [document.getElementById('fields'), document.getElementById('methods'), document.getElementById('matches')];
+	let tables = document.getElementsByClassName('sortable-table');
 	for (let i = 0; i < tables.length; i++) {
 		let table = tables[i];
 		if (table) {

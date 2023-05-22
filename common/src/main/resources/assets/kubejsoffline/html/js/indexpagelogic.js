@@ -73,6 +73,9 @@ function onHashChange() {
 			searchHelp();
 			let query = searchParams.get('query');
 			switch (searchParams.get('search')) {
+				case 'any':
+					searchByAny(query);
+					break;
 				case 'class-name':
 					searchByClassName(query);
 					break;

@@ -21,7 +21,7 @@ function createMethodTable(id) {
 		if (methods.length === 0) {
 			return;
 		}
-		table = createTableWithHeaders(createTable('methods'), 'Methods', 'Return Type');
+		table = createTableWithHeaders(createSortableTable('methods'), 'Methods', 'Return Type');
 		for (method of methods) {
 			meth = getMethod(method);
 			row = addRow(table, createMethodSignature(method), createFullSignature(getMethod(method).returnType()));
@@ -53,7 +53,7 @@ function createFieldTable(id) {
 		if (fields.length === 0) {
 			return;
 		}
-		table = createTableWithHeaders(createTable('fields'), 'Fields', 'Type');
+		table = createTableWithHeaders(createSortableTable('fields'), 'Fields', 'Type');
 		for (field of fields) {
 			data = getField(field);
 			row = addRow(table, createFieldSignature(field), createFullSignature(getField(field).type()));
@@ -84,7 +84,7 @@ function createConstructorTable(id) {
 		if (constructors.length === 0) {
 			return;
 		}
-		table = createTableWithHeaders(createTable('constructors'), 'Constructors');
+		table = createTableWithHeaders(createSortableTable('constructors'), 'Constructors');
 		for (constructor of constructors) {
 			cons = getConstructor(constructor);
 			row = addRow(table, createConstructorSignature(constructor, id));
@@ -99,7 +99,7 @@ function createRelationshipTable(id) {
 	if (GLOBAL_SETTINGS.showRelationships === false) {
 		return;
 	}
-	let table = createTableWithHeaders(createTable('relations'), 'Relationships', 'RelatedClass');
+	let table = createTableWithHeaders(createSortableTable('relations'), 'Relationships', 'RelatedClass');
 	let seen = new Set();
 	let relation = null;
 	for (let i = 0; i < RELATIONS.length; i++) {

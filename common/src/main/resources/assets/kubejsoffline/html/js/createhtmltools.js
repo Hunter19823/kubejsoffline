@@ -7,6 +7,12 @@ function createTable(id) {
 	return table;
 }
 
+function createSortableTable(id) {
+	let table = createTable(id);
+	table.classList.add('sortable-table');
+	return table;
+}
+
 function createTableWithHeaders(table, ...headers) {
 	let tbody = document.createElement('tbody');
 	let tr = document.createElement("tr");
