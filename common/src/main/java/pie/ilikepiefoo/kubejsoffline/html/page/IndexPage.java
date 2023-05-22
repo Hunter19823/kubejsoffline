@@ -15,15 +15,17 @@ public class IndexPage extends HTMLFile {
 	public IndexPage(final Gson gson) {
 		this.HEADER_TAG.add(new CustomAssetTag("title", "html/title.txt"));
 		this.HEADER_TAG.add(new CustomAssetTag("style", "html/css/styling.css"));
-		this.HEADER_TAG.add(new JSONDataTag("DATA", ClassJSONManager.getInstance().getTypeData(), gson));
 		final JsonObject object = new JsonObject();
 		for (final Class<?> subject : KubeJSOffline.HELPER.getEventClasses()) {
-			object.add(subject.getName(), ClassJSONManager.getInstance().findAllRelationsOf(subject, RelationType.SUPER_CLASS_OF));
+			object.add(subject.getName(), ClassJSONManager.getInstance().findAllRelationsOf(subject, RelationType.SUPER_CLASS_OF, RelationType.IMPLEMENTATION_OF, RelationType.COMPONENT_OF));
 		}
+		ClassJSONManager.getInstance().filterRelationshipData();
+		this.HEADER_TAG.add(new JSONDataTag("DATA", ClassJSONManager.getInstance().getTypeData(), gson));
 		this.HEADER_TAG.add(new JSONDataTag("EVENTS", object, gson));
 		this.HEADER_TAG.add(new JSONDataTag("RELATIONS", RelationType.getRelationTypeData(), gson));
 		this.HEADER_TAG.add(new JSONDataTag("BINDINGS", BindingsJSON.get(), gson));
 		this.HEADER_TAG.add(new JSONDataTag("PROPERTY", JSONProperty.createTranslation(), gson));
+		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/projectinfo.js"));
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/modifier.js"));
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/globalsettings.js"));
 //		HEADER_TAG.add(new CustomAssetTag("script","html/js/debugtools.js"));

@@ -2,9 +2,9 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
 plugins {
-    id "architectury-plugin" version "3.4-SNAPSHOT"
-    id "dev.architectury.loom" version "0.12.0-SNAPSHOT" apply false
-	id "me.shedaniel.unified-publishing" version "0.1.+" apply false
+	id "architectury-plugin" version "${architectury_plugin_version}"
+	id "dev.architectury.loom" version "${architectury_loom_version}" apply false
+	id "me.shedaniel.unified-publishing" version "${unified_publishing_version}" apply false
 }
 
 architectury {
@@ -32,11 +32,33 @@ subprojects {
 		processResources {
 			inputs.property 'version', project.version
 
-			filesMatching([rootProject.forge_config, rootProject.fabric_config, "pack.mcmeta"]) {
+			filesMatching([rootProject.forge_config, rootProject.fabric_config, "pack.mcmeta", "projectinfo.js"]) {
 				expand project.properties
 			}
 		}
 	}
+
+//	// Before runClient task clear version specific kubejs scripts
+//	tasks.register("beforeRunClient") {
+//		// Clear the forge and fabric kubejs scripts directories
+//		doFirst {
+//			println("Clearing existing kubejs scripts to prevent different versions from conflicting")
+//			var scriptDir = ["run/kubejs/server_scripts", "run/kubejs/startup_scripts", "run/kubejs/client_scripts"]
+//			scriptDir.forEach { sdir ->
+//				var pat = project.projectDir.toPath().resolve(sdir)
+//
+//				if (pat.toFile().deleteDir()) {
+//					println "Deleted ${pat}"
+//				} else {
+//					println "Failed to delete ${pat}"
+//				}
+//			}
+//		}
+//	}
+//
+//	tasks.getByName("runClient") {
+//		dependsOn "beforeRunClient"
+//	}
 }
 
 allprojects {

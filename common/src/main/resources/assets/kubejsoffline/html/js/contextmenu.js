@@ -1,5 +1,6 @@
 function createBaseContextMenu() {
 	let menu = document.createElement('div');
+	persistElement(menu);
 	menu.classList.add('context-menu');
 	menu.id = 'context-menu';
 
@@ -9,6 +10,21 @@ function createBaseContextMenu() {
 		item.innerHTML = name;
 		item.onclick = action;
 		menu.appendChild(item);
+	}
+
+	function addToggleMenuItem(name, action, initialValue = false) {
+		let item = document.createElement('div');
+		let toggle = createRoundedToggleSwitch(name, initialValue, action);
+		item.classList.add('context-menu-item');
+		item.appendChild(toggle);
+		menu.appendChild(item);
+	}
+
+	function addSettingItem(name, setting) {
+		addToggleMenuItem(name, () => {
+			GLOBAL_SETTINGS[setting] = !GLOBAL_SETTINGS[setting];
+			onHashChange();
+		}, GLOBAL_SETTINGS[setting]);
 	}
 
 	let title = document.createElement('div');
@@ -31,58 +47,28 @@ function createBaseContextMenu() {
 
 	// Add a separator
 	menu.appendChild(document.createElement('hr'));
-	addMenuItem('Toggle Private Members', () => {
-		GLOBAL_SETTINGS.showPrivate = !GLOBAL_SETTINGS.showPrivate;
-		onHashChange();
-	});
-	addMenuItem('Toggle Protected Members', () => {
-		GLOBAL_SETTINGS.showProtected = !GLOBAL_SETTINGS.showProtected;
-		onHashChange();
-	});
-	addMenuItem('Toggle Package Members', () => {
-		GLOBAL_SETTINGS.showPackage = !GLOBAL_SETTINGS.showPackage;
-		onHashChange();
-	});
+	addSettingItem('Private Members', 'showPrivate');
+	addSettingItem('Protected Members', 'showProtected');
+	addSettingItem('Package Members', 'showPackage');
 
 	// Add a separator
 	menu.appendChild(document.createElement('hr'));
-	addMenuItem('Toggle Methods', () => {
-		GLOBAL_SETTINGS.showMethods = !GLOBAL_SETTINGS.showMethods;
-		onHashChange();
-	});
-	addMenuItem('Toggle Inherited Methods', () => {
-		GLOBAL_SETTINGS.showMethodsInherited = !GLOBAL_SETTINGS.showMethodsInherited;
-		onHashChange();
-	});
+	addSettingItem('Methods', 'showMethods');
+	addSettingItem('Inherited Methods', 'showMethodsInherited');
 
 	// Add a separator
 	menu.appendChild(document.createElement('hr'));
-	addMenuItem('Toggle Fields', () => {
-		GLOBAL_SETTINGS.showFields = !GLOBAL_SETTINGS.showFields;
-		onHashChange();
-	});
-	addMenuItem('Toggle Inherited Fields', () => {
-		GLOBAL_SETTINGS.showFieldsInherited = !GLOBAL_SETTINGS.showFieldsInherited;
-		onHashChange();
-	});
+	addSettingItem('Fields', 'showFields');
+	addSettingItem('Inherited Fields', 'showFieldsInherited');
 
 	// Add a separator
 	menu.appendChild(document.createElement('hr'));
-	addMenuItem('Toggle Constructors', () => {
-		GLOBAL_SETTINGS.showConstructors = !GLOBAL_SETTINGS.showConstructors;
-		onHashChange();
-	});
-	addMenuItem('Toggle Inherited Constructors', () => {
-		GLOBAL_SETTINGS.showConstructorsInherited = !GLOBAL_SETTINGS.showConstructorsInherited;
-		onHashChange();
-	});
+	addSettingItem('Constructors', 'showConstructors');
+	addSettingItem('Inherited Constructors', 'showConstructorsInherited');
 
 	// Add a separator
 	menu.appendChild(document.createElement('hr'));
-	addMenuItem('Toggle Relationships', () => {
-		GLOBAL_SETTINGS.showRelationships = !GLOBAL_SETTINGS.showRelationships;
-		onHashChange();
-	});
+	addSettingItem('Relationships', 'showRelationships');
 
 	// Add a separator
 	menu.appendChild(document.createElement('hr'));
@@ -117,6 +103,12 @@ addEventListener('click', (event) => {
 	if (!menu) {
 		menu = createBaseContextMenu();
 	}
-	menu.style.display = 'none';
-	count = 0;
+	if (menu.style.display !== 'none') {
+		// Check if the click was inside the menu
+		let rect = menu.getBoundingClientRect();
+		if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) {
+			menu.style.display = 'none';
+			count = 0;
+		}
+	}
 });

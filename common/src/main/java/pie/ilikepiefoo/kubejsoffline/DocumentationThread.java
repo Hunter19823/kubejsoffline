@@ -100,6 +100,7 @@ public class DocumentationThread extends Thread {
 		timeMillis = System.currentTimeMillis();
 		ClassFinder.INSTANCE.clear();
 		ClassJSONManager.getInstance().clear();
+		DocumentationConfig.clearInstance();
 		timeMillis = System.currentTimeMillis() - timeMillis;
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] Data cleared and dereferenced in %,dms", step, totalSteps, timeMillis));
 		final long end = System.currentTimeMillis();

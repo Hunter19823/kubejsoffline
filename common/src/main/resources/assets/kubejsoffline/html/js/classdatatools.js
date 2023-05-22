@@ -1,17 +1,26 @@
 function getAnySuperClass(id) {
-	data = null;
-
-	if (typeof id === "number") {
-		data = getClass(id).data;
-	} else if (typeof id === "object") {
-		if(id['data'] !== null && id['data'] !== undefined){
-			data = id.data;
-		}else{
-			data = id;
-		}
+	let data = null;
+	if (id === null || id === undefined) {
+		return null;
 	}
 
-	if(data === null || data === undefined){
+	switch (typeof (id)) {
+		case "number":
+			data = getClass(id).data;
+			break;
+		case "object":
+			if (id['data'] !== null && id['data'] !== undefined) {
+				data = id.data;
+			} else {
+				data = id;
+			}
+			break;
+		default:
+			console.error("Invalid class id passed to getAnySuperClass: " + id);
+			return null;
+	}
+
+	if (data === null || data === undefined) {
 		return null;
 	}
 
@@ -25,22 +34,79 @@ function getAnySuperClass(id) {
 
 	return null;
 }
-
+const LOOK_UP_CACHE = new Map();
 function getClass(id) {
 	let output = {};
 	if (id === null || id === undefined) {
 		console.error("Invalid class id: " + id);
 		return null;
 	}
-	if (id < 0 || id >= DATA.length) {
-		console.error("Invalid class id: " + id);
-		return null;
+	switch (typeof (id)) {
+		case "number":
+			if (id < 0 || id >= DATA.length) {
+				console.error("Invalid class id: " + id);
+				return null;
+			}
+			if (DATA[id] === null || DATA[id] === undefined) {
+				console.error("Invalid class data: " + id);
+				return null;
+			}
+			output.data = DATA[id];
+			break;
+		case "object":
+			if (id['data'] !== null && id['data'] !== undefined) {
+				output.data = id.data;
+			} else if (id['id'] !== null && id['id'] !== undefined) {
+				output.data = DATA[id.id];
+			}
+			break;
+		case "string":
+			// See if the string is a number
+			let num = parseInt(id);
+			if (!isNaN(num)) {
+				return getClass(num);
+			}
+			// Assume it's a search query
+			if (id.match(/[a-zA-Z-]+[|][|].+/)) {
+				let split = id.split("||");
+				if (split.length !== 2) {
+					console.error("Invalid search query: " + id);
+					return null;
+				}
+				let search = split[0];
+				let page = split[1];
+				searchForTerms(search, page);
+				return null;
+			}
+			let lowerID = id.toLowerCase();
+			if (LOOK_UP_CACHE.has(lowerID)) {
+				return getClass(LOOK_UP_CACHE.get(lowerID));
+			}
+			// See if the string is a class type
+			for (let i = LOOK_UP_CACHE.size; i < DATA.length; i++) {
+				let lower = DATA[i][PROPERTY.TYPE_IDENTIFIER]?.toLowerCase();
+				LOOK_UP_CACHE.set(lower, i);
+				if (lowerID === lower) {
+					return getClass(i);
+				}
+			}
+			// See if the string is a class name
+			for (let i = 0; i < DATA.length; i++) {
+				if (lowerID === DATA[i][PROPERTY.BASE_CLASS_NAME]?.toLowerCase()) {
+					return getClass(i);
+				}
+			}
+			// See if the string is a class simple name
+			for (let i = 0; i < DATA.length; i++) {
+				if (lowerID === getClass(i)?.simplename()?.toLowerCase()) {
+					return getClass(i);
+				}
+			}
+			break;
+		default:
+			console.error("Unsupported class type provided to getClass: " + id + " (" + typeof (id) + ")");
+			return null;
 	}
-	if(DATA[id] === null || DATA[id] === undefined){
-		console.error("Invalid class data: " + id);
-		return null;
-	}
-	output.data = DATA[id];
 
 	output.id = function () {
 		return this.data[PROPERTY.TYPE_ID];
@@ -144,33 +210,59 @@ function getClass(id) {
 		return interfaces;
 	}
 
-	output.fields = function () {
+	output.fields = function (shallow = false) {
 		let fields = new Set();
-		this._follow_inheritance((data) => {
+
+		function addFields(data) {
 			if (data[PROPERTY.FIELDS] !== null && data[PROPERTY.FIELDS] !== undefined) {
 				for (let i = 0; i < data[PROPERTY.FIELDS].length; i++) {
 					data[PROPERTY.FIELDS][i].declaringClass = data[PROPERTY.TYPE_ID];
 					fields.add(data[PROPERTY.FIELDS][i]);
 				}
 			}
-		});
-		if(fields.size === 0){
+		}
+
+		if (shallow) {
+			addFields(this.data);
+		} else {
+			this._follow_inheritance((data) => {
+				addFields(data);
+				getClass(data).interfaces()?.forEach((interfaceId) => {
+					let data = DATA[interfaceId];
+					addFields(data);
+				});
+			});
+		}
+		if (fields.size === 0) {
 			return null;
 		}
 		return fields;
 	}
 
-	output.methods = function () {
+	output.methods = function (shallow = false) {
 		let methods = new Set();
-		this._follow_inheritance((data) => {
+
+		function addMethods(data) {
 			if (data[PROPERTY.METHODS] !== null && data[PROPERTY.METHODS] !== undefined) {
 				for (let i = 0; i < data[PROPERTY.METHODS].length; i++) {
 					data[PROPERTY.METHODS][i].declaringClass = data[PROPERTY.TYPE_ID];
 					methods.add(data[PROPERTY.METHODS][i]);
 				}
 			}
-		});
-		if(methods.size === 0){
+		}
+
+		if (shallow) {
+			addMethods(this.data);
+		} else {
+			this._follow_inheritance((data) => {
+				addMethods(data);
+				getClass(data).interfaces()?.forEach((interfaceId) => {
+					let data = DATA[interfaceId];
+					addMethods(data);
+				});
+			});
+		}
+		if (methods.size === 0) {
 			return null;
 		}
 		return methods;
@@ -217,6 +309,7 @@ function getClass(id) {
 			seen.add(current);
 			current = getAnySuperClass(current);
 		}
+
 	}
 
 	output.relation = function (index) {
@@ -290,6 +383,10 @@ function getMethod(methodData) {
 		return parameters;
 	}
 
+	output.declaredIn = function () {
+		return this.data.declaringClass;
+	}
+
 	return output;
 }
 
@@ -317,6 +414,10 @@ function getField(fieldData) {
 		return new Set(annotations);
 	}
 
+	output.declaredIn = function () {
+		return this.data.declaringClass;
+	}
+
 	return output;
 }
 
@@ -342,6 +443,10 @@ function getConstructor(constructorData) {
 			return [];
 		}
 		return parameters;
+	}
+
+	output.declaredIn = function () {
+		return this.data.declaringClass;
 	}
 
 	return output;

@@ -7,6 +7,12 @@ function createTable(id) {
 	return table;
 }
 
+function createSortableTable(id) {
+	let table = createTable(id);
+	table.classList.add('sortable-table');
+	return table;
+}
+
 function createTableWithHeaders(table, ...headers) {
 	let tbody = document.createElement('tbody');
 	let tr = document.createElement("tr");
@@ -104,6 +110,16 @@ function li(content) {
 	return tag;
 }
 
+function href(element, url) {
+	element.style.textDecoration = 'underline';
+	element.style.color = '#8cb4ff';
+	element.style.cursor = 'pointer';
+	element.onclick = () => {
+		changeURL(url);
+	};
+	return element;
+}
+
 
 function appendAnnotationToolTip(tag, annotations) {
 	if (!annotations || annotations.size === 0)
@@ -116,4 +132,26 @@ function appendAnnotationToolTip(tag, annotations) {
 		tooltip.appendChild(createAnnotationSignature(annotation));
 	}
 	tag.appendChild(tooltip);
+}
+
+
+function createRoundedToggleSwitch(name, initialValue, onChange) {
+	let label = document.createElement('label');
+	label.classList.add('switch');
+	let input = document.createElement('input');
+	input.type = 'checkbox';
+	input.checked = initialValue;
+	input.onchange = onChange;
+	let span = document.createElement('span');
+	span.classList.add('slider', 'round');
+	label.appendChild(input);
+	label.appendChild(span);
+	let span2 = document.createElement('span');
+	span2.innerText = name;
+	label.appendChild(span2);
+	return label;
+}
+
+function persistElement(element) {
+	element.classList.add('refresh-persistent');
 }

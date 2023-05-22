@@ -2,6 +2,10 @@ function loadClass(id) {
 	wipePage();
 	console.log("Loading class " + id);
 	let data = getClass(id);
+	if (!data) {
+		console.error("No class data found for id " + id);
+		return;
+	}
 	let superClass = data.superclass();
 	let interfaces = data.interfaces();
 	let h1 = document.createElement('h3');
@@ -70,32 +74,7 @@ function onHashChange() {
 				searchHelp();
 				return;
 			}
-			searchHelp();
-			let query = searchParams.get('query');
-			switch (searchParams.get('search')) {
-				case 'class-name':
-					searchByClassName(query);
-					break;
-				case 'field-name':
-					searchByFieldName(query);
-					break;
-				case 'field-type':
-					searchByFieldType(query);
-					break;
-				case 'method-name':
-					searchByMethodName(query);
-					break;
-				case 'method-return-type':
-					searchByMethodReturnType(query);
-					break;
-				case 'method-parameter-type':
-					searchByMethodParameterType(query);
-					break;
-				default:
-					document.body.append(span("Invalid search type! :("));
-					document.body.append(br());
-					break;
-			}
+			searchForTerms(searchParams.get('query'), searchParams.get('search'));
 		}
 	} else {
 		createHomePage();
