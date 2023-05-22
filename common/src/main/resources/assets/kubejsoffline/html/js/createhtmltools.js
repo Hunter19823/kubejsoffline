@@ -141,3 +141,7 @@ function createRoundedToggleSwitch(name, initialValue, onChange) {
 	label.appendChild(span2);
 	return label;
 }
+
+function persistElement(element) {
+	element.classList.add('refresh-persistent');
+}

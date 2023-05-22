@@ -25,8 +25,13 @@ function createPageHeader() {
 
 // Clear the page of all content
 function wipePage() {
+	let persist = document.body.getElementsByClassName('refresh-persistent');
+	persist = Array.from(persist);
 	document.body.innerHTML = '';
 	createPageHeader();
+	for (let child of persist) {
+		document.body.append(child);
+	}
 }
 
 function createHomePage() {

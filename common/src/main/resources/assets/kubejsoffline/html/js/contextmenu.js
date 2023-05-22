@@ -1,5 +1,6 @@
 function createBaseContextMenu() {
 	let menu = document.createElement('div');
+	persistElement(menu);
 	menu.classList.add('context-menu');
 	menu.id = 'context-menu';
 
