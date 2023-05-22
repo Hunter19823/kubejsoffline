@@ -123,3 +123,21 @@ function appendAnnotationToolTip(tag, annotations) {
 	}
 	tag.appendChild(tooltip);
 }
+
+
+function createRoundedToggleSwitch(name, initialValue, onChange) {
+	let label = document.createElement('label');
+	label.classList.add('switch');
+	let input = document.createElement('input');
+	input.type = 'checkbox';
+	input.checked = initialValue;
+	input.onchange = onChange;
+	let span = document.createElement('span');
+	span.classList.add('slider', 'round');
+	label.appendChild(input);
+	label.appendChild(span);
+	let span2 = document.createElement('span');
+	span2.innerText = name;
+	label.appendChild(span2);
+	return label;
+}
