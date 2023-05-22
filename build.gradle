@@ -38,27 +38,27 @@ subprojects {
 		}
 	}
 
-	// Before runClient task clear version specific kubejs scripts
-	tasks.register("beforeRunClient") {
-		// Clear the forge and fabric kubejs scripts directories
-		doFirst {
-			println("Clearing existing kubejs scripts to prevent different versions from conflicting")
-			var scriptDir = ["run/kubejs/server_scripts", "run/kubejs/startup_scripts", "run/kubejs/client_scripts"]
-			scriptDir.forEach { sdir ->
-				var pat = project.projectDir.toPath().resolve(sdir)
-
-				if (pat.toFile().deleteDir()) {
-					println "Deleted ${pat}"
-				} else {
-					println "Failed to delete ${pat}"
-				}
-			}
-		}
-	}
-
-	tasks.getByName("runClient") {
-		dependsOn "beforeRunClient"
-	}
+//	// Before runClient task clear version specific kubejs scripts
+//	tasks.register("beforeRunClient") {
+//		// Clear the forge and fabric kubejs scripts directories
+//		doFirst {
+//			println("Clearing existing kubejs scripts to prevent different versions from conflicting")
+//			var scriptDir = ["run/kubejs/server_scripts", "run/kubejs/startup_scripts", "run/kubejs/client_scripts"]
+//			scriptDir.forEach { sdir ->
+//				var pat = project.projectDir.toPath().resolve(sdir)
+//
+//				if (pat.toFile().deleteDir()) {
+//					println "Deleted ${pat}"
+//				} else {
+//					println "Failed to delete ${pat}"
+//				}
+//			}
+//		}
+//	}
+//
+//	tasks.getByName("runClient") {
+//		dependsOn "beforeRunClient"
+//	}
 }
 
 allprojects {
