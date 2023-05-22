@@ -20,7 +20,7 @@ public class CustomAssetTag extends CustomTag {
 
 	@Override
 	public void writeContent(Writer writer) {
-		if (!Minecraft.getInstance().getResourceManager().hasResource(file)) {
+		if (Minecraft.getInstance().getResourceManager().getResource(file).isEmpty()) {
 			LOG.error("Could not find {} tag from file: {}\n THIS WILL CAUSE SEVERE PROBLEMS WITH THE RESULTING DOCUMENTATION FILE!", this.name, file.toDebugFileName());
 			return;
 		}
