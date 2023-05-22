@@ -19,6 +19,10 @@ public class CustomAssetTag extends CustomTag {
 
 	@Override
 	public void writeContent(Writer writer) {
+		if (!Minecraft.getInstance().getResourceManager().hasResource(file)) {
+			LOG.error("Could not find {} tag from file: {}\n THIS WILL CAUSE SEVERE PROBLEMS WITH THE RESULTING DOCUMENTATION FILE!", this.name, file.toDebugFileName());
+			return;
+		}
 		try (InputStream stream = Minecraft.getInstance().getResourceManager().getResource(file).getInputStream()) {
 			// Read the file and write it to the writer.
 			int c;
@@ -26,8 +30,8 @@ public class CustomAssetTag extends CustomTag {
 				writer.write(c);
 			}
 			writer.flush();
-		}catch (Exception e){
-			LOG.error("Error writing "+this.name+" tag from file: " + file.toDebugFileName(), e);
+		} catch (Exception e) {
+			LOG.error("Error writing " + this.name + " tag from file: " + file.toDebugFileName(), e);
 		}
 	}
 }
