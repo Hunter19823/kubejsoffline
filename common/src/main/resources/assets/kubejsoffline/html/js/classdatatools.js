@@ -210,51 +210,59 @@ function getClass(id) {
 		return interfaces;
 	}
 
-	output.fields = function () {
+	output.fields = function (shallow = false) {
 		let fields = new Set();
-		this._follow_inheritance((data) => {
+
+		function addFields(data) {
 			if (data[PROPERTY.FIELDS] !== null && data[PROPERTY.FIELDS] !== undefined) {
 				for (let i = 0; i < data[PROPERTY.FIELDS].length; i++) {
 					data[PROPERTY.FIELDS][i].declaringClass = data[PROPERTY.TYPE_ID];
 					fields.add(data[PROPERTY.FIELDS][i]);
 				}
 			}
-			getClass(data).interfaces()?.forEach((interfaceId) => {
-				let data = DATA[interfaceId];
-				if (data[PROPERTY.FIELDS] !== null && data[PROPERTY.FIELDS] !== undefined) {
-					for (let i = 0; i < data[PROPERTY.FIELDS].length; i++) {
-						data[PROPERTY.FIELDS][i].declaringClass = data[PROPERTY.TYPE_ID];
-						fields.add(data[PROPERTY.FIELDS][i]);
-					}
-				}
+		}
+
+		if (shallow) {
+			addFields(this.data);
+		} else {
+			this._follow_inheritance((data) => {
+				addFields(data);
+				getClass(data).interfaces()?.forEach((interfaceId) => {
+					let data = DATA[interfaceId];
+					addFields(data);
+				});
 			});
-		});
-		if(fields.size === 0){
+		}
+		if (fields.size === 0) {
 			return null;
 		}
 		return fields;
 	}
 
-	output.methods = function () {
+	output.methods = function (shallow = false) {
 		let methods = new Set();
-		this._follow_inheritance((data) => {
+
+		function addMethods(data) {
 			if (data[PROPERTY.METHODS] !== null && data[PROPERTY.METHODS] !== undefined) {
 				for (let i = 0; i < data[PROPERTY.METHODS].length; i++) {
 					data[PROPERTY.METHODS][i].declaringClass = data[PROPERTY.TYPE_ID];
 					methods.add(data[PROPERTY.METHODS][i]);
 				}
 			}
-			getClass(data).interfaces()?.forEach((interfaceId) => {
-				let data = DATA[interfaceId];
-				if (data[PROPERTY.METHODS] !== null && data[PROPERTY.METHODS] !== undefined) {
-					for (let i = 0; i < data[PROPERTY.METHODS].length; i++) {
-						data[PROPERTY.METHODS][i].declaringClass = data[PROPERTY.TYPE_ID];
-						methods.add(data[PROPERTY.METHODS][i]);
-					}
-				}
+		}
+
+		if (shallow) {
+			addMethods(this.data);
+		} else {
+			this._follow_inheritance((data) => {
+				addMethods(data);
+				getClass(data).interfaces()?.forEach((interfaceId) => {
+					let data = DATA[interfaceId];
+					addMethods(data);
+				});
 			});
-		});
-		if(methods.size === 0){
+		}
+		if (methods.size === 0) {
 			return null;
 		}
 		return methods;

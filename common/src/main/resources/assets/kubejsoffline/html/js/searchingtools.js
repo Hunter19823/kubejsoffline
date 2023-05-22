@@ -14,7 +14,7 @@ function searchByFieldName(field_name) {
 
 	let lower_field_name = field_name.toLowerCase();
 	applyToAllClasses((subject) => {
-		let fields = subject.fields();
+		let fields = subject.fields(true);
 		if (!fields)
 			return;
 		for (let f of fields) {
@@ -31,7 +31,7 @@ function searchByFieldType(field_type) {
 	let table = createTableWithHeaders(createSortableTable('matches'), 'Class-ID', 'Field Signature', 'Declared In');
 	let lower_field_type = field_type.toLowerCase();
 	applyToAllClasses((subject) => {
-		let fields = subject.fields();
+		let fields = subject.fields(true);
 		if (!fields)
 			return;
 		for (let f of fields) {
@@ -48,7 +48,7 @@ function searchByMethodName(method_name) {
 
 	let lower_method_name = method_name.toLowerCase();
 	applyToAllClasses((subject) => {
-		let methods = subject.methods();
+		let methods = subject.methods(true);
 		if (!methods)
 			return;
 		for (let m of methods) {
@@ -67,12 +67,12 @@ function searchByMethodReturnType(method_type) {
 	let lower_method_type = method_type.toLowerCase();
 
 	applyToAllClasses((subject) => {
-		let methods = subject.methods();
+		let methods = subject.methods(true);
 		if (!methods)
 			return;
 		for (let m of methods) {
 			let method = getMethod(m);
-			if (getClass(method.returnType()).simplename().toLowerCase().includes(lower_method_type)) {
+			if (getClass(method.returnType()).type().toLowerCase().includes(lower_method_type)) {
 				addMethodToTable(table, subject.id(), method);
 			}
 		}
@@ -87,7 +87,7 @@ function searchByMethodParameterType(param_type) {
 	let lower_param_type = param_type.toLowerCase();
 
 	applyToAllClasses((subject) => {
-		let methods = subject.methods();
+		let methods = subject.methods(true);
 		if (!methods)
 			return;
 		for (let m of methods) {
@@ -114,7 +114,7 @@ function searchByName(query) {
 			addClassToTable(table, subject.id());
 		}
 
-		let fields = subject.fields();
+		let fields = subject.fields(true);
 		if (fields) {
 			for (let f of fields) {
 				let field = getField(f);
@@ -124,7 +124,7 @@ function searchByName(query) {
 			}
 		}
 
-		let methods = subject.methods();
+		let methods = subject.methods(true);
 		if (methods) {
 			for (let m of methods) {
 				let method = getMethod(m);
@@ -158,7 +158,7 @@ function searchByReturnType(query) {
 			addClassToTable(table, subject.id());
 		}
 
-		let fields = subject.fields();
+		let fields = subject.fields(true);
 		if (fields) {
 			for (let f of fields) {
 				let field = getField(f);
@@ -168,7 +168,7 @@ function searchByReturnType(query) {
 			}
 		}
 
-		let methods = subject.methods();
+		let methods = subject.methods(true);
 		if (methods) {
 			for (let m of methods) {
 				let method = getMethod(m);
@@ -194,7 +194,7 @@ function searchByAny(query) {
 		}
 		// Then check if any of the fields match
 		// If so, add them to the table
-		let fields = subject.fields();
+		let fields = subject.fields(true);
 		if (fields) {
 			for (let f of fields) {
 				let field = getField(f);
@@ -208,7 +208,7 @@ function searchByAny(query) {
 		}
 		// Then check if any of the methods match
 		// If so, add them to the table
-		let methods = subject.methods();
+		let methods = subject.methods(true);
 		if (methods) {
 			for (let m of methods) {
 				let method = getMethod(m);
@@ -237,6 +237,7 @@ function searchHelp() {
 	document.body.append(ul);
 	ul = document.createElement('ul');
 	document.body.append(ul);
+	ul.append(href(li('any'), '#any||net.minecraft.server.level.ServerPlayer'));
 	ul.append(href(li('name'), '#name||dev.latvian.mods.kubejs'));
 	ul.append(href(li('return-type'), '#return-type||dev.latvian.mods.kubejs'));
 	ul.append(href(li('package'), '#package||dev.latvian.mods.kubejs'));
