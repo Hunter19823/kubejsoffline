@@ -358,7 +358,7 @@ function getMethod(methodData) {
 		return parameters;
 	}
 
-	output.declaringClass = function () {
+	output.declaredIn = function () {
 		return this.data.declaringClass;
 	}
 
@@ -389,7 +389,7 @@ function getField(fieldData) {
 		return new Set(annotations);
 	}
 
-	output.declaringClass = function () {
+	output.declaredIn = function () {
 		return this.data.declaringClass;
 	}
 
@@ -420,7 +420,7 @@ function getConstructor(constructorData) {
 		return parameters;
 	}
 
-	output.declaringClass = function () {
+	output.declaredIn = function () {
 		return this.data.declaringClass;
 	}
 

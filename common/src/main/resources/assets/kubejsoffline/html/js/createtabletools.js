@@ -13,7 +13,7 @@ function createMethodTable(id) {
 			if (GLOBAL_SETTINGS.showProtected === false && MODIFIER.isProtected(m.modifiers())) {
 				return false;
 			}
-			if (GLOBAL_SETTINGS.showMethodsInherited === false && m.declaringClass() != id) {
+			if (GLOBAL_SETTINGS.showMethodsInherited === false && m.declaredIn() != id) {
 				return false;
 			}
 			return true;
@@ -25,7 +25,7 @@ function createMethodTable(id) {
 		for (method of methods) {
 			meth = getMethod(method);
 			row = addRow(table, createMethodSignature(method), createFullSignature(getMethod(method).returnType()));
-			appendAttributesToMethodTableRow(row, meth.declaringClass(), meth);
+			appendAttributesToMethodTableRow(row, meth.declaredIn(), meth);
 		}
 	}
 }
@@ -45,7 +45,7 @@ function createFieldTable(id) {
 			if (GLOBAL_SETTINGS.showProtected === false && MODIFIER.isProtected(f.modifiers())) {
 				return false;
 			}
-			if (GLOBAL_SETTINGS.showFieldsInherited === false && f.declaringClass() != id) {
+			if (GLOBAL_SETTINGS.showFieldsInherited === false && f.declaredIn() != id) {
 				return false;
 			}
 			return true;
@@ -57,7 +57,7 @@ function createFieldTable(id) {
 		for (field of fields) {
 			data = getField(field);
 			row = addRow(table, createFieldSignature(field), createFullSignature(getField(field).type()));
-			appendAttributesToFieldTableRow(row, field.declaringClass(), data);
+			appendAttributesToFieldTableRow(row, data.declaredIn(), data);
 		}
 	}
 }
@@ -76,7 +76,7 @@ function createConstructorTable(id) {
 			if (GLOBAL_SETTINGS.showProtected === false && MODIFIER.isProtected(c.modifiers())) {
 				return false;
 			}
-			if (GLOBAL_SETTINGS.showConstructorsInherited === false && c.declaringClass() !== id) {
+			if (GLOBAL_SETTINGS.showConstructorsInherited === false && c.declaredIn() !== id) {
 				return false;
 			}
 			return true;
@@ -90,6 +90,7 @@ function createConstructorTable(id) {
 			row = addRow(table, createConstructorSignature(constructor, id));
 			row.setAttribute('mod', cons.modifiers());
 			row.setAttribute('params', cons.parameters());
+			row.setAttribute('declaredIn', cons.declaredIn());
 		}
 	}
 }
