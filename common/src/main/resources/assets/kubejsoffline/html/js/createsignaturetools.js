@@ -7,11 +7,20 @@ function createLink(element, id, rawId) {
 	element.style.textDecoration = 'underline';
 	element.style.color = '#8cb4ff';
 	element.style.cursor = 'pointer';
-	if (!rawId) {
-		element.onclick = () => changeURL(`#${id}`);
-	} else {
-		element.onclick = () => changeURL(`#${rawId}`);
+	let redirect = id;
+	if (rawId) {
+		redirect = rawId;
 	}
+	redirect = getClass(redirect).type();
+
+	if (!redirect.match(/([a-z][a-z_0-9]*\.)+[A-Z_]($[A-Z_]|[\w_])*/)) {
+		if (rawId) {
+			redirect = rawId;
+		} else {
+			redirect = id;
+		}
+	}
+	element.onclick = () => changeURL(`#${redirect}`);
 }
 
 function createShortLink(id, parents) {

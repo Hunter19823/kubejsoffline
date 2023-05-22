@@ -110,6 +110,16 @@ function li(content) {
 	return tag;
 }
 
+function href(element, url) {
+	element.style.textDecoration = 'underline';
+	element.style.color = '#8cb4ff';
+	element.style.cursor = 'pointer';
+	element.onclick = () => {
+		changeURL(url);
+	};
+	return element;
+}
+
 
 function appendAnnotationToolTip(tag, annotations) {
 	if (!annotations || annotations.size === 0)

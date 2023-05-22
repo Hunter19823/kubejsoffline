@@ -155,22 +155,18 @@ function searchByAny(query) {
 
 function searchHelp() {
 	// List valid search types
-	document.body.append(span("Valid search parameters:"));
+	document.body.append(span("Valid search types:"));
 	let ul = document.createElement('ul');
 	document.body.append(ul);
-	ul.append(li('search'));
-	ul.append(li('query'));
-	document.body.append(br());
-	document.body.append(span("Valid search types:"));
 	ul = document.createElement('ul');
 	document.body.append(ul);
-	ul.append(li('any'));
-	ul.append(li('class-name'));
-	ul.append(li('field-name'));
-	ul.append(li('field-type'));
-	ul.append(li('method-name'));
-	ul.append(li('method-return-type'));
-	ul.append(li('method-parameter-type'));
+	ul.append(href(li('any'), '#any||dev.latvian.mods.kubejs'));
+	ul.append(href(li('class-name'), '#class-name||dev.latvian.mods.kubejs'));
+	ul.append(href(li('field-name'), '#field-name||player'));
+	ul.append(href(li('field-type'), '#field-type||dev.latvian.mods.kubejs'));
+	ul.append(href(li('method-name'), '#method-name||getEntity'));
+	ul.append(href(li('method-return-type'), '#method-return-type||dev.latvian.mods.kubejs'));
+	ul.append(href(li('method-parameter-type'), '#method-parameter-type||dev.latvian.mods.kubejs'));
 
 	document.body.append(br());
 	document.body.append(span("Query is the term to be searched for in the search type."));

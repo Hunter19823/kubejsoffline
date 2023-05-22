@@ -34,7 +34,7 @@ function getAnySuperClass(id) {
 
 	return null;
 }
-
+const LOOK_UP_CACHE = new Map();
 function getClass(id) {
 	let output = {};
 	if (id === null || id === undefined) {
@@ -66,16 +66,33 @@ function getClass(id) {
 			if (!isNaN(num)) {
 				return getClass(num);
 			}
+			// Assume it's a search query
+			if (id.match(/[a-zA-Z-]+[|][|].+/)) {
+				let split = id.split("||");
+				if (split.length !== 2) {
+					console.error("Invalid search query: " + id);
+					return null;
+				}
+				let search = split[0];
+				let page = split[1];
+				searchForTerms(search, page);
+				return null;
+			}
 			let lowerID = id.toLowerCase();
-			// See if the string is a class name
-			for (let i = 0; i < DATA.length; i++) {
-				if (lowerID === DATA[i][PROPERTY.BASE_CLASS_NAME]?.toLowerCase()) {
+			if (LOOK_UP_CACHE.has(lowerID)) {
+				return getClass(LOOK_UP_CACHE.get(lowerID));
+			}
+			// See if the string is a class type
+			for (let i = LOOK_UP_CACHE.size; i < DATA.length; i++) {
+				let lower = DATA[i][PROPERTY.TYPE_IDENTIFIER]?.toLowerCase();
+				LOOK_UP_CACHE.set(lower, i);
+				if (lowerID === lower) {
 					return getClass(i);
 				}
 			}
-			// See if the string is a class type
+			// See if the string is a class name
 			for (let i = 0; i < DATA.length; i++) {
-				if (lowerID === DATA[i][PROPERTY.TYPE_IDENTIFIER]?.toLowerCase()) {
+				if (lowerID === DATA[i][PROPERTY.BASE_CLASS_NAME]?.toLowerCase()) {
 					return getClass(i);
 				}
 			}
