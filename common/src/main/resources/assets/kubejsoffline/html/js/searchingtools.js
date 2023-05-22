@@ -104,6 +104,83 @@ function searchByMethodParameterType(param_type) {
 	});
 }
 
+function searchByName(query) {
+	let table = createTableWithHeaders(createSortableTable('matches'), 'Class-ID');
+
+	let lower_query = query.toLowerCase();
+
+	applyToAllClasses((subject) => {
+		if (subject.name().toLowerCase().includes(lower_query)) {
+			addClassToTable(table, subject.id());
+		}
+
+		let fields = subject.fields();
+		if (fields) {
+			for (let f of fields) {
+				let field = getField(f);
+				if (field.name().toLowerCase().includes(lower_query)) {
+					addFieldToTable(table, subject.id(), field);
+				}
+			}
+		}
+
+		let methods = subject.methods();
+		if (methods) {
+			for (let m of methods) {
+				let method = getMethod(m);
+				if (method.name().toLowerCase().includes(lower_query)) {
+					addMethodToTable(table, subject.id(), method);
+				}
+			}
+		}
+	});
+}
+
+function searchByPackage(query) {
+	let table = createTableWithHeaders(createSortableTable('matches'), 'Class-ID');
+
+	let lower_query = query.toLowerCase();
+
+	applyToAllClasses((subject) => {
+		if (subject.package().toLowerCase().includes(lower_query)) {
+			addClassToTable(table, subject.id());
+		}
+	});
+}
+
+function searchByReturnType(query) {
+	let table = createTableWithHeaders(createSortableTable('matches'), 'Class-ID');
+
+	let lower_query = query.toLowerCase();
+
+	applyToAllClasses((subject) => {
+		if (subject.type().toLowerCase().includes(lower_query)) {
+			addClassToTable(table, subject.id());
+		}
+
+		let fields = subject.fields();
+		if (fields) {
+			for (let f of fields) {
+				let field = getField(f);
+				if (getClass(field.type()).type().toLowerCase().includes(lower_query)) {
+					addFieldToTable(table, subject.id(), field);
+				}
+			}
+		}
+
+		let methods = subject.methods();
+		if (methods) {
+			for (let m of methods) {
+				let method = getMethod(m);
+				if (getClass(method.returnType()).type().toLowerCase().includes(lower_query)) {
+					addMethodToTable(table, subject.id(), method);
+				}
+			}
+		}
+	});
+}
+
+
 function searchByAny(query) {
 	let table = createTableWithHeaders(createSortableTable('matches'), 'Class-ID');
 
@@ -160,7 +237,9 @@ function searchHelp() {
 	document.body.append(ul);
 	ul = document.createElement('ul');
 	document.body.append(ul);
-	ul.append(href(li('any'), '#any||dev.latvian.mods.kubejs'));
+	ul.append(href(li('name'), '#name||dev.latvian.mods.kubejs'));
+	ul.append(href(li('return-type'), '#return-type||dev.latvian.mods.kubejs'));
+	ul.append(href(li('package'), '#package||dev.latvian.mods.kubejs'));
 	ul.append(href(li('class-name'), '#class-name||dev.latvian.mods.kubejs'));
 	ul.append(href(li('field-name'), '#field-name||player'));
 	ul.append(href(li('field-type'), '#field-type||dev.latvian.mods.kubejs'));
@@ -171,4 +250,47 @@ function searchHelp() {
 	document.body.append(br());
 	document.body.append(span("Query is the term to be searched for in the search type."));
 	// ul.append(li('method-parameter-type'));
+}
+
+
+function searchForTerms(query_type, search_term) {
+	searchHelp();
+	let query = search_term;
+	console.log("Searching for " + search_term + " in " + query);
+	switch (query_type) {
+		case 'name':
+			searchByName(query);
+			break;
+		case 'package':
+			searchByPackage(query);
+			break;
+		case 'return-type':
+			searchByReturnType(query);
+			break;
+		case 'any':
+			searchByAny(query);
+			break;
+		case 'class-name':
+			searchByClassName(query);
+			break;
+		case 'field-name':
+			searchByFieldName(query);
+			break;
+		case 'field-type':
+			searchByFieldType(query);
+			break;
+		case 'method-name':
+			searchByMethodName(query);
+			break;
+		case 'method-return-type':
+			searchByMethodReturnType(query);
+			break;
+		case 'method-parameter-type':
+			searchByMethodParameterType(query);
+			break;
+		default:
+			document.body.append(span("Invalid search type! :("));
+			document.body.append(br());
+			break;
+	}
 }

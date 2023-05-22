@@ -52,38 +52,6 @@ function loadClassIDWithQueryString(classID, queryString) {
 	}
 }
 
-function searchForTerms(query_type, search_term) {
-	searchHelp();
-	let query = query_type;
-	switch (search_term) {
-		case 'any':
-			searchByAny(query);
-			break;
-		case 'class-name':
-			searchByClassName(query);
-			break;
-		case 'field-name':
-			searchByFieldName(query);
-			break;
-		case 'field-type':
-			searchByFieldType(query);
-			break;
-		case 'method-name':
-			searchByMethodName(query);
-			break;
-		case 'method-return-type':
-			searchByMethodReturnType(query);
-			break;
-		case 'method-parameter-type':
-			searchByMethodParameterType(query);
-			break;
-		default:
-			document.body.append(span("Invalid search type! :("));
-			document.body.append(br());
-			break;
-	}
-}
-
 function onHashChange() {
 	let class_id = null;
 	let queryString = null;
