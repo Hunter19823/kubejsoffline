@@ -67,8 +67,8 @@ function getClass(id) {
 				return getClass(num);
 			}
 			// Assume it's a search query
-			if (id.match(/[a-zA-Z-]+[|][|].+/)) {
-				let split = id.split("||");
+			if (id.match(/[a-zA-Z-]+[-][-].+/)) {
+				let split = id.split("--");
 				if (split.length !== 2) {
 					console.error("Invalid search query: " + id);
 					return null;

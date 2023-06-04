@@ -237,16 +237,16 @@ function searchHelp() {
 	document.body.append(ul);
 	ul = document.createElement('ul');
 	document.body.append(ul);
-	ul.append(href(li('any'), '#any||net.minecraft.server.level.ServerPlayer'));
-	ul.append(href(li('name'), '#name||dev.latvian.mods.kubejs'));
-	ul.append(href(li('return-type'), '#return-type||dev.latvian.mods.kubejs'));
-	ul.append(href(li('package'), '#package||dev.latvian.mods.kubejs'));
-	ul.append(href(li('class-name'), '#class-name||dev.latvian.mods.kubejs'));
-	ul.append(href(li('field-name'), '#field-name||player'));
-	ul.append(href(li('field-type'), '#field-type||dev.latvian.mods.kubejs'));
-	ul.append(href(li('method-name'), '#method-name||getEntity'));
-	ul.append(href(li('method-return-type'), '#method-return-type||dev.latvian.mods.kubejs'));
-	ul.append(href(li('method-parameter-type'), '#method-parameter-type||dev.latvian.mods.kubejs'));
+	ul.append(href(li('any'), '#any--net.minecraft.server.level.ServerPlayer'));
+	ul.append(href(li('name'), '#name--dev.latvian.mods.kubejs'));
+	ul.append(href(li('return-type'), '#return-type--dev.latvian.mods.kubejs'));
+	ul.append(href(li('package'), '#package--dev.latvian.mods.kubejs'));
+	ul.append(href(li('class-name'), '#class-name--dev.latvian.mods.kubejs'));
+	ul.append(href(li('field-name'), '#field-name--player'));
+	ul.append(href(li('field-type'), '#field-type--dev.latvian.mods.kubejs'));
+	ul.append(href(li('method-name'), '#method-name--getEntity'));
+	ul.append(href(li('method-return-type'), '#method-return-type--dev.latvian.mods.kubejs'));
+	ul.append(href(li('method-parameter-type'), '#method-parameter-type--dev.latvian.mods.kubejs'));
 
 	document.body.append(br());
 	document.body.append(span("Query is the term to be searched for in the search type."));
