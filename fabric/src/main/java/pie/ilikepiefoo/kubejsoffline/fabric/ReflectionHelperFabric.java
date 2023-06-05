@@ -1,6 +1,7 @@
 package pie.ilikepiefoo.kubejsoffline.fabric;
 
 import dev.latvian.mods.kubejs.event.EventJS;
+import dev.latvian.mods.kubejs.recipe.RecipeJS;
 import net.fabricmc.loader.api.FabricLoader;
 import org.reflections.Configuration;
 import org.reflections.Reflections;
@@ -26,7 +27,7 @@ public class ReflectionHelperFabric implements ReflectionHelper {
 
 	@Override
 	public Class[] getEventClasses() {
-		return new Class[] {EventJS.class};
+		return new Class[]{EventJS.class, net.fabricmc.fabric.api.event.Event.class, dev.architectury.event.Event.class, RecipeJS.class};
 	}
 
 	/**

@@ -179,22 +179,44 @@ function appendAttributesToClassTableRow(row, class_id) {
 	row.setAttribute('mod', clazz.modifiers());
 	row.setAttribute('name', clazz.name());
 	row.setAttribute('type', class_id);
+	row.setAttribute('row-type', 'class');
 	// row.setAttribute('declared-in', clazz);
 }
 
-function appendAttributesToMethodTableRow(row, classID, method) {
+function appendAttributesToMethodTableRow(row, class_id, method, current_class_id = null) {
 	row.setAttribute('mod', method.modifiers());
 	row.setAttribute('name', method.name());
 	row.setAttribute('type', method.returnType());
-	row.setAttribute('declared-in', classID);
+	row.setAttribute('declared-in', class_id);
 	row.setAttribute('parameters', method.parameters().length);
+	row.setAttribute('row-type', 'method');
+	row.setAttribute('dataIndex', method.dataIndex());
+	if (current_class_id) {
+		row.setAttribute('current-class', current_class_id);
+	}
 }
 
-function appendAttributesToFieldTableRow(row, class_id, field) {
+function appendAttributesToFieldTableRow(row, class_id, field, current_class_id = null) {
 	row.setAttribute('mod', field.modifiers());
 	row.setAttribute('name', field.name());
 	row.setAttribute('type', field.type());
 	row.setAttribute('declared-in', class_id);
+	row.setAttribute('row-type', 'field');
+	row.setAttribute('dataIndex', field.dataIndex());
+	if (current_class_id) {
+		row.setAttribute('current-class', current_class_id);
+	}
+}
+
+function appendAttributesToConstructorTableRow(row, class_id, constructor, current_class_id = null) {
+	row.setAttribute('mod', constructor.modifiers());
+	row.setAttribute('parameters', constructor.parameters().length);
+	row.setAttribute('declared-in', class_id);
+	row.setAttribute('row-type', 'constructor');
+	row.setAttribute('dataIndex', constructor.dataIndex());
+	if (current_class_id) {
+		row.setAttribute('current-class', current_class_id);
+	}
 }
 
 function addClassToTable(table, class_id) {
@@ -203,13 +225,13 @@ function addClassToTable(table, class_id) {
 	appendAttributesToClassTableRow(row, class_id);
 }
 
-function addMethodToTable(table, classID, method) {
+function addMethodToTable(table, classID, method, current_class_id = null) {
 	let row = addRow(table, span(classID), createMethodSignature(method.data), createFullSignature(classID));
-	appendAttributesToMethodTableRow(row, classID, method);
+	appendAttributesToMethodTableRow(row, classID, method, current_class_id);
 
 }
 
-function addFieldToTable(table, class_id, field) {
+function addFieldToTable(table, class_id, field, current_class_id = null) {
 	let row = addRow(table, span(class_id), createFieldSignature(field.data), createShortLink(field.type()), createFullSignature(class_id));
-	appendAttributesToFieldTableRow(row, class_id, field);
+	appendAttributesToFieldTableRow(row, class_id, field, current_class_id);
 }

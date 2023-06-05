@@ -1,11 +1,12 @@
 function createMethodTable(id) {
-	let methods = getClass(id).methods();
+	let target = getClass(id);
+	let methods = target.methods();
 	let table = null;
 	let method = null;
 	let meth = null;
 	let row = null;
 	if (methods && GLOBAL_SETTINGS.showMethods) {
-		methods = [...methods].filter((method) => {
+		methods = methods.filter((method) => {
 			let m = getMethod(method);
 			if (GLOBAL_SETTINGS.showPrivate === false && MODIFIER.isPrivate(m.modifiers())) {
 				return false;
@@ -25,19 +26,20 @@ function createMethodTable(id) {
 		for (method of methods) {
 			meth = getMethod(method);
 			row = addRow(table, createMethodSignature(method), createFullSignature(getMethod(method).returnType()));
-			appendAttributesToMethodTableRow(row, meth.declaredIn(), meth);
+			appendAttributesToMethodTableRow(row, meth.declaredIn(), meth, target.id());
 		}
 	}
 }
 
 function createFieldTable(id) {
-	let fields = getClass(id).fields();
+	let target = getClass(id);
+	let fields = target.fields();
 	let table = null;
 	let field = null;
 	let row = null;
 	let data = null;
 	if (fields && GLOBAL_SETTINGS.showFields) {
-		fields = [...fields].filter((field) => {
+		fields = fields.filter((field) => {
 			let f = getField(field);
 			if (GLOBAL_SETTINGS.showPrivate === false && MODIFIER.isPrivate(f.modifiers())) {
 				return false;
@@ -57,12 +59,13 @@ function createFieldTable(id) {
 		for (field of fields) {
 			data = getField(field);
 			row = addRow(table, createFieldSignature(field), createFullSignature(getField(field).type()));
-			appendAttributesToFieldTableRow(row, data.declaredIn(), data);
+			appendAttributesToFieldTableRow(row, data.declaredIn(), data, target.id());
 		}
 	}
 }
 function createConstructorTable(id) {
-	let constructors = getClass(id).constructors();
+	let target = getClass(id);
+	let constructors = target.constructors();
 	let table = null;
 	let constructor = null;
 	let row = null;
@@ -88,9 +91,7 @@ function createConstructorTable(id) {
 		for (constructor of constructors) {
 			cons = getConstructor(constructor);
 			row = addRow(table, createConstructorSignature(constructor, id));
-			row.setAttribute('mod', cons.modifiers());
-			row.setAttribute('params', cons.parameters());
-			row.setAttribute('declaredIn', cons.declaredIn());
+			appendAttributesToConstructorTableRow(row, cons.declaredIn(), cons, target.id());
 		}
 	}
 }

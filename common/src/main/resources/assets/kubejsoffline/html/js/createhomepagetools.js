@@ -12,7 +12,7 @@ function createPageHeader() {
 	img.onclick = () => {
 		changeURL("");
 	};
-	title.innerHTML = 'KubeJS Offline';
+	title.innerHTML = 'KubeJS Offline v' + PROJECT_INFO.mod_version;
 	img.src = 'https://raw.githubusercontent.com/Hunter19823/kubejsoffline/master/kubejs_offline_logo.png';
 	img.style.height = '7em';
 	img.onerror = () => {
@@ -21,6 +21,7 @@ function createPageHeader() {
 	header.appendChild(img);
 	header.appendChild(title);
 	document.body.append(header);
+	createSearchBar();
 }
 
 // Clear the page of all content

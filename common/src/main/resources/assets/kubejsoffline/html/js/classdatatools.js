@@ -67,8 +67,8 @@ function getClass(id) {
 				return getClass(num);
 			}
 			// Assume it's a search query
-			if (id.match(/[a-zA-Z-]+[|][|].+/)) {
-				let split = id.split("||");
+			if (id.match(/[a-zA-Z-]+--.+/)) {
+				let split = id.split("--");
 				if (split.length !== 2) {
 					console.error("Invalid search query: " + id);
 					return null;
@@ -81,6 +81,12 @@ function getClass(id) {
 			let lowerID = id.toLowerCase();
 			if (LOOK_UP_CACHE.has(lowerID)) {
 				return getClass(LOOK_UP_CACHE.get(lowerID));
+			}
+			// Check if the string matches the java qualified type name regex
+			if (!id.match(/([a-zA-Z_$][a-zA-Z\d_$]*\.)*[a-zA-Z_$][a-zA-Z\d_$]*/)) {
+				// Class does not match a valid java qualified type name, so return null
+				console.error("Invalid class id/search: " + id);
+				return null;
 			}
 			// See if the string is a class type
 			for (let i = LOOK_UP_CACHE.size; i < DATA.length; i++) {
@@ -99,6 +105,13 @@ function getClass(id) {
 			// See if the string is a class simple name
 			for (let i = 0; i < DATA.length; i++) {
 				if (lowerID === getClass(i)?.simplename()?.toLowerCase()) {
+					return getClass(i);
+				}
+			}
+			// See if the string is included in a class name
+			for (let i = LOOK_UP_CACHE.size; i < DATA.length; i++) {
+				let lower = DATA[i][PROPERTY.TYPE_IDENTIFIER]?.toLowerCase();
+				if (lowerID.includes(lower)) {
 					return getClass(i);
 				}
 			}
@@ -234,9 +247,15 @@ function getClass(id) {
 			});
 		}
 		if (fields.size === 0) {
-			return null;
+			return [];
 		}
-		return fields;
+
+		let out = [...fields]
+		for (let i = 0; i < out.length; i++) {
+			out[i].dataIndex = i;
+		}
+
+		return out;
 	}
 
 	output.methods = function (shallow = false) {
@@ -263,9 +282,14 @@ function getClass(id) {
 			});
 		}
 		if (methods.size === 0) {
-			return null;
+			return [];
 		}
-		return methods;
+		let out = [...methods]
+		for (let i = 0; i < out.length; i++) {
+			out[i].dataIndex = i;
+		}
+
+		return out;
 	}
 
 	output.constructors = function () {
@@ -273,14 +297,15 @@ function getClass(id) {
 		if (this.data[PROPERTY.CONSTRUCTORS] !== null && this.data[PROPERTY.CONSTRUCTORS] !== undefined) {
 			for (let i = 0; i < this.data[PROPERTY.CONSTRUCTORS].length; i++) {
 				this.data[PROPERTY.CONSTRUCTORS][i].declaringClass = this.data[PROPERTY.TYPE_ID];
+				this.data[PROPERTY.CONSTRUCTORS][i].dataIndex = i;
 				constructors.add(this.data[PROPERTY.CONSTRUCTORS][i]);
 			}
 		}
 
 		if (constructors.size === 0) {
-			return null;
+			return [];
 		}
-		return constructors;
+		return [...constructors];
 	}
 
 	output.annotations = function () {
@@ -288,6 +313,7 @@ function getClass(id) {
 		this._follow_inheritance((data) => {
 			if (data[PROPERTY.ANNOTATIONS] !== null && data[PROPERTY.ANNOTATIONS] !== undefined) {
 				for (let i = 0; i < data[PROPERTY.ANNOTATIONS].length; i++) {
+					data[PROPERTY.ANNOTATIONS][i].dataIndex = i;
 					annotations.add(data[PROPERTY.ANNOTATIONS][i]);
 				}
 			}
@@ -321,6 +347,27 @@ function getClass(id) {
 		}
 	}
 
+	output.toKubeJSLoad_1_18 = function () {
+		return `// KJSODocs: ${output.hrefLink()}\nconst $${output.simplename().toUpperCase()} = Java("${output.type()}");`
+	}
+
+	output.toKubeJSLoad_1_19 = function () {
+		return `// KJSODocs: ${output.hrefLink()}\nconst $${output.simplename().toUpperCase()} = Java.loadClass("${output.type()}");`
+	}
+
+	output.toKubeJSLoad = function () {
+		if (PROJECT_INFO.minecraft_version.includes("1.18")) {
+			return this.toKubeJSLoad_1_18();
+		}
+		if (PROJECT_INFO.minecraft_version.includes("1.19")) {
+			return this.toKubeJSLoad_1_19();
+		}
+	}
+
+	output.hrefLink = function () {
+		return window.location.pathname + '#' + this.type();
+	}
+
 	return output;
 }
 
@@ -346,6 +393,10 @@ function getParameter(paramData) {
 			return null;
 		}
 		return new Set(annotations);
+	}
+
+	output.dataIndex = function () {
+		return this.data.dataIndex;
 	}
 
 	return output;
@@ -387,6 +438,23 @@ function getMethod(methodData) {
 		return this.data.declaringClass;
 	}
 
+	output.dataIndex = function () {
+		return this.data.dataIndex;
+	}
+
+	output.toKubeJSStaticCall = function () {
+		let parent = getClass(this.declaredIn());
+		let out = `// KJSODocs: ${parent.hrefLink()}\n$${parent.simplename().toUpperCase()}.${this.name()}(`;
+		for (let i = 0; i < this.parameters().length; i++) {
+			out += getParameter(this.parameters()[i]).name();
+			if (i < this.parameters().length - 1) {
+				out += ", ";
+			}
+		}
+		out += `);`;
+		return out;
+	}
+
 	return output;
 }
 
@@ -418,6 +486,15 @@ function getField(fieldData) {
 		return this.data.declaringClass;
 	}
 
+	output.dataIndex = function () {
+		return this.data.dataIndex;
+	}
+
+	output.toKubeJSStaticReference = function () {
+		let parent = getClass(this.declaredIn());
+		return `// KJSODocs: ${getClass(this.type()).hrefLink()}\n$${parent.simplename().toUpperCase()}.${this.name()};`;
+	}
+
 	return output;
 }
 
@@ -447,6 +524,23 @@ function getConstructor(constructorData) {
 
 	output.declaredIn = function () {
 		return this.data.declaringClass;
+	}
+
+	output.dataIndex = function () {
+		return this.data.dataIndex;
+	}
+
+	output.toKubeJSStaticCall = function () {
+		let parent = getClass(this.declaredIn());
+		let out = `// KJSODocs: ${parent.hrefLink()}\nlet ${parent.simplename()} = new $${parent.simplename().toUpperCase()}(`;
+		for (let i = 0; i < this.parameters().length; i++) {
+			out += getParameter(this.parameters()[i]).name();
+			if (i < this.parameters().length - 1) {
+				out += ", ";
+			}
+		}
+		out += ");";
+		return out;
 	}
 
 	return output;

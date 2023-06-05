@@ -2,6 +2,7 @@ package pie.ilikepiefoo.kubejsoffline.forge;
 
 import dev.architectury.platform.Platform;
 import dev.latvian.mods.kubejs.event.EventJS;
+import dev.latvian.mods.kubejs.recipe.RecipeJS;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.FieldInfo;
 import javassist.bytecode.MethodInfo;
@@ -86,7 +87,7 @@ public class ReflectionHelperForge implements ReflectionHelper {
 
 	@Override
 	public Class[] getEventClasses() {
-		return new Class[] {EventJS.class, Event.class};
+		return new Class[]{EventJS.class, Event.class, dev.architectury.event.Event.class, RecipeJS.class};
 	}
 
 	/**

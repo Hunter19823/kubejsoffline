@@ -74,7 +74,7 @@ function onHashChange() {
 				searchHelp();
 				return;
 			}
-			searchForTerms(searchParams.get('query'), searchParams.get('search'));
+			searchForTerms(searchParams.get('search'), searchParams.get('query'));
 		}
 	} else {
 		createHomePage();
