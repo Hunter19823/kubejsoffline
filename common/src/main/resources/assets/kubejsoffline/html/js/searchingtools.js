@@ -255,7 +255,7 @@ function searchHelp() {
 
 
 function searchForTerms(query_type, search_term) {
-	searchHelp();
+	//searchHelp();
 	let query = search_term;
 	console.log("Searching for " + search_term + " in " + query);
 	switch (query_type) {
@@ -294,4 +294,46 @@ function searchForTerms(query_type, search_term) {
 			document.body.append(br());
 			break;
 	}
+}
+
+function createSearchBar() {
+	// Create one div that contains the search bar
+	let searchDiv = document.createElement('div');
+	searchDiv.id = 'search-bar';
+
+	// Create two elements, one for a search type, the other for search input
+	let searchType = document.createElement('select');
+	let searchInput = document.createElement('input');
+	searchInput.type = 'text';
+	searchInput.placeholder = 'Search...';
+	// Use the enter key to change the URL
+	searchInput.onkeydown = function (e) {
+		if (e.key === 'Enter') {
+			changeURL(`#${searchType.value}--${searchInput.value}`);
+		}
+	}
+
+	// Add the search types
+	function addSearchType(type) {
+		let option = document.createElement('option');
+		option.value = type;
+		option.text = type;
+		searchType.add(option);
+	}
+
+	addSearchType('any');
+	addSearchType('name');
+	addSearchType('package');
+	addSearchType('return-type');
+	addSearchType('class-name');
+	addSearchType('field-name');
+	addSearchType('field-type');
+	addSearchType('method-name');
+	addSearchType('method-return-type');
+	addSearchType('method-parameter-type');
+	// Add the search bar to the page
+	searchDiv.append(searchType);
+	searchDiv.append(searchInput);
+	document.body.append(searchDiv);
+	return searchDiv;
 }

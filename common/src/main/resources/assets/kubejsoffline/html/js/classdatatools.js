@@ -348,11 +348,11 @@ function getClass(id) {
 	}
 
 	output.toKubeJSLoad_1_18 = function () {
-		return `const $${output.simplename().toUpperCase()} = Java("${output.type()}");`
+		return `// KJSODocs: ${output.hrefLink()}\nconst $${output.simplename().toUpperCase()} = Java("${output.type()}");`
 	}
 
 	output.toKubeJSLoad_1_19 = function () {
-		return `const $${output.simplename().toUpperCase()} = Java.loadClass("${output.type()}");`
+		return `// KJSODocs: ${output.hrefLink()}\nconst $${output.simplename().toUpperCase()} = Java.loadClass("${output.type()}");`
 	}
 
 	output.toKubeJSLoad = function () {
@@ -362,6 +362,10 @@ function getClass(id) {
 		if (PROJECT_INFO.minecraft_version.includes("1.19")) {
 			return this.toKubeJSLoad_1_19();
 		}
+	}
+
+	output.hrefLink = function () {
+		return window.location.pathname + '#' + this.type();
 	}
 
 	return output;
@@ -440,14 +444,14 @@ function getMethod(methodData) {
 
 	output.toKubeJSStaticCall = function () {
 		let parent = getClass(this.declaredIn());
-		let out = `$${parent.simplename().toUpperCase()}.${this.name()}(`;
+		let out = `// KJSODocs: ${parent.hrefLink()}\n$${parent.simplename().toUpperCase()}.${this.name()}(`;
 		for (let i = 0; i < this.parameters().length; i++) {
 			out += getParameter(this.parameters()[i]).name();
 			if (i < this.parameters().length - 1) {
 				out += ", ";
 			}
 		}
-		out += ");";
+		out += `);`;
 		return out;
 	}
 
@@ -488,7 +492,7 @@ function getField(fieldData) {
 
 	output.toKubeJSStaticReference = function () {
 		let parent = getClass(this.declaredIn());
-		return `$${parent.simplename().toUpperCase()}.${this.name()};`;
+		return `// KJSODocs: ${getClass(this.type()).hrefLink()}\n$${parent.simplename().toUpperCase()}.${this.name()};`;
 	}
 
 	return output;
@@ -528,7 +532,7 @@ function getConstructor(constructorData) {
 
 	output.toKubeJSStaticCall = function () {
 		let parent = getClass(this.declaredIn());
-		let out = `let ${parent.simplename()} = new $${parent.simplename().toUpperCase()}(`;
+		let out = `// KJSODocs: ${parent.hrefLink()}\nlet ${parent.simplename()} = new $${parent.simplename().toUpperCase()}(`;
 		for (let i = 0; i < this.parameters().length; i++) {
 			out += getParameter(this.parameters()[i]).name();
 			if (i < this.parameters().length - 1) {
