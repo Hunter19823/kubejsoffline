@@ -75,6 +75,7 @@ function createBaseContextMenu() {
 		item.innerHTML = name;
 		item.onclick = action;
 		menu.appendChild(item);
+		return item;
 	}
 
 	function addToggleMenuItem(name, action, initialValue = false) {
@@ -83,10 +84,11 @@ function createBaseContextMenu() {
 		item.classList.add('context-menu-item');
 		item.appendChild(toggle);
 		menu.appendChild(item);
+		return item;
 	}
 
 	function addSettingItem(name, setting) {
-		addToggleMenuItem(name, () => {
+		return addToggleMenuItem(name, () => {
 			GLOBAL_SETTINGS[setting] = !GLOBAL_SETTINGS[setting];
 			onHashChange();
 		}, GLOBAL_SETTINGS[setting]);
@@ -110,85 +112,73 @@ function createBaseContextMenu() {
 			return node.hasAttribute('row-type');
 		});
 		if (tableEntries.length !== 0) {
+			// First collect all the different types of entries
 			let classes = tableEntries.filter((node) => {
 				return node.getAttribute('row-type') === 'class';
+			}).map((node) => {
+				return getClass(node.getAttribute('type'));
 			});
 			let methods = tableEntries.filter((node) => {
 				return node.getAttribute('row-type') === 'method' && MODIFIER.isStatic(node.getAttribute('mod')) && node.hasAttribute('current-class');
+			}).map((node) => {
+				return getMethod(getClass(node.getAttribute('current-class')).methods()[node.getAttribute('dataIndex')]);
 			});
 			let fields = tableEntries.filter((node) => {
 				return node.getAttribute('row-type') === 'field' && MODIFIER.isStatic(node.getAttribute('mod')) && node.hasAttribute('current-class');
+			}).map((node) => {
+				return getField(getClass(node.getAttribute('current-class')).fields()[node.getAttribute('dataIndex')]);
 			});
 			let constructors = tableEntries.filter((node) => {
 				return node.getAttribute('row-type') === 'constructor';
+			}).map((node) => {
+				return getConstructor(getClass(node.getAttribute('current-class')).constructors()[node.getAttribute('dataIndex')]);
+			});
+			let code = "";
+			let constants = new Set();
+			classes.forEach((node) => {
+				constants.add(node.toKubeJSLoad());
+			});
+			methods.forEach((node) => {
+				constants.add(getClass(node.declaredIn()).toKubeJSLoad())
+			});
+			fields.forEach((node) => {
+				constants.add(getClass(node.declaredIn()).toKubeJSLoad())
 			});
 
-			if (classes.length !== 0) {
-				addMenuItem('Copy Code for Selected Class' + (classes.length > 1 ? 'es' : ''), () => {
-					let text = "";
-					classes = classes.map((node) => {
-						return getClass(node.getAttribute('type'));
-					});
-					classes.forEach((node) => {
-						text += '\n' + node.toKubeJSLoad();
-					});
-					navigator.clipboard.writeText(text).then(r => {
-						console.log('Finished Copying to clipboard');
-					});
-
-					menu.remove();
+			constants.forEach((node) => {
+				code += '\n' + node;
+			});
+			if (constructors.length !== 0) {
+				code += '\n\n// Constructors';
+				constructors.forEach((node) => {
+					code += '\n' + node.toKubeJSStaticCall();
 				});
 			}
 			if (methods.length !== 0) {
-				addMenuItem('Copy Code for Selected Method' + (methods.length > 1 ? 's' : ''), () => {
-					let text = "";
-					methods = methods.map((node) => {
-						return getMethod(getClass(node.getAttribute('current-class')).methods()[node.getAttribute('dataIndex')]);
-					});
-					methods.forEach((node) => {
-						text += '\n' + node.toKubeJSStaticCall();
-					});
-					navigator.clipboard.writeText(text).then(r => {
-						console.log('Finished Copying to clipboard');
-					});
-
-					menu.remove();
+				code += '\n\n// Methods';
+				methods.forEach((node) => {
+					code += '\n' + node.toKubeJSStaticCall();
 				});
 			}
+
 			if (fields.length !== 0) {
-				addMenuItem('Copy Code for Selected Field' + (fields.length > 1 ? 's' : ''), () => {
-					let text = "";
-					fields = fields.map((node) => {
-						return getField(getClass(node.getAttribute('current-class')).fields()[node.getAttribute('dataIndex')]);
-					});
-					fields.forEach((node) => {
-						text += '\n' + node.toKubeJSStaticReference();
-					});
-					navigator.clipboard.writeText(text).then(r => {
-						console.log('Finished Copying to clipboard');
-					});
-
-					menu.remove();
+				code += '\n\n// Fields';
+				fields.forEach((node) => {
+					code += '\n' + node.toKubeJSStaticReference();
 				});
 			}
-			if (constructors.length !== 0) {
-				addMenuItem('Copy Code for Selected Constructor' + (constructors.length > 1 ? 's' : ''), () => {
-					let text = "";
-					constructors = constructors.map((node) => {
-						return getConstructor(getClass(node.getAttribute('current-class')).constructors()[node.getAttribute('dataIndex')]);
-					});
-					constructors.forEach((node) => {
-						text += '\n' + node.toKubeJSStaticCall();
-					});
-					navigator.clipboard.writeText(text).then(r => {
-						console.log('Finished Copying to clipboard');
+
+			if (code.length !== 0) {
+				addMenuItem('Copy Selected Code' + (classes.length > 1 ? 'es' : ''), () => {
+					navigator.clipboard.writeText(code).then(r => {
+						console.log('Finished Copying Code to clipboard...');
 					});
 
 					menu.remove();
 				});
+				menu.appendChild(document.createElement('hr'));
 			}
 		}
-		menu.appendChild(document.createElement('hr'));
 	}
 
 

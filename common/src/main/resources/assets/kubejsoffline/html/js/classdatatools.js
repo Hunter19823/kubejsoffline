@@ -82,6 +82,12 @@ function getClass(id) {
 			if (LOOK_UP_CACHE.has(lowerID)) {
 				return getClass(LOOK_UP_CACHE.get(lowerID));
 			}
+			// Check if the string matches the java qualified type name regex
+			if (!id.match(/([a-zA-Z_$][a-zA-Z\d_$]*\.)*[a-zA-Z_$][a-zA-Z\d_$]*/)) {
+				// Class does not match a valid java qualified type name, so return null
+				console.error("Invalid class id/search: " + id);
+				return null;
+			}
 			// See if the string is a class type
 			for (let i = LOOK_UP_CACHE.size; i < DATA.length; i++) {
 				let lower = DATA[i][PROPERTY.TYPE_IDENTIFIER]?.toLowerCase();
@@ -434,11 +440,9 @@ function getMethod(methodData) {
 
 	output.toKubeJSStaticCall = function () {
 		let parent = getClass(this.declaredIn());
-		let out = parent.toKubeJSLoad();
-		out += "\n\n";
-		out += `$${parent.simplename().toUpperCase()}.${this.name()}(`;
+		let out = `$${parent.simplename().toUpperCase()}.${this.name()}(`;
 		for (let i = 0; i < this.parameters().length; i++) {
-			out += this.parameters()[i].name();
+			out += getParameter(this.parameters()[i]).name();
 			if (i < this.parameters().length - 1) {
 				out += ", ";
 			}
@@ -484,10 +488,7 @@ function getField(fieldData) {
 
 	output.toKubeJSStaticReference = function () {
 		let parent = getClass(this.declaredIn());
-		let out = parent.toKubeJSLoad();
-		out += "\n\n";
-		out += `$${parent.simplename().toUpperCase()}.${this.name()};`;
-		return out;
+		return `$${parent.simplename().toUpperCase()}.${this.name()};`;
 	}
 
 	return output;
@@ -527,11 +528,9 @@ function getConstructor(constructorData) {
 
 	output.toKubeJSStaticCall = function () {
 		let parent = getClass(this.declaredIn());
-		let out = parent.toKubeJSLoad();
-		out += "\n\n";
-		out += `let ${parent.simplename()} = new $${parent.simplename().toUpperCase()}(`;
+		let out = `let ${parent.simplename()} = new $${parent.simplename().toUpperCase()}(`;
 		for (let i = 0; i < this.parameters().length; i++) {
-			out += this.parameters()[i].name();
+			out += getParameter(this.parameters()[i]).name();
 			if (i < this.parameters().length - 1) {
 				out += ", ";
 			}
