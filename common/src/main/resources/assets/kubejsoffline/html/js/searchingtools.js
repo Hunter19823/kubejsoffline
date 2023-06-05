@@ -20,7 +20,7 @@ function searchByFieldName(field_name) {
 		for (let f of fields) {
 			let field = getField(f);
 			if (field.name().toLowerCase().includes(lower_field_name)) {
-				addFieldToTable(table, subject.id(), field);
+				addFieldToTable(table, subject.id(), field, subject.id());
 			}
 		}
 	});
@@ -37,7 +37,7 @@ function searchByFieldType(field_type) {
 		for (let f of fields) {
 			let field = getField(f);
 			if (getClass(field.type()).name().toLowerCase().includes(lower_field_type)) {
-				addFieldToTable(table, subject.id(), field);
+				addFieldToTable(table, subject.id(), field, subject.id());
 			}
 		}
 	});
@@ -54,7 +54,7 @@ function searchByMethodName(method_name) {
 		for (let m of methods) {
 			let method = getMethod(m);
 			if (method.name().toLowerCase().includes(lower_method_name)) {
-				addMethodToTable(table, subject.id(), method);
+				addMethodToTable(table, subject.id(), method, subject.id());
 			}
 		}
 	});
@@ -73,7 +73,7 @@ function searchByMethodReturnType(method_type) {
 		for (let m of methods) {
 			let method = getMethod(m);
 			if (getClass(method.returnType()).type().toLowerCase().includes(lower_method_type)) {
-				addMethodToTable(table, subject.id(), method);
+				addMethodToTable(table, subject.id(), method, subject.id());
 			}
 		}
 	});
@@ -97,7 +97,7 @@ function searchByMethodParameterType(param_type) {
 			}
 			for (let param of method.parameters()) {
 				if (getClass(getParameter(param).type()).name().toLowerCase().includes(lower_param_type)) {
-					addMethodToTable(table, subject.id(), method);
+					addMethodToTable(table, subject.id(), method, subject.id());
 				}
 			}
 		}
@@ -119,7 +119,7 @@ function searchByName(query) {
 			for (let f of fields) {
 				let field = getField(f);
 				if (field.name().toLowerCase().includes(lower_query)) {
-					addFieldToTable(table, subject.id(), field);
+					addFieldToTable(table, subject.id(), field, subject.id());
 				}
 			}
 		}
@@ -129,7 +129,7 @@ function searchByName(query) {
 			for (let m of methods) {
 				let method = getMethod(m);
 				if (method.name().toLowerCase().includes(lower_query)) {
-					addMethodToTable(table, subject.id(), method);
+					addMethodToTable(table, subject.id(), method, subject.id());
 				}
 			}
 		}
@@ -163,7 +163,7 @@ function searchByReturnType(query) {
 			for (let f of fields) {
 				let field = getField(f);
 				if (getClass(field.type()).type().toLowerCase().includes(lower_query)) {
-					addFieldToTable(table, subject.id(), field);
+					addFieldToTable(table, subject.id(), field, subject.id());
 				}
 			}
 		}
@@ -173,7 +173,7 @@ function searchByReturnType(query) {
 			for (let m of methods) {
 				let method = getMethod(m);
 				if (getClass(method.returnType()).type().toLowerCase().includes(lower_query)) {
-					addMethodToTable(table, subject.id(), method);
+					addMethodToTable(table, subject.id(), method, subject.id());
 				}
 			}
 		}
@@ -199,10 +199,10 @@ function searchByAny(query) {
 			for (let f of fields) {
 				let field = getField(f);
 				if (field.name().toLowerCase().includes(lower_query)) {
-					addFieldToTable(table, subject.id(), field);
+					addFieldToTable(table, subject.id(), field, subject.id());
 				}
 				if (getClass(field.type()).name().toLowerCase().includes(lower_query)) {
-					addFieldToTable(table, subject.id(), field);
+					addFieldToTable(table, subject.id(), field, subject.id());
 				}
 			}
 		}
@@ -213,15 +213,15 @@ function searchByAny(query) {
 			for (let m of methods) {
 				let method = getMethod(m);
 				if (method.name().toLowerCase().includes(lower_query)) {
-					addMethodToTable(table, subject.id(), method);
+					addMethodToTable(table, subject.id(), method, subject.id());
 				}
 				if (getClass(method.returnType()).name().toLowerCase().includes(lower_query)) {
-					addMethodToTable(table, subject.id(), method);
+					addMethodToTable(table, subject.id(), method, subject.id());
 				}
 				if (method.parameters()) {
 					for (let param of method.parameters()) {
 						if (getClass(getParameter(param).type()).name().toLowerCase().includes(lower_query)) {
-							addMethodToTable(table, subject.id(), method);
+							addMethodToTable(table, subject.id(), method, subject.id());
 						}
 					}
 				}

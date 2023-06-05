@@ -1,3 +1,68 @@
+// I Stole this code from https://stackoverflow.com/questions/1482832/how-to-get-all-elements-that-are-highlighted
+// Thank you for your help, StackOverflow!
+function rangeIntersectsNode(range, node) {
+	var nodeRange;
+	if (range.intersectsNode) {
+		return range.intersectsNode(node);
+	} else {
+		nodeRange = node.ownerDocument.createRange();
+		try {
+			nodeRange.selectNode(node);
+		} catch (e) {
+			nodeRange.selectNodeContents(node);
+		}
+
+		return range.compareBoundaryPoints(Range.END_TO_START, nodeRange) == -1 &&
+				range.compareBoundaryPoints(Range.START_TO_END, nodeRange) == 1;
+	}
+}
+
+function getSelectedElementTags(win) {
+	var range, sel, elmlist, treeWalker, containerElement;
+	sel = win.getSelection();
+	if (sel.rangeCount > 0) {
+		range = sel.getRangeAt(0);
+	}
+
+	if (range) {
+		containerElement = range.commonAncestorContainer;
+		if (containerElement.nodeType != 1) {
+			containerElement = containerElement.parentNode;
+		}
+
+		treeWalker = win.document.createTreeWalker(
+				containerElement,
+				NodeFilter.SHOW_ELEMENT,
+				function (node) {
+					return rangeIntersectsNode(range, node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+				},
+				false
+		);
+
+		elmlist = [treeWalker.currentNode];
+		while (treeWalker.nextNode()) {
+			elmlist.push(treeWalker.currentNode);
+			let currentNode = treeWalker.currentNode;
+			while (currentNode && currentNode.tagName === 'SPAN') {
+				currentNode = currentNode.parentNode;
+			}
+			if (!currentNode)
+				continue;
+			elmlist.push(currentNode);
+			while (currentNode && currentNode.tagName === 'TD') {
+				currentNode = currentNode.parentNode;
+			}
+			if (!currentNode)
+				continue;
+			elmlist.push(currentNode);
+		}
+
+		return [...new Set(elmlist)];
+	}
+
+	return [];
+}
+
 function createBaseContextMenu() {
 	let menu = document.createElement('div');
 	persistElement(menu);
@@ -31,6 +96,101 @@ function createBaseContextMenu() {
 	title.classList.add('context-menu-title');
 	title.innerHTML = 'Context Menu';
 	menu.appendChild(title);
+
+	menu.appendChild(document.createElement('hr'));
+	if (!window.getSelection().isCollapsed) {
+		addMenuItem('Copy', () => {
+			navigator.clipboard.writeText(window.getSelection().toString()).then(r => {
+				console.log('Finished Copying to clipboard');
+			});
+		});
+		// Find all selected entries with a type attribute
+		let selectedElementTags = getSelectedElementTags(window);
+		let tableEntries = selectedElementTags.filter((node) => {
+			return node.hasAttribute('row-type');
+		});
+		if (tableEntries.length !== 0) {
+			let classes = tableEntries.filter((node) => {
+				return node.getAttribute('row-type') === 'class';
+			});
+			let methods = tableEntries.filter((node) => {
+				return node.getAttribute('row-type') === 'method' && MODIFIER.isStatic(node.getAttribute('mod')) && node.hasAttribute('current-class');
+			});
+			let fields = tableEntries.filter((node) => {
+				return node.getAttribute('row-type') === 'field' && MODIFIER.isStatic(node.getAttribute('mod')) && node.hasAttribute('current-class');
+			});
+			let constructors = tableEntries.filter((node) => {
+				return node.getAttribute('row-type') === 'constructor';
+			});
+
+			if (classes.length !== 0) {
+				addMenuItem('Copy Code for Selected Class' + (classes.length > 1 ? 'es' : ''), () => {
+					let text = "";
+					classes = classes.map((node) => {
+						return getClass(node.getAttribute('type'));
+					});
+					classes.forEach((node) => {
+						text += '\n' + node.toKubeJSLoad();
+					});
+					navigator.clipboard.writeText(text).then(r => {
+						console.log('Finished Copying to clipboard');
+					});
+
+					menu.remove();
+				});
+			}
+			if (methods.length !== 0) {
+				addMenuItem('Copy Code for Selected Method' + (methods.length > 1 ? 's' : ''), () => {
+					let text = "";
+					methods = methods.map((node) => {
+						return getMethod(getClass(node.getAttribute('current-class')).methods()[node.getAttribute('dataIndex')]);
+					});
+					methods.forEach((node) => {
+						text += '\n' + node.toKubeJSStaticCall();
+					});
+					navigator.clipboard.writeText(text).then(r => {
+						console.log('Finished Copying to clipboard');
+					});
+
+					menu.remove();
+				});
+			}
+			if (fields.length !== 0) {
+				addMenuItem('Copy Code for Selected Field' + (fields.length > 1 ? 's' : ''), () => {
+					let text = "";
+					fields = fields.map((node) => {
+						return getField(getClass(node.getAttribute('current-class')).fields()[node.getAttribute('dataIndex')]);
+					});
+					fields.forEach((node) => {
+						text += '\n' + node.toKubeJSStaticReference();
+					});
+					navigator.clipboard.writeText(text).then(r => {
+						console.log('Finished Copying to clipboard');
+					});
+
+					menu.remove();
+				});
+			}
+			if (constructors.length !== 0) {
+				addMenuItem('Copy Code for Selected Constructor' + (constructors.length > 1 ? 's' : ''), () => {
+					let text = "";
+					constructors = constructors.map((node) => {
+						return getConstructor(getClass(node.getAttribute('current-class')).constructors()[node.getAttribute('dataIndex')]);
+					});
+					constructors.forEach((node) => {
+						text += '\n' + node.toKubeJSStaticCall();
+					});
+					navigator.clipboard.writeText(text).then(r => {
+						console.log('Finished Copying to clipboard');
+					});
+
+					menu.remove();
+				});
+			}
+		}
+		menu.appendChild(document.createElement('hr'));
+	}
+
 
 	addMenuItem('Back', () => {
 		history.back();
@@ -82,9 +242,11 @@ addEventListener('contextmenu', (event) => {
 	if (count++ % 2 === 0) {
 		event.preventDefault();
 		let menu = document.getElementById('context-menu');
-		if (!menu) {
-			menu = createBaseContextMenu();
+		if (menu) {
+			menu.remove();
 		}
+
+		menu = createBaseContextMenu();
 		// Set the position of the menu
 		// then show it
 		menu.style.top = event.clientY + 'px';
@@ -92,10 +254,9 @@ addEventListener('contextmenu', (event) => {
 		menu.style.display = 'block';
 	} else {
 		let menu = document.getElementById('context-menu');
-		if (!menu) {
-			menu = createBaseContextMenu();
+		if (menu) {
+			menu.remove();
 		}
-		menu.style.display = 'none';
 	}
 });
 addEventListener('click', (event) => {
