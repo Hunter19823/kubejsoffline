@@ -139,6 +139,9 @@ function getClass(id) {
 
 	output.simplename = function () {
 		let fullName = this.type();
+		if (this.data._cachedSimpleName) {
+			return this.data._cachedSimpleName;
+		}
 		// Remove any Generics
 		let index = fullName.indexOf("<");
 		if (index !== -1) {
@@ -154,11 +157,15 @@ function getClass(id) {
 		if (index !== -1) {
 			fullName = fullName.substring(0, index);
 		}
+		this.data._cachedSimpleName = fullName;
 		return fullName;
 	}
 
 	output.package = function () {
 		let pkg = this.data[PROPERTY.PACKAGE_NAME];
+		if (this.data._cachedPackageName) {
+			return this.data._cachedPackageName;
+		}
 		if (pkg === null || pkg === undefined) {
 			let fullName = this.type();
 			// Remove any Generics
@@ -176,6 +183,7 @@ function getClass(id) {
 			if (index !== -1) {
 				pkg = fullName.substring(0, index);
 			}
+			this.data._cachedPackageName = pkg;
 			return fullName;
 		}
 		return pkg;
