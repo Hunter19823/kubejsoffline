@@ -104,12 +104,14 @@ function createRelationshipTable(id) {
 	let table = createTableWithHeaders(createSortableTable('relations'), 'Relationships', 'RelatedClass');
 	let seen = new Set();
 	let relation = null;
+	let row = null;
 	for (let i = 0; i < RELATIONS.length; i++) {
 		relation = data.relation(i);
 		if (relation) {
 			for (let j = 0; j < relation.length; j++) {
 				if (!seen.has(relation[j])) {
-					addRow(table, span(RELATIONS[i]), createFullSignature(relation[j]));
+					row = addRow(table, span(RELATIONS[i]), createFullSignature(relation[j]));
+					appendAttributesToRelationshipToTableRow(row, relation[j], RELATIONS[i], data.id())
 					seen.add(relation[j]);
 				}
 			}

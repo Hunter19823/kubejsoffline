@@ -219,6 +219,15 @@ function appendAttributesToConstructorTableRow(row, class_id, constructor, curre
 	}
 }
 
+function appendAttributesToRelationshipToTableRow(row, relationship, relationshipName, current_class_id = null) {
+	row.setAttribute('type', relationship);
+	row.setAttribute('row-type', 'relationship');
+
+	if (current_class_id) {
+		row.setAttribute('current-class', current_class_id);
+	}
+}
+
 function addClassToTable(table, class_id) {
 	let clazz = getClass(class_id);
 	let row = addRow(table, span(class_id), createShortLink(class_id), span(clazz.package()), createFullSignature(class_id));
