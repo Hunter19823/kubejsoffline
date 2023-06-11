@@ -43,6 +43,14 @@ function addRow(table, ...data) {
 	return tr;
 }
 
+function div(...args) {
+	let div = document.createElement('div');
+	for (let arg of args) {
+		div.appendChild(arg);
+	}
+	return div;
+}
+
 function span(text) {
 	let span = document.createElement('span');
 	span.innerText = text;

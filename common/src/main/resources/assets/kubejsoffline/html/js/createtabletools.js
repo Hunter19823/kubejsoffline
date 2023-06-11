@@ -25,7 +25,7 @@ function createMethodTable(id) {
 		table = createTableWithHeaders(createSortableTable('methods'), 'Methods', 'Return Type');
 		for (method of methods) {
 			meth = getMethod(method);
-			row = addRow(table, createMethodSignature(method), createFullSignature(getMethod(method).returnType()));
+			row = addRow(table, div(copyLinkToClipboard(meth.hrefLink()), createMethodSignature(method)), createFullSignature(getMethod(method).returnType()));
 			appendAttributesToMethodTableRow(row, meth.declaredIn(), meth, target.id());
 		}
 	}
@@ -35,9 +35,9 @@ function createFieldTable(id) {
 	let target = getClass(id);
 	let fields = target.fields();
 	let table = null;
-	let field = null;
-	let row = null;
 	let data = null;
+	let row = null;
+	let field = null;
 	if (fields && GLOBAL_SETTINGS.showFields) {
 		fields = fields.filter((field) => {
 			let f = getField(field);
@@ -56,10 +56,10 @@ function createFieldTable(id) {
 			return;
 		}
 		table = createTableWithHeaders(createSortableTable('fields'), 'Fields', 'Type');
-		for (field of fields) {
-			data = getField(field);
-			row = addRow(table, createFieldSignature(field), createFullSignature(getField(field).type()));
-			appendAttributesToFieldTableRow(row, data.declaredIn(), data, target.id());
+		for (data of fields) {
+			field = getField(data);
+			row = addRow(table, div(copyLinkToClipboard(field.hrefLink()), createFieldSignature(data)), createFullSignature(getField(data).type()));
+			appendAttributesToFieldTableRow(row, field.declaredIn(), field, target.id());
 		}
 	}
 }
@@ -90,7 +90,7 @@ function createConstructorTable(id) {
 		table = createTableWithHeaders(createSortableTable('constructors'), 'Constructors');
 		for (constructor of constructors) {
 			cons = getConstructor(constructor);
-			row = addRow(table, createConstructorSignature(constructor, id));
+			row = addRow(table, div(copyLinkToClipboard(cons.hrefLink()), createConstructorSignature(constructor, id)));
 			appendAttributesToConstructorTableRow(row, cons.declaredIn(), cons, target.id());
 		}
 	}

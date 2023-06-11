@@ -66,18 +66,6 @@ function getClass(id) {
 			if (!isNaN(num)) {
 				return getClass(num);
 			}
-			// Assume it's a search query
-			if (id.match(/[a-zA-Z-]+--.+/)) {
-				let split = id.split("--");
-				if (split.length !== 2) {
-					console.error("Invalid search query: " + id);
-					return null;
-				}
-				let search = split[0];
-				let page = split[1];
-				searchForTerms(search, page);
-				return null;
-			}
 			let lowerID = id.toLowerCase();
 			if (LOOK_UP_CACHE.has(lowerID)) {
 				return getClass(LOOK_UP_CACHE.get(lowerID));
@@ -104,14 +92,7 @@ function getClass(id) {
 			}
 			// See if the string is a class simple name
 			for (let i = 0; i < DATA.length; i++) {
-				if (lowerID === getClass(i)?.simplename()?.toLowerCase()) {
-					return getClass(i);
-				}
-			}
-			// See if the string is included in a class name
-			for (let i = LOOK_UP_CACHE.size; i < DATA.length; i++) {
-				let lower = DATA[i][PROPERTY.TYPE_IDENTIFIER]?.toLowerCase();
-				if (lowerID.includes(lower)) {
+				if (getClass(i)?.simplename()?.toLowerCase() === lowerID) {
 					return getClass(i);
 				}
 			}
@@ -373,7 +354,7 @@ function getClass(id) {
 	}
 
 	output.hrefLink = function () {
-		return window.location.pathname + '#' + this.type();
+		return window.location.origin + window.location.pathname + '#' + this.type();
 	}
 
 	return output;
@@ -405,6 +386,10 @@ function getParameter(paramData) {
 
 	output.dataIndex = function () {
 		return this.data.dataIndex;
+	}
+
+	output.id = function () {
+		return this.type();
 	}
 
 	return output;
@@ -452,7 +437,7 @@ function getMethod(methodData) {
 
 	output.toKubeJSStaticCall = function () {
 		let parent = getClass(this.declaredIn());
-		let out = `// KJSODocs: ${parent.hrefLink()}\n$${parent.simplename().toUpperCase()}.${this.name()}(`;
+		let out = `// KJSODocs: ${this.hrefLink()}\n$${parent.simplename().toUpperCase()}.${this.name()}(`;
 		for (let i = 0; i < this.parameters().length; i++) {
 			out += getParameter(this.parameters()[i]).name();
 			if (i < this.parameters().length - 1) {
@@ -461,6 +446,17 @@ function getMethod(methodData) {
 		}
 		out += `);`;
 		return out;
+	}
+
+	output.id = function () {
+		// Generate a unique HTML ID for this method
+		return this.declaredIn() + "." + this.name() + "(" + this.parameters().map((param) => {
+			return getParameter(param).id();
+		}).join(",") + ")";
+	}
+
+	output.hrefLink = function () {
+		return getClass(this.declaredIn()).hrefLink() + "---" + this.id();
 	}
 
 	return output;
@@ -503,6 +499,15 @@ function getField(fieldData) {
 		return `// KJSODocs: ${getClass(this.type()).hrefLink()}\n$${parent.simplename().toUpperCase()}.${this.name()};`;
 	}
 
+	output.id = function () {
+		// Generate a unique HTML ID for this field
+		return this.declaredIn() + "." + this.name();
+	}
+
+	output.hrefLink = function () {
+		return getClass(this.declaredIn()).hrefLink() + "---" + this.id();
+	}
+
 	return output;
 }
 
@@ -540,7 +545,7 @@ function getConstructor(constructorData) {
 
 	output.toKubeJSStaticCall = function () {
 		let parent = getClass(this.declaredIn());
-		let out = `// KJSODocs: ${parent.hrefLink()}\nlet ${parent.simplename()} = new $${parent.simplename().toUpperCase()}(`;
+		let out = `// KJSODocs: ${this.hrefLink()}\nlet ${parent.simplename()} = new $${parent.simplename().toUpperCase()}(`;
 		for (let i = 0; i < this.parameters().length; i++) {
 			out += getParameter(this.parameters()[i]).name();
 			if (i < this.parameters().length - 1) {
@@ -549,6 +554,17 @@ function getConstructor(constructorData) {
 		}
 		out += ");";
 		return out;
+	}
+
+	output.id = function () {
+		// Generate a unique HTML ID for this constructor
+		return this.declaredIn() + ".__init__(" + this.parameters().map((param) => {
+			return getParameter(param).id();
+		}).join(",") + ")";
+	}
+
+	output.hrefLink = function () {
+		return getClass(this.declaredIn()).hrefLink() + "---" + this.id();
 	}
 
 	return output;

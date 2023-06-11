@@ -3,10 +3,9 @@ function changeURL(url) {
 	onHashChange();
 }
 
-function createLink(element, id, rawId) {
-	element.style.textDecoration = 'underline';
-	element.style.color = '#8cb4ff';
-	element.style.cursor = 'pointer';
+
+function createLink(element, id, rawId = null, focus = null) {
+	element.classList.add('link');
 	let redirect = id;
 	if (rawId) {
 		redirect = rawId;
@@ -19,6 +18,9 @@ function createLink(element, id, rawId) {
 		} else {
 			redirect = id;
 		}
+	}
+	if (focus) {
+		redirect += `---${focus}`;
 	}
 	element.onclick = () => changeURL(`#${redirect}`);
 }
@@ -180,6 +182,7 @@ function appendAttributesToClassTableRow(row, class_id) {
 	row.setAttribute('name', clazz.name());
 	row.setAttribute('type', class_id);
 	row.setAttribute('row-type', 'class');
+	row.id = class_id;
 	// row.setAttribute('declared-in', clazz);
 }
 
@@ -194,6 +197,8 @@ function appendAttributesToMethodTableRow(row, class_id, method, current_class_i
 	if (current_class_id) {
 		row.setAttribute('current-class', current_class_id);
 	}
+
+	row.id = method.id();
 }
 
 function appendAttributesToFieldTableRow(row, class_id, field, current_class_id = null) {
@@ -206,6 +211,7 @@ function appendAttributesToFieldTableRow(row, class_id, field, current_class_id 
 	if (current_class_id) {
 		row.setAttribute('current-class', current_class_id);
 	}
+	row.id = field.id();
 }
 
 function appendAttributesToConstructorTableRow(row, class_id, constructor, current_class_id = null) {
@@ -217,6 +223,7 @@ function appendAttributesToConstructorTableRow(row, class_id, constructor, curre
 	if (current_class_id) {
 		row.setAttribute('current-class', current_class_id);
 	}
+	row.id = constructor.id();
 }
 
 function appendAttributesToRelationshipToTableRow(row, relationship, relationshipName, current_class_id = null) {
@@ -228,19 +235,46 @@ function appendAttributesToRelationshipToTableRow(row, relationship, relationshi
 	}
 }
 
+function createLinkSpan(action) {
+	let clipboard = span('');
+	clipboard.innerHTML = '&#128279;'
+	clipboard.setAttribute('class', 'link');
+	clipboard.setAttribute('title', 'Copy Link to clipboard');
+	clipboard.onclick = () => {
+		action();
+		// Change the innerHTML to a checkmark
+		clipboard.innerHTML = '&#10003;';
+		// Wait 2 seconds
+		setTimeout(() => {
+			// Change the innerHTML back to a clipboard
+			clipboard.innerHTML = '&#128279;';
+		}, 2000);
+	};
+	return clipboard;
+}
+
+function copyLinkToClipboard(link) {
+	return createLinkSpan(() => {
+		navigator.clipboard.writeText(link).then(r => console.log("Successfully Copied link to clipboard"));
+	});
+}
+
+
 function addClassToTable(table, class_id) {
 	let clazz = getClass(class_id);
-	let row = addRow(table, span(class_id), createShortLink(class_id), span(clazz.package()), createFullSignature(class_id));
+	let copyLink = copyLinkToClipboard(clazz.hrefLink());
+	let row = addRow(table, div(copyLink, span(class_id)), createShortLink(class_id), span(clazz.package()), createFullSignature(class_id));
 	appendAttributesToClassTableRow(row, class_id);
 }
 
 function addMethodToTable(table, classID, method, current_class_id = null) {
-	let row = addRow(table, span(classID), createMethodSignature(method.data), createFullSignature(classID));
+	let copyLink = copyLinkToClipboard(method.hrefLink());
+	let row = addRow(table, div(copyLink, span(classID)), createMethodSignature(method.data), createFullSignature(classID));
 	appendAttributesToMethodTableRow(row, classID, method, current_class_id);
-
 }
 
 function addFieldToTable(table, class_id, field, current_class_id = null) {
-	let row = addRow(table, span(class_id), createFieldSignature(field.data), createShortLink(field.type()), createFullSignature(class_id));
+	let copyLink = copyLinkToClipboard(field.hrefLink());
+	let row = addRow(table, div(copyLink, span(class_id)), createFieldSignature(field.data), createShortLink(field.type()), createFullSignature(class_id));
 	appendAttributesToFieldTableRow(row, class_id, field, current_class_id);
 }

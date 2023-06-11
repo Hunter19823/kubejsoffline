@@ -288,3 +288,15 @@ input:checked + .slider:before {
 .slider.round:before {
     border-radius: 50%;
 }
+
+.focused {
+    color: #ff9800;
+    font-weight: bold;
+    font-size: larger;
+}
+
+.link {
+    text-decoration: underline;
+    color: #8cb4ff;
+    cursor: pointer;
+}
