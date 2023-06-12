@@ -355,7 +355,7 @@ function getClass(id) {
 
 	output.hrefLink = function () {
 		let url = DecodeURL();
-		url.params.set("focus", this.id());
+		url.params.set("focus", this.type());
 		return url.href();
 	}
 

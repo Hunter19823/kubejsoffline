@@ -23,6 +23,8 @@ function createLink(element, id, rawId = null, focus = null) {
 		redirect += `---${focus}`;
 	}
 	element.onclick = () => changeURL(`#${redirect}`);
+
+	return element;
 }
 
 function createShortLink(id, parents) {
@@ -182,7 +184,7 @@ function appendAttributesToClassTableRow(row, class_id) {
 	row.setAttribute('name', clazz.name());
 	row.setAttribute('type', class_id);
 	row.setAttribute('row-type', 'class');
-	row.id = class_id;
+	row.id = clazz.type();
 	// row.setAttribute('declared-in', clazz);
 }
 
@@ -269,12 +271,12 @@ function addClassToTable(table, class_id) {
 
 function addMethodToTable(table, classID, method, current_class_id = null) {
 	let copyLink = copyLinkToClipboard(method.hrefLink());
-	let row = addRow(table, div(copyLink, span(classID)), createMethodSignature(method.data), createFullSignature(classID));
+	let row = addRow(table, div(copyLink, href(span(classID), `#${getClass(classID).type()}`)), createMethodSignature(method.data), createFullSignature(classID));
 	appendAttributesToMethodTableRow(row, classID, method, current_class_id);
 }
 
 function addFieldToTable(table, class_id, field, current_class_id = null) {
 	let copyLink = copyLinkToClipboard(field.hrefLink());
-	let row = addRow(table, div(copyLink, span(class_id)), createFieldSignature(field.data), createShortLink(field.type()), createFullSignature(class_id));
+	let row = addRow(table, div(copyLink, href(span(class_id), `#${getClass(class_id).type()}`)), createFieldSignature(field.data), createFullSignature(class_id));
 	appendAttributesToFieldTableRow(row, class_id, field, current_class_id);
 }

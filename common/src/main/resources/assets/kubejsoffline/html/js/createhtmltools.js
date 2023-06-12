@@ -125,9 +125,7 @@ function li(content) {
 }
 
 function href(element, url) {
-	element.style.textDecoration = 'underline';
-	element.style.color = '#8cb4ff';
-	element.style.cursor = 'pointer';
+	element.classList.add('link')
 	element.onclick = () => {
 		changeURL(url);
 	};

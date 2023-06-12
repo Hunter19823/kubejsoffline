@@ -721,18 +721,18 @@ function loadSearchResults(page_number, page_size) {
 
 	createResultTable("Matching Fields", 'field-table', results.fields, (table, data) => {
 		let fieldData = getField(data);
-		addFieldToTable(table, fieldData.type(), fieldData, fieldData.type());
-	}, 'Class-ID', 'Field Signature', 'Declared In');
+		addFieldToTable(table, fieldData.declaredIn(), fieldData, fieldData.type());
+	}, 'Declared In', 'Field Signature', 'Declaration Class');
 
 	createResultTable("Matching Methods", 'method-table', results.methods, (table, data) => {
 		let methodData = getMethod(data);
-		addMethodToTable(table, methodData.returnType(), methodData, methodData.returnType());
-	},'Class-ID', 'Method Signature', 'Declared In');
+		addMethodToTable(table, methodData.declaredIn(), methodData);
+	},'Declared In', 'Method Signature', 'Declaration Class');
 
 	createResultTable("Matching Parameters", 'parameter-table', results.parameters, (table, data) => {
 		let methodData = getMethod(data);
-		addMethodToTable(table, methodData.returnType(), methodData, methodData.returnType());
-	}, 'Class-ID', 'Method Signature', 'Declared In');
+		addMethodToTable(table, methodData.declaredIn(), methodData);
+	}, 'Declared In', 'Method Signature', 'Declaration Class');
 }
 
 function addSearchDetails(title, list, focus, page_number, page_size) {
