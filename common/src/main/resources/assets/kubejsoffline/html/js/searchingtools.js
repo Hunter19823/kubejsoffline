@@ -510,6 +510,22 @@ function dataFilter() {
 		return this.results;
 	}
 
+	output.sortResults = function () {
+		this.results.classes.sort((a,b) => {
+			return getClass(a).simplename().localeCompare(getClass(b).simplename());
+		});
+		this.results.fields.sort((a,b) => {
+			return getField(a).name().localeCompare(getField(b).name());
+		});
+		this.results.methods.sort((a,b) => {
+			return getMethod(a).name().localeCompare(getMethod(b).name());
+		});
+		this.results.parameters.sort((a,b) => {
+			return getMethod(a).name().localeCompare(getMethod(b).name());
+		});
+		return this;
+	}
+
 	return output;
 }
 
@@ -653,7 +669,13 @@ function searchFromParameters(parameters) {
 			}
 		}
 
+		console.log("Finding all matches...");
 		_last_filter.findAllThatMatch();
+		console.log("Done finding all matches");
+		// Sort the results
+		console.log("Sorting results...");
+		_last_filter.sortResults();
+		console.log("Done sorting results");
 	}
 
 	loadSearchResults(page, page_size);
@@ -672,64 +694,49 @@ function loadSearchResults(page_number, page_size) {
 
 	let results = _last_filter.getResults();
 
-	if (results.classes.length !== 0) {
-		document.body.append(addSearchDetails("Matching Classes",results.classes, 'class-table-header', page_number, page_size));
+	function createResultTable(title, table_id, list, addRowAction, ...headers) {
+		if(list.length === 0) {
+			return;
+		}
+
+		// Add the search details
+		document.body.append(addSearchDetails(title, list, table_id+'-header', page_number, page_size));
+
 		// Create a class table
-		let classTable = createTableWithHeaders(createSortableTable('class-table'), 'ID', 'Class Name', 'Package', 'Qualified Name');
+		let classTable = createTableWithHeaders(createSortableTable(table_id), ...headers);
+
 		// Determine the start and end of the page
-		let start = Math.min(page_number * page_size, results.classes.length);
-		let end = Math.min(start + page_size, results.classes.length);
+		let start = Math.max(0, Math.min(page_number * page_size, list.length - page_size));
+		let end = Math.min(start + page_size, list.length);
 		for (let i = start; i < end; i++) {
-			let id = results.classes[i];
-			let classData = getClass(id);
-			addClassToTable(classTable, classData.id());
+			let data = list[i];
+			addRowAction(classTable, data);
 		}
 	}
 
-	if (results.fields.length !== 0) {
-		document.body.append(addSearchDetails("Matching Fields", results.fields, 'field-table-header', page_number, page_size));
-		// Create a field table
-		let fieldTable = createTableWithHeaders(createSortableTable('field-table'), 'Class-ID', 'Field Signature', 'Declared In');
-		// Determine the start and end of the page
-		let start = Math.min(page_number * page_size, results.fields.length);
-		let end = Math.min(start + page_size, results.fields.length);
-		for (let i = start; i < end; i++) {
-			let field = results.fields[i];
-			let fieldData = getField(field);
-			addFieldToTable(fieldTable, fieldData.type(), fieldData, fieldData.type());
-		}
-	}
+	createResultTable("Matching Classes", 'class-table', results.classes, (table, data) => {
+		let classData = getClass(data);
+		addClassToTable(table, classData.id());
+	}, 'ID', 'Class Name', 'Package', 'Qualified Name');
 
-	if (results.methods.length !== 0) {
-		document.body.append(addSearchDetails("Matching Methods", results.methods, 'method-table-header', page_number, page_size));
-		// Create a method table
-		let methodTable = createTableWithHeaders(createSortableTable('method-table'), 'Class-ID', 'Method Signature', 'Declared In');
-		// Determine the start and end of the page
-		let start = Math.min(page_number * page_size, results.methods.length);
-		let end = Math.min(start + page_size, results.methods.length);
-		for (let i = start; i < end; i++) {
-			let method = results.methods[i];
-			let methodData = getMethod(method);
-			addMethodToTable(methodTable, methodData.returnType(), methodData, methodData.returnType());
-		}
-	}
+	createResultTable("Matching Fields", 'field-table', results.fields, (table, data) => {
+		let fieldData = getField(data);
+		addFieldToTable(table, fieldData.type(), fieldData, fieldData.type());
+	}, 'Class-ID', 'Field Signature', 'Declared In');
 
-	if (results.parameters.length !== 0) {
-		document.body.append(addSearchDetails("Matching Parameters", results.parameters, 'parameter-table-header', page_number, page_size));
-		// Create a parameter table
-		let parameterTable = createTableWithHeaders(createSortableTable('parameter-table'), 'Class-ID', 'Method Signature', 'Declared In');
-		// Determine the start and end of the page
-		let start = Math.min(page_number * page_size, results.parameters.length);
-		let end = Math.min(start + page_size, results.parameters.length);
-		for (let i = start; i < end; i++) {
-			let method = results.parameters[i];
-			let methodData = getMethod(method);
-			addMethodToTable(parameterTable, methodData.returnType(), methodData, methodData.returnType());
-		}
-	}
+	createResultTable("Matching Methods", 'method-table', results.methods, (table, data) => {
+		let methodData = getMethod(data);
+		addMethodToTable(table, methodData.returnType(), methodData, methodData.returnType());
+	},'Class-ID', 'Method Signature', 'Declared In');
+
+	createResultTable("Matching Parameters", 'parameter-table', results.parameters, (table, data) => {
+		let methodData = getMethod(data);
+		addMethodToTable(table, methodData.returnType(), methodData, methodData.returnType());
+	}, 'Class-ID', 'Method Signature', 'Declared In');
 }
 
 function addSearchDetails(title, list, focus, page_number, page_size) {
+	// console.log("Adding search details for "+title+" with focus "+focus+" and page number "+page_number+" and page size "+page_size);
 	let div = document.createElement('h2');
 
 	let headerTitle = document.createElement('h1');
@@ -746,16 +753,21 @@ function addSearchDetails(title, list, focus, page_number, page_size) {
 	}
 
 	let lastPage = Math.ceil(list.length / page_size) - 1;
+	let currentPage = Math.min(page_number, lastPage);
+
+	// console.log("Last page: " + lastPage);
+	// console.log("Current page: " + currentPage);
+
 
 	// Add a previous button, if needed
 	div.classList.add('search-pagination');
-	if (page_number > 0) {
+	if (currentPage > 0) {
 		let prev = span("Previous");
 		div.append(prev);
 		div.append(span("    "));
 		linkify(prev, () => {
 			// The Previous button should go to the minimum of the last page and the previous page
-			_last_search_parameters.set('page', Math.min(page_number - 1, lastPage));
+			_last_search_parameters.set('page', Math.min(currentPage - 1, lastPage));
 			_last_search_parameters.set('size', page_size);
 			_last_search_parameters.set('focus', focus);
 			changeURL(`#?${_last_search_parameters.toString()}`);
@@ -763,15 +775,15 @@ function addSearchDetails(title, list, focus, page_number, page_size) {
 	}
 
 	// Add the number of results and how many total results there are
-	div.append(span(`Page ${page_number + 1} of ${lastPage + 1} (${list.length} total results)`));
+	div.append(span(`Page ${currentPage + 1} of ${lastPage + 1} (${list.length} total results)`));
 
 	// Add a next button, if needed
-	if (list.length > (page_number + 1) * page_size) {
+	if (list.length > (currentPage + 1) * page_size) {
 		div.append(span("    "));
 		let next = span("Next");
 		div.append(next);
 		linkify(next, () => {
-			_last_search_parameters.set('page', page_number + 1);
+			_last_search_parameters.set('page', currentPage + 1);
 			_last_search_parameters.set('size', page_size);
 			_last_search_parameters.set('focus', focus);
 			changeURL(`#?${_last_search_parameters.toString()}`);

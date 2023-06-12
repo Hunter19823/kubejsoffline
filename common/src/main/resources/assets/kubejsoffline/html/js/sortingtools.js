@@ -272,7 +272,8 @@ function addSortTables() {
 			sortDiv.appendChild(sortLabel);
 			sortDiv.appendChild(options);
 			table.parentNode.insertBefore(sortDiv, table);
-			sortTable(table, SORT_FUNCTIONS.default);
+			if(!DecodeURL().isSearch())
+				sortTable(table, SORT_FUNCTIONS.default);
 		}
 	}
 }
