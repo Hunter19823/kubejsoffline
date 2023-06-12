@@ -452,7 +452,7 @@ function getMethod(methodData) {
 
 	output.id = function () {
 		// Generate a unique HTML ID for this method
-		return this.declaredIn() + "." + this.name() + "(" + this.parameters().map((param) => {
+		return getClass(this.declaredIn()).type() + "." + this.name() + "(" + this.parameters().map((param) => {
 			return getParameter(param).id();
 		}).join(",") + ")";
 	}
@@ -505,7 +505,7 @@ function getField(fieldData) {
 
 	output.id = function () {
 		// Generate a unique HTML ID for this field
-		return this.declaredIn() + "." + this.name();
+		return getClass(this.declaredIn()).type() + "." + this.name();
 	}
 
 	output.hrefLink = function () {
@@ -564,7 +564,7 @@ function getConstructor(constructorData) {
 
 	output.id = function () {
 		// Generate a unique HTML ID for this constructor
-		return this.declaredIn() + ".__init__(" + this.parameters().map((param) => {
+		return getClass(this.declaredIn()).type() + ".__init__(" + this.parameters().map((param) => {
 			return getParameter(param).id();
 		}).join(",") + ")";
 	}
