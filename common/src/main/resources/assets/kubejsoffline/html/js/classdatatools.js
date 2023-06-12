@@ -354,7 +354,9 @@ function getClass(id) {
 	}
 
 	output.hrefLink = function () {
-		return window.location.origin + window.location.pathname + '#' + this.type();
+		let url = DecodeURL();
+		url.params.set("focus", this.id());
+		return url.href();
 	}
 
 	return output;
@@ -456,7 +458,9 @@ function getMethod(methodData) {
 	}
 
 	output.hrefLink = function () {
-		return getClass(this.declaredIn()).hrefLink() + "---" + this.id();
+		let url = DecodeURL();
+		url.params.set("focus", this.id());
+		return url.href();
 	}
 
 	return output;
@@ -505,7 +509,9 @@ function getField(fieldData) {
 	}
 
 	output.hrefLink = function () {
-		return getClass(this.declaredIn()).hrefLink() + "---" + this.id();
+		let url = DecodeURL();
+		url.params.set("focus", this.id());
+		return url.href();
 	}
 
 	return output;
@@ -564,7 +570,9 @@ function getConstructor(constructorData) {
 	}
 
 	output.hrefLink = function () {
-		return getClass(this.declaredIn()).hrefLink() + "---" + this.id();
+		let url = DecodeURL();
+		url.params.set("focus", this.id());
+		return url.href();
 	}
 
 	return output;

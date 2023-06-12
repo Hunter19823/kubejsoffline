@@ -248,10 +248,14 @@ function DecodeURL() {
 	}
 
 	output.isHome = function () {
-		if (this.isSearch()){
+		if (this.isSearch()) {
 			return false;
 		}
 		return this.hash?.length === 0;
+	}
+
+	output.href = function () {
+		return `${window.location.origin}${window.location.pathname}#${this.hash}?${this.params.toString()}`;
 	}
 
 	return output;
