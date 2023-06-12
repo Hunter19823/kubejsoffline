@@ -34,6 +34,7 @@ function dataFilter() {
 
 	function fieldTypeAttributeMatcher(attribute, query, exact = false, includes = true) {
 		const MATCHER = attributeMatcher(attribute, query, exact, includes);
+
 		return (field) => {
 			return MATCHER(getClass(field.type()));
 		}
@@ -41,6 +42,7 @@ function dataFilter() {
 
 	function methodTypeAttributeMatcher(attribute, query, exact = false, includes = true) {
 		const MATCHER = attributeMatcher(attribute, query, exact, includes);
+
 		return (method) => {
 			return MATCHER(getClass(method.returnType()));
 		}
@@ -48,6 +50,7 @@ function dataFilter() {
 
 	function parameterTypeAttributeMatcher(attribute, query, exact = false, includes = true) {
 		const MATCHER = attributeMatcher(attribute, query, exact, includes);
+
 		return (parameter) => {
 			return MATCHER(getClass(parameter.type()));
 		}
@@ -97,7 +100,8 @@ function dataFilter() {
 
 	output.withFieldAny = function (query, exact = false, includes = true) {
 		const TYPE_FILTER = attributeMatcher('type', query, exact, includes);
-		const FIELD_TYPE_FILTER = fieldTypeAttributeMatcher('type', query, exact, includes);
+		const FIELD_TYPE_FILTER = fieldTypeAttributeMatcher('type', query, exact, includes)
+
 		return this.withFieldFilter((subject) => {
 			return TYPE_FILTER(subject) || FIELD_TYPE_FILTER(subject);
 		});
@@ -106,6 +110,7 @@ function dataFilter() {
 	output.withMethodAny = function (query, exact = false, includes = true) {
 		const NAME_FILTER = attributeMatcher('name', query, exact, includes);
 		const METHOD_TYPE_FILTER = methodTypeAttributeMatcher('type', query, exact, includes);
+
 		return this.withMethodFilter((subject) => {
 			return NAME_FILTER(subject) || METHOD_TYPE_FILTER(subject);
 		});
@@ -114,6 +119,7 @@ function dataFilter() {
 	output.withMethodParameterAny = function (query, exact = false, includes = true) {
 		const NAME_FILTER = attributeMatcher('name', query, exact, includes);
 		const PARAMETER_TYPE_FILTER = parameterTypeAttributeMatcher('type', query, exact, includes);
+
 		return this.withParamFilter((subject) => {
 			return NAME_FILTER(subject) || PARAMETER_TYPE_FILTER(subject);
 		});
@@ -158,6 +164,31 @@ function dataFilter() {
 	// Name
 
 	output.withName = function (query, exact = false, includes = true) {
+		let CLASS_NAME_FILTER = attributeMatcher('name', query, exact, includes);
+		let FIELD_NAME_FILTER = fieldTypeAttributeMatcher('name', query, exact, includes);
+		let METHOD_NAME_FILTER = methodTypeAttributeMatcher('name', query, exact, includes);
+		let PARAMETER_NAME_FILTER = parameterTypeAttributeMatcher('name', query, exact, includes);
+
+		this.withClassFilter((subject) => {
+			return CLASS_NAME_FILTER(subject);
+		});
+
+		this.withFieldFilter((subject) => {
+			return FIELD_NAME_FILTER(subject);
+		})
+
+		this.withMethodFilter((subject) => {
+			return METHOD_NAME_FILTER(subject);
+		});
+
+		this.withParamFilter((subject) => {
+			return PARAMETER_NAME_FILTER(subject);
+		});
+
+		return this;
+	}
+
+	output.withClassName = function (query, exact = false, includes = true) {
 		return this.withClassAttribute('name', query, exact, includes);
 	}
 
@@ -188,6 +219,34 @@ function dataFilter() {
 	// Simple Name
 
 	output.withSimpleName = function (query, exact = false, includes = true) {
+		let CLASS_SIMPLE_NAME_FILTER = attributeMatcher('simplename', query, exact, includes);
+		let FIELD_NAME_FILTER = fieldTypeAttributeMatcher('name', query, exact, includes);
+		let FIELD_TYPE_SIMPLE_NAME_FILTER = fieldTypeAttributeMatcher('simplename', query, exact, includes);
+		let METHOD_NAME_FILTER = methodTypeAttributeMatcher('name', query, exact, includes);
+		let METHOD_TYPE_SIMPLE_NAME_FILTER = methodTypeAttributeMatcher('simplename', query, exact, includes);
+		let PARAMETER_NAME_FILTER = parameterTypeAttributeMatcher('name', query, exact, includes);
+		let PARAMETER_TYPE_SIMPLE_NAME_FILTER = parameterTypeAttributeMatcher('simplename', query, exact, includes);
+
+		this.withClassFilter((subject) => {
+			return CLASS_SIMPLE_NAME_FILTER(subject);
+		});
+
+		this.withFieldFilter((subject) => {
+			return FIELD_NAME_FILTER(subject) || FIELD_TYPE_SIMPLE_NAME_FILTER(subject);
+		});
+
+		this.withMethodFilter((subject) => {
+			return METHOD_NAME_FILTER(subject) || METHOD_TYPE_SIMPLE_NAME_FILTER(subject);
+		});
+
+		this.withParamFilter((subject) => {
+			return PARAMETER_NAME_FILTER(subject) || PARAMETER_TYPE_SIMPLE_NAME_FILTER(subject);
+		});
+
+		return this;
+	}
+
+	output.withClassSimpleName = function (query, exact = false, includes = true) {
 		return this.withClassAttribute('simplename', query, exact, includes);
 	}
 
@@ -206,12 +265,74 @@ function dataFilter() {
 	// Raw Type
 
 	output.withRawType = function (query, exact = false, includes = true) {
+		let CLASS_RAW_TYPE_FILTER = attributeMatcher('rawtype', query, exact, includes);
+		let FIELD_TYPE_RAW_TYPE_FILTER = fieldTypeAttributeMatcher('rawtype', query, exact, includes);
+		let METHOD_RETURN_RAW_TYPE_FILTER = methodTypeAttributeMatcher('rawtype', query, exact, includes);
+		let METHOD_PARAMETER_RAW_TYPE_FILTER = parameterTypeAttributeMatcher('rawtype', query, exact, includes);
+
+		this.withClassFilter((subject) => {
+			return CLASS_RAW_TYPE_FILTER(subject);
+		});
+
+		this.withFieldFilter((subject) => {
+			return FIELD_TYPE_RAW_TYPE_FILTER(subject);
+		});
+
+		this.withMethodFilter((subject) => {
+			return METHOD_RETURN_RAW_TYPE_FILTER(subject);
+		});
+
+		this.withParamFilter((subject) => {
+			return METHOD_PARAMETER_RAW_TYPE_FILTER(subject);
+		});
+
+		return this;
+	}
+
+	output.withClassRawType = function (query, exact = false, includes = true) {
 		return this.withClassAttribute('rawtype', query, exact, includes);
+	}
+
+	output.withFieldRawType = function (query, exact = false, includes = true) {
+		return this.withFieldFilter(fieldTypeAttributeMatcher('rawtype', query, exact, includes));
+	}
+
+	output.withMethodReturnRawType = function (query, exact = false, includes = true) {
+		return this.withMethodFilter(methodTypeAttributeMatcher('rawtype', query, exact, includes));
+	}
+
+	output.withMethodParameterRawType = function (query, exact = false, includes = true) {
+		return this.withParamFilter(parameterTypeAttributeMatcher('rawtype', query, exact, includes));
 	}
 
 	// Type
 
 	output.withType = function (query, exact = false, includes = true) {
+		let CLASS_TYPE_FILTER = attributeMatcher('type', query, exact, includes);
+		let FIELD_TYPE_FILTER = fieldTypeAttributeMatcher('type', query, exact, includes);
+		let METHOD_RETURN_TYPE_FILTER = methodTypeAttributeMatcher('type', query, exact, includes);
+		let METHOD_PARAMETER_TYPE_FILTER = parameterTypeAttributeMatcher('type', query, exact, includes);
+
+		this.withClassFilter((subject) => {
+			return CLASS_TYPE_FILTER(subject);
+		});
+
+		this.withFieldFilter((subject) => {
+			return FIELD_TYPE_FILTER(subject);
+		});
+
+		this.withMethodFilter((subject) => {
+			return METHOD_RETURN_TYPE_FILTER(subject);
+		});
+
+		this.withParamFilter((subject) => {
+			return METHOD_PARAMETER_TYPE_FILTER(subject);
+		});
+
+		return this;
+	}
+
+	output.withClassType = function (query, exact = false, includes = true) {
 		return this.withClassAttribute('type', query, exact, includes);
 	}
 
@@ -230,6 +351,31 @@ function dataFilter() {
 	// Package
 
 	output.withPackage = function (query, exact = false, includes = true) {
+		let CLASS_PACKAGE_FILTER = attributeMatcher('package', query, exact, includes);
+		let FIELD_PACKAGE_FILTER = fieldTypeAttributeMatcher('package', query, exact, includes);
+		let METHOD_PACKAGE_FILTER = methodTypeAttributeMatcher('package', query, exact, includes);
+		let PARAMETER_PACKAGE_FILTER = parameterTypeAttributeMatcher('package', query, exact, includes);
+
+		this.withClassFilter((subject) => {
+			return CLASS_PACKAGE_FILTER(subject);
+		});
+
+		this.withFieldFilter((subject) => {
+			return FIELD_PACKAGE_FILTER(subject);
+		});
+
+		this.withMethodFilter((subject) => {
+			return METHOD_PACKAGE_FILTER(subject);
+		});
+
+		this.withParamFilter((subject) => {
+			return PARAMETER_PACKAGE_FILTER(subject);
+		});
+
+		return this;
+	}
+
+	output.withClassPackage = function (query, exact = false, includes = true) {
 		return this.withClassAttribute('package', query, exact, includes);
 	}
 
@@ -250,6 +396,24 @@ function dataFilter() {
 	output.withMethodParameterCount = function (count, exact = false, includes = true) {
 		return this.withMethodFilter((method) => method.parameters().length === count);
 	}
+
+	// Ignore
+	output.withIgnoreClasses = function (query, exact = false, includes = true) {
+		return this.withClassFilter(() => false);
+	}
+
+	output.withIgnoreMethods = function (query, exact = false, includes = true) {
+		return this.withMethodFilter(() => false);
+	}
+
+	output.withIgnoreFields = function (query, exact = false, includes = true) {
+		return this.withFieldFilter(() => false);
+	}
+
+	output.withIgnoreParameters = function (query, exact = false, includes = true) {
+		return this.withParamFilter(() => false);
+	}
+
 
 
 	// Filters
@@ -355,35 +519,63 @@ const NEW_QUERY_TERMS = {
 	'field-any': 'withFieldAny',
 	'method-any': 'withMethodAny',
 	'parameter-any': 'withMethodParameterAny',
+
+
 	'class-id': 'withId',
 	'field-id': 'withFieldTypeId',
 	'method-id': 'withMethodReturnTypeId',
 	'parameter-id': 'withMethodParameterTypeId',
-	'class-name': 'withName',
+
+
+	'name': 'withName',
+	'class-name': 'withClassName',
 	'field-name': 'withFieldName',
-	'field-type-name': 'withFieldTypeName',
 	'method-name': 'withMethodName',
-	'method-type-name': 'withMethodReturnTypeName',
 	'parameter-name': 'withMethodParameterName',
+
+	'field-type-name': 'withFieldTypeName',
+	'method-type-name': 'withMethodReturnTypeName',
 	'parameter-type-name': 'withMethodParameterTypeName',
+
+
 	'simplename': 'withSimpleName',
+	'class-type-simplename': 'withClassSimpleName',
 	'field-type-simplename': 'withFieldTypeSimpleName',
 	'method-type-simplename': 'withMethodReturnTypeSimpleName',
 	'parameter-type-simple-name': 'withMethodParameterTypeSimpleName',
+
+
 	'raw-type': 'withRawType',
+	'class-raw-type': 'withClassRawType',
+	'field-raw-type': 'withFieldRawType',
+	'method-raw-type': 'withMethodReturnRawType',
+	'parameter-raw-type': 'withMethodParameterRawType',
+
+
 	'type-name': 'withType',
+	'class-type-name': 'withClassType',
 	'field-type-name': 'withFieldTypeTypeName',
 	'method-type-name': 'withMethodReturnTypeTypeName',
 	'parameter-type-name': 'withMethodParameterTypeTypeName',
+
+
 	'package': 'withPackage',
+	'class-package': 'withClassPackage',
 	'field-type-package': 'withFieldTypePackage',
 	'method-type-package': 'withMethodReturnTypePackage',
 	'parameter-type-package': 'withMethodParameterTypePackage',
-	'parameter-count': 'withMethodParameterCount'
+
+
+	'parameter-count': 'withMethodParameterCount',
+
+
+	'ignore-classes': 'withIgnoreClasses',
+	'ignore-fields': 'withIgnoreFields',
+	'ignore-methods': 'withIgnoreMethods',
+	'ignore-parameters': 'withIgnoreParameters'
 }
 
 let _last_filter = null;
-let _last_search_terms = null;
 let _last_search_parameters = null;
 
 function searchFromParameters(parameters) {
@@ -392,69 +584,78 @@ function searchFromParameters(parameters) {
 		parameters.set('page', 0);
 	}
 	if (!parameters.has('size')) {
-		parameters.set('size', 100);
+		parameters.set('size', GLOBAL_SETTINGS.defaultSearchPageSize);
 	}
 	let page = parseInt(parameters.get('page'));
 	let page_size = parseInt(parameters.get('size'));
 
-	// Create an array of all the search terms in NEW_QUERY_TERMS that are in the parameters
-	function createArrayOfSearchTerms(searchParams) {
-		let search_terms = [];
+	function compareSearchParameters(before, after) {
+		// These keys are ignored when comparing search parameters
+		let IGNORED_KEYS = new Set(['page', 'size', 'focus']);
+
+		// A set of all the keys in the before and after parameters
+		let before_keys = new Set(before.keys());
+		let after_keys = new Set(after.keys());
+
+		// Determine which keys were added
+		let added_keys = new Set([...after_keys].filter(x => !before_keys.has(x)));
+		// Determine which keys were removed
+		let removed_keys = new Set([...before_keys].filter(x => !after_keys.has(x)));
+
+		// Check if the added/removed keys are in the ignored keys
+		for (let key of IGNORED_KEYS) {
+			if (added_keys.has(key)) {
+				added_keys.delete(key);
+			}
+			if (removed_keys.has(key)) {
+				removed_keys.delete(key);
+			}
+		}
+
+		// Check if the added/removed keys are the same
+		if (added_keys.size !== 0 || removed_keys.size !== 0) {
+			return false;
+		}
+
+		// Determine which keys were changed
+		let changed_keys = new Set([...before_keys].filter(x => after_keys.has(x)));
+
+		// Remove the ignored keys from the changed keys
+		for (let key of IGNORED_KEYS) {
+			changed_keys.delete(key);
+		}
+
+		// Check if the values of the changed keys are the same
+		for (let key of changed_keys) {
+			if (before.get(key) !== after.get(key)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	if(!_last_search_parameters || !compareSearchParameters(_last_search_parameters, parameters)) {
+		// The search parameters have changed or don't exist, so we need to create a new filter
+		console.log("Creating new filter either because the search parameters have changed or don't exist");
+		_last_search_parameters = parameters;
+		_last_filter = dataFilter();
+
 		for (const key in NEW_QUERY_TERMS) {
 			let value = NEW_QUERY_TERMS[key];
-			if (searchParams.has(key)) {
-				search_terms.push({'key': key, 'value': searchParams.get(key)});
+			if (_last_search_parameters.has(key)) {
+				_last_filter[value](_last_search_parameters.get(key));
 				continue;
 			}
 			let key_normalized = key.replaceAll(/[^a-z0-9-_]+/g, '');
-			if (searchParams.has(key_normalized)) {
-				search_terms.push({'key': key, 'value': searchParams.get(key_normalized)});
+			if (_last_search_parameters.has(key_normalized)) {
+				_last_filter[value](_last_search_parameters.get(key_normalized));
 			}
 		}
-		search_terms.sort();
-		return search_terms;
+
+		_last_filter.findAllThatMatch();
 	}
 
-	let search_terms = createArrayOfSearchTerms(parameters);
-
-	if (_last_search_terms !== null) {
-		// Check this array against the last one
-		if (search_terms.length === _last_search_terms.length) {
-			// Check if they are the same
-			let same = true;
-			for (let i = 0; i < search_terms.length; i++) {
-				if (search_terms[i].key !== _last_search_terms[i].key && search_terms[i].value !== _last_search_terms[i].value) {
-					same = false;
-					break;
-				}
-			}
-
-			if (same) {
-				// Load from cache
-				console.log("Loading page from cache...");
-
-				loadSearchResults(page, page_size);
-				return;
-			}
-		}
-	}
-
-	// This is a new search
-	_last_search_terms = search_terms;
-	_last_search_parameters = parameters;
-
-	_last_filter = dataFilter();
-
-	// Create a new filter from the search terms
-	for (let i = 0; i < search_terms.length; i++) {
-		let term = search_terms[i];
-		_last_filter[NEW_QUERY_TERMS[term.key]](term.value);
-	}
-
-	// Create a new cache
-	_last_filter.findAllThatMatch();
-
-	// Load from cache
 	loadSearchResults(page, page_size);
 }
 
@@ -472,7 +673,7 @@ function loadSearchResults(page_number, page_size) {
 	let results = _last_filter.getResults();
 
 	if (results.classes.length !== 0) {
-		document.body.append(addSearchDetails(results.fields, 'class-table', page_number, page_size));
+		document.body.append(addSearchDetails("Matching Classes",results.classes, 'class-table-header', page_number, page_size));
 		// Create a class table
 		let classTable = createTableWithHeaders(createSortableTable('class-table'), 'ID', 'Class Name', 'Package', 'Qualified Name');
 		// Determine the start and end of the page
@@ -483,11 +684,10 @@ function loadSearchResults(page_number, page_size) {
 			let classData = getClass(id);
 			addClassToTable(classTable, classData.id());
 		}
-		document.body.append(addSearchDetails(results.fields, 'class-table', page_number, page_size));
 	}
 
 	if (results.fields.length !== 0) {
-		document.body.append(addSearchDetails(results.fields, 'field-table', page_number, page_size));
+		document.body.append(addSearchDetails("Matching Fields", results.fields, 'field-table-header', page_number, page_size));
 		// Create a field table
 		let fieldTable = createTableWithHeaders(createSortableTable('field-table'), 'Class-ID', 'Field Signature', 'Declared In');
 		// Determine the start and end of the page
@@ -498,11 +698,10 @@ function loadSearchResults(page_number, page_size) {
 			let fieldData = getField(field);
 			addFieldToTable(fieldTable, fieldData.type(), fieldData, fieldData.type());
 		}
-		document.body.append(addSearchDetails(results.fields, 'field-table', page_number, page_size));
 	}
 
 	if (results.methods.length !== 0) {
-		document.body.append(addSearchDetails(results.methods, 'method-table', page_number, page_size));
+		document.body.append(addSearchDetails("Matching Methods", results.methods, 'method-table-header', page_number, page_size));
 		// Create a method table
 		let methodTable = createTableWithHeaders(createSortableTable('method-table'), 'Class-ID', 'Method Signature', 'Declared In');
 		// Determine the start and end of the page
@@ -513,11 +712,10 @@ function loadSearchResults(page_number, page_size) {
 			let methodData = getMethod(method);
 			addMethodToTable(methodTable, methodData.returnType(), methodData, methodData.returnType());
 		}
-		document.body.append(addSearchDetails(results.methods, 'method-table', page_number, page_size));
 	}
 
 	if (results.parameters.length !== 0) {
-		document.body.append(addSearchDetails(results.parameters, 'parameter-table', page_number, page_size));
+		document.body.append(addSearchDetails("Matching Parameters", results.parameters, 'parameter-table-header', page_number, page_size));
 		// Create a parameter table
 		let parameterTable = createTableWithHeaders(createSortableTable('parameter-table'), 'Class-ID', 'Method Signature', 'Declared In');
 		// Determine the start and end of the page
@@ -528,23 +726,17 @@ function loadSearchResults(page_number, page_size) {
 			let methodData = getMethod(method);
 			addMethodToTable(parameterTable, methodData.returnType(), methodData, methodData.returnType());
 		}
-		document.body.append(addSearchDetails(results.parameters, 'parameter-table', page_number, page_size));
-	}
-
-
-	addSortTables();
-
-	if (_last_search_parameters.has('focus')) {
-		let focus = _last_search_parameters.get('focus');
-
-		focusElement(focus);
 	}
 }
 
-function addSearchDetails(list, focus, page_number, page_size) {
-	document.body.append(br());
+function addSearchDetails(title, list, focus, page_number, page_size) {
+	let div = document.createElement('h2');
 
-	let div = document.createElement('div');
+	let headerTitle = document.createElement('h1');
+	headerTitle.innerText = title;
+	headerTitle.id = focus;
+	headerTitle.style.fontSize = 'revert';
+	div.append(headerTitle);
 
 	function linkify(tag, callback) {
 		tag.onclick = callback;
@@ -553,6 +745,8 @@ function addSearchDetails(list, focus, page_number, page_size) {
 		tag.style.cursor = 'pointer';
 	}
 
+	let lastPage = Math.ceil(list.length / page_size) - 1;
+
 	// Add a previous button, if needed
 	div.classList.add('search-pagination');
 	if (page_number > 0) {
@@ -560,7 +754,8 @@ function addSearchDetails(list, focus, page_number, page_size) {
 		div.append(prev);
 		div.append(span("    "));
 		linkify(prev, () => {
-			_last_search_parameters.set('page', page_number - 1);
+			// The Previous button should go to the minimum of the last page and the previous page
+			_last_search_parameters.set('page', Math.min(page_number - 1, lastPage));
 			_last_search_parameters.set('size', page_size);
 			_last_search_parameters.set('focus', focus);
 			changeURL(`#?${_last_search_parameters.toString()}`);
@@ -568,7 +763,7 @@ function addSearchDetails(list, focus, page_number, page_size) {
 	}
 
 	// Add the number of results and how many total results there are
-	div.append(span(`Page ${page_number + 1} of ${Math.ceil(list.length / page_size)} (${list.length} total results)`));
+	div.append(span(`Page ${page_number + 1} of ${lastPage + 1} (${list.length} total results)`));
 
 	// Add a next button, if needed
 	if (list.length > (page_number + 1) * page_size) {

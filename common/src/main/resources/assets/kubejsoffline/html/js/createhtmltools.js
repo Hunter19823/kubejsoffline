@@ -57,6 +57,12 @@ function span(text) {
 	return span;
 }
 
+function header(text, level = 2) {
+	let header = document.createElement('h' + level);
+	header.innerText = text;
+	return header;
+}
+
 function breakLine() {
 	document.body.appendChild(br());
 }
