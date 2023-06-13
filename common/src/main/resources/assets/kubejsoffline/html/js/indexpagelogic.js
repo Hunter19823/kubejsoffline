@@ -128,7 +128,7 @@ function onHashChange() {
 	// Now that we have our re-routing logic out of the way, we can rely on the page decoder to do the rest.
 	let decoded = DecodeURL();
 
-	console.log(`Decoded URL created in hash change. Raw Hash: '${window.location.hash}' Decoded Hash: '${decoded.hash}' Params: '${decoded.params.toString()}' Href: '${decoded.href()}' Is Homepage: '${decoded.isHome()}' Is Class: '${decoded.isClass()}' Is Search: '${decoded.isSearch()}' Has Focus: '${decoded.hasFocus()}' Focus: '${decoded.getFocusOrDefaultHeader()}'`);
+	console.log(`Decoded URL created in hash change. Raw Hash: '${window.location.hash}' Decoded Hash: '${decoded.hash}' Params: '${decoded.params.toString()}' Href: '${decoded.href()}' Is Homepage: '${decoded.isHome()}' Is Class: '${decoded.isClass()}' Is Search: '${decoded.isSearch()}' Has Focus: '${decoded.hasFocus()}' Focus: '${decoded.getFocusOrDefaultHeader()}' Parameter Size: '${decoded.getParamSize()}' Safe Parameter Size: '${decoded.getParamSizeSafe()}'`);
 	if (!decoded) {
 		console.error("Failed to decode URL.");
 		return;
@@ -238,13 +238,22 @@ function DecodeURL() {
 		return "page-header";
 	}
 
+	output.getParamSize = function () {
+		return this.params.size;
+	}
+
+	output.getParamSizeSafe = function () {
+		return [...this.params.keys()].length;
+	}
+
 	output.isSearch = function () {
-		if (this.params.size === 0){
+		if (this.getParamSizeSafe() === 0){
 			return false;
 		}
-		if(this.params.size !== 1) {
+		if(this.getParamSizeSafe() !== 1) {
 			return true;
 		}
+		// If thee is no focus, then it's a search as the only parameter must be the search term.
 		return !this.hasFocus();
 	}
 
