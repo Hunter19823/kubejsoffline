@@ -20,7 +20,7 @@ function createLink(element, id, rawId = null, focus = null) {
 		}
 	}
 	if (focus) {
-		redirect += `---${focus}`;
+		redirect += `?focus=${focus}`;
 	}
 	element.onclick = () => changeURL(`#${redirect}`);
 

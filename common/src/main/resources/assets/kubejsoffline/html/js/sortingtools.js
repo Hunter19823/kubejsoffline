@@ -276,4 +276,8 @@ function addSortTables() {
 				sortTable(table, SORT_FUNCTIONS.default);
 		}
 	}
+
+	document.body.append(document.getElementById('log'));
+
+	console.log("Finished adding sort tables and removing log to force logs to be at the bottom of the page.");
 }

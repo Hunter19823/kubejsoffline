@@ -127,6 +127,8 @@ function onHashChange() {
 
 	// Now that we have our re-routing logic out of the way, we can rely on the page decoder to do the rest.
 	let decoded = DecodeURL();
+
+	console.log(`Decoded URL created in hash change. Raw Hash: '${window.location.hash}' Decoded Hash: '${decoded.hash}' Params: '${decoded.params.toString()}' Href: '${decoded.href()}' Is Homepage: '${decoded.isHome()}' Is Class: '${decoded.isClass()}' Is Search: '${decoded.isSearch()}' Has Focus: '${decoded.hasFocus()}' Focus: '${decoded.getFocusOrDefaultHeader()}'`);
 	if (!decoded) {
 		console.error("Failed to decode URL.");
 		return;
@@ -136,6 +138,8 @@ function onHashChange() {
 
 	// Is this the home page?
 	if(decoded.isHome()) {
+		console.log("Loading Homepage.");
+
 		// Load the home page.
 		createHomePage();
 		// Add sort tables.
@@ -151,6 +155,8 @@ function onHashChange() {
 			console.error("Error state in URL detected.Cannot be a class and a homepage at the same time.");
 			return;
 		}
+		console.log("Loading Class from URL.");
+
 		// Load the class.
 		loadClass(decoded.hash);
 
@@ -168,6 +174,8 @@ function onHashChange() {
 			console.error("Error state in URL detected. Cannot be a search and a class/homepage at the same time.");
 			return;
 		}
+		console.log("Loading search from URL.");
+
 		// Load the search.
 		searchFromParameters(decoded.params);
 
@@ -195,7 +203,7 @@ function onHashChange() {
 
 function DecodeURL() {
 	let output = {};
-	let hash = window.location.hash;
+	let hash = location.hash;
 	if (hash?.length > 0) {
 		hash = hash.substring(1);
 	}
@@ -269,3 +277,43 @@ addEventListener('popstate', (event) => {
 window.onload = () => {
 	onHashChange();
 }
+
+document.onload = () => {
+	createInPageLog();
+}
+
+
+
+function createInPageLog()
+{
+	let log = document.createElement("div");
+	log.id = "log";
+	log.classList.add("refresh-persistent");
+	document.body.append(log);
+}
+const MESSAGES = [];
+(function () {
+	const old = console.log;
+	console.log = function () {
+		if(!document.getElementById('log')) {
+			let logger = document.getElementById('log');
+			if (logger) {
+				logger.innerHTML = MESSAGES.join('') + '<br />';
+			}
+			createInPageLog();
+		}
+		let logger = document.getElementById('log');
+		for (let i = 0; i < arguments.length; i++) {
+			if (typeof arguments[i] == 'object') {
+				MESSAGES.push((JSON && JSON.stringify ? JSON.stringify(arguments[i], undefined, 2) : arguments[i]) + '<br />');
+			} else {
+				MESSAGES.push(arguments[i] + '<br />');
+			}
+			logger.innerHTML += MESSAGES[MESSAGES.length - 1];
+		}
+
+		old(...arguments);
+	}
+	console.error = console.log;
+	console.warn = console.log;
+})();
