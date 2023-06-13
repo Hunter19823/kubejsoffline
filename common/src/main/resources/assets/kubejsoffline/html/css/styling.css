@@ -300,3 +300,15 @@ input:checked + .slider:before {
     color: #8cb4ff;
     cursor: pointer;
 }
+
+.clickable {
+    cursor: pointer;
+}
+
+.sticky {
+    position: sticky;
+    top: 0;
+    width: 100vw;
+    z-index: 999;
+    background: #201c21;
+}

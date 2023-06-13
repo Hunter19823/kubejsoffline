@@ -126,6 +126,8 @@ function li(content) {
 
 function href(element, url) {
 	element.classList.add('link')
+	element.setAttribute('href', url);
+	element.setAttribute('onclick', 'handleClickLink(this)');
 	element.onclick = () => {
 		changeURL(url);
 	};

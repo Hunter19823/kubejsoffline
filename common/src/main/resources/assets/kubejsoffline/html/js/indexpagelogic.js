@@ -43,9 +43,16 @@ function focusElement(elementId) {
 	if (element) {
 		element.scrollIntoView();
 		for (const e of document.getElementsByClassName("focused")) {
+			console.log("UnFocused element " + e.id);
 			e.classList.remove("focused");
 		}
 		element.classList.add("focused");
+		console.log("Focused element " + elementId);
+		const elementRect = element.getBoundingClientRect();
+		const absoluteElementTop = elementRect.top + window.scrollY;
+		const middle = absoluteElementTop - (window.innerHeight / 2);
+		window.scrollTo(0, middle);
+		console.log("Scrolled to middle of element " + elementId);
 	}
 }
 
@@ -146,7 +153,13 @@ function onHashChange() {
 		addSortTables();
 		// Focus the element.
 		focusElement(decoded.getFocusOrDefaultHeader());
+		// Add link icons.
+		addLinkIcons();
+		// Add Sticky Headers.
+		handleStickyElements();
+
 		hasState = true;
+
 	}
 
 	// Is this a class page?
@@ -165,6 +178,13 @@ function onHashChange() {
 
 		// Focus the element.
 		focusElement(decoded.getFocusOrDefaultHeader());
+
+		// Add link icons.
+		addLinkIcons();
+
+		// Add Sticky Headers.
+		handleStickyElements();
+
 		hasState = true;
 	}
 
@@ -184,6 +204,13 @@ function onHashChange() {
 
 		// Focus the element.
 		focusElement(decoded.getFocusOrDefaultHeader());
+
+		// Add link icons.
+		addLinkIcons();
+
+		// Add Sticky Headers.
+		handleStickyElements();
+
 		hasState = true;
 	}
 
@@ -300,29 +327,31 @@ function createInPageLog()
 	log.classList.add("refresh-persistent");
 	document.body.append(log);
 }
-const MESSAGES = [];
-(function () {
-	const old = console.log;
-	console.log = function () {
-		if(!document.getElementById('log')) {
+if(GLOBAL_SETTINGS.debug) {
+	const MESSAGES = [];
+	(function () {
+		const old = console.log;
+		console.log = function () {
+			if (!document.getElementById('log')) {
+				let logger = document.getElementById('log');
+				if (logger) {
+					logger.innerHTML = MESSAGES.join('') + '<br />';
+				}
+				createInPageLog();
+			}
 			let logger = document.getElementById('log');
-			if (logger) {
-				logger.innerHTML = MESSAGES.join('') + '<br />';
+			for (let i = 0; i < arguments.length; i++) {
+				if (typeof arguments[i] == 'object') {
+					MESSAGES.push((JSON && JSON.stringify ? JSON.stringify(arguments[i], undefined, 2) : arguments[i]) + '<br />');
+				} else {
+					MESSAGES.push(arguments[i] + '<br />');
+				}
+				logger.innerHTML += MESSAGES[MESSAGES.length - 1];
 			}
-			createInPageLog();
-		}
-		let logger = document.getElementById('log');
-		for (let i = 0; i < arguments.length; i++) {
-			if (typeof arguments[i] == 'object') {
-				MESSAGES.push((JSON && JSON.stringify ? JSON.stringify(arguments[i], undefined, 2) : arguments[i]) + '<br />');
-			} else {
-				MESSAGES.push(arguments[i] + '<br />');
-			}
-			logger.innerHTML += MESSAGES[MESSAGES.length - 1];
-		}
 
-		old(...arguments);
-	}
-	console.error = console.log;
-	console.warn = console.log;
-})();
+			old(...arguments);
+		}
+		console.error = console.log;
+		console.warn = console.log;
+	})();
+}

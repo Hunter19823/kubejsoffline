@@ -22,10 +22,10 @@ function createMethodTable(id) {
 		if (methods.length === 0) {
 			return;
 		}
-		table = createTableWithHeaders(createSortableTable('methods'), 'Methods', 'Return Type');
+		table = createTableWithHeaders(createSortableTable('methods'), 'Link', 'Methods', 'Return Type');
 		for (method of methods) {
 			meth = getMethod(method);
-			row = addRow(table, div(copyLinkToClipboard(meth.hrefLink()), createMethodSignature(method)), createFullSignature(getMethod(method).returnType()));
+			row = addRow(table, createMethodSignature(method), createFullSignature(getMethod(method).returnType()));
 			appendAttributesToMethodTableRow(row, meth.declaredIn(), meth, target.id());
 		}
 	}
@@ -55,10 +55,10 @@ function createFieldTable(id) {
 		if (fields.length === 0) {
 			return;
 		}
-		table = createTableWithHeaders(createSortableTable('fields'), 'Fields', 'Type');
+		table = createTableWithHeaders(createSortableTable('fields'), 'Link', 'Fields', 'Type');
 		for (data of fields) {
 			field = getField(data);
-			row = addRow(table, div(copyLinkToClipboard(field.hrefLink()), createFieldSignature(data)), createFullSignature(getField(data).type()));
+			row = addRow(table, createFieldSignature(data), createFullSignature(getField(data).type()));
 			appendAttributesToFieldTableRow(row, field.declaredIn(), field, target.id());
 		}
 	}
@@ -87,10 +87,10 @@ function createConstructorTable(id) {
 		if (constructors.length === 0) {
 			return;
 		}
-		table = createTableWithHeaders(createSortableTable('constructors'), 'Constructors');
+		table = createTableWithHeaders(createSortableTable('constructors'), 'Link', 'Constructors');
 		for (constructor of constructors) {
 			cons = getConstructor(constructor);
-			row = addRow(table, div(copyLinkToClipboard(cons.hrefLink()), createConstructorSignature(constructor, id)));
+			row = addRow(table, createConstructorSignature(constructor, id));
 			appendAttributesToConstructorTableRow(row, cons.declaredIn(), cons, target.id());
 		}
 	}

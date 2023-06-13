@@ -717,22 +717,22 @@ function loadSearchResults(page_number, page_size) {
 	createResultTable("Matching Classes", 'class-table', results.classes, (table, data) => {
 		let classData = getClass(data);
 		addClassToTable(table, classData.id());
-	}, 'ID', 'Class Name', 'Package', 'Qualified Name');
+	}, 'Link', 'ID', 'Class Name', 'Package', 'Qualified Name');
 
 	createResultTable("Matching Fields", 'field-table', results.fields, (table, data) => {
 		let fieldData = getField(data);
 		addFieldToTable(table, fieldData.declaredIn(), fieldData, fieldData.type());
-	}, 'Declared In', 'Field Signature', 'Declaration Class');
+	}, 'Link', 'Declared In', 'Field Signature', 'Declaration Class');
 
 	createResultTable("Matching Methods", 'method-table', results.methods, (table, data) => {
 		let methodData = getMethod(data);
 		addMethodToTable(table, methodData.declaredIn(), methodData);
-	},'Declared In', 'Method Signature', 'Declaration Class');
+	},'Link', 'Declared In', 'Method Signature', 'Declaration Class');
 
 	createResultTable("Matching Parameters", 'parameter-table', results.parameters, (table, data) => {
 		let methodData = getMethod(data);
 		addMethodToTable(table, methodData.declaredIn(), methodData);
-	}, 'Declared In', 'Method Signature', 'Declaration Class');
+	}, 'Link', 'Declared In', 'Method Signature', 'Declaration Class');
 }
 
 function addSearchDetails(title, list, focus, page_number, page_size) {
@@ -761,15 +761,18 @@ function addSearchDetails(title, list, focus, page_number, page_size) {
 
 	// Add a previous button, if needed
 	div.classList.add('search-pagination');
+	div.classList.add('stick-able');
 	if (currentPage > 0) {
 		let prev = span("Previous");
 		div.append(prev);
 		div.append(span("    "));
+		// The Previous button should go to the minimum of the last page and the previous page
+		_last_search_parameters.set('page', Math.min(currentPage - 1, lastPage));
+		_last_search_parameters.set('size', page_size);
+		_last_search_parameters.set('focus', focus);
+		prev.setAttribute('href', `#?${_last_search_parameters.toString()}`)
+		prev.setAttribute('onclick', 'changeURLFromElement(this);');
 		linkify(prev, () => {
-			// The Previous button should go to the minimum of the last page and the previous page
-			_last_search_parameters.set('page', Math.min(currentPage - 1, lastPage));
-			_last_search_parameters.set('size', page_size);
-			_last_search_parameters.set('focus', focus);
 			changeURL(`#?${_last_search_parameters.toString()}`);
 		});
 	}
@@ -782,10 +785,13 @@ function addSearchDetails(title, list, focus, page_number, page_size) {
 		div.append(span("    "));
 		let next = span("Next");
 		div.append(next);
+		// The Previous button should go to the minimum of the last page and the previous page
+		_last_search_parameters.set('page', currentPage + 1);
+		_last_search_parameters.set('size', page_size);
+		_last_search_parameters.set('focus', focus);
+		next.setAttribute('href', `#?${_last_search_parameters.toString()}`)
+		next.setAttribute('onclick', 'changeURLFromElement(this);');
 		linkify(next, () => {
-			_last_search_parameters.set('page', currentPage + 1);
-			_last_search_parameters.set('size', page_size);
-			_last_search_parameters.set('focus', focus);
 			changeURL(`#?${_last_search_parameters.toString()}`);
 		});
 	}

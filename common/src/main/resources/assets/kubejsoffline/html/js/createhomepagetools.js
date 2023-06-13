@@ -6,12 +6,10 @@ function createPageHeader() {
 	header.style.textDecoration = 'underline';
 	header.style.color = '#8cb4ff';
 	header.style.cursor = 'pointer';
-	title.onclick = () => {
-		changeURL("");
-	};
-	img.onclick = () => {
-		changeURL("");
-	};
+	title.setAttribute('href', '#');
+	img.setAttribute('href', '#');
+	title.setAttribute('onclick', 'changeURLFromElement(this);');
+	img.setAttribute('onclick', 'changeURLFromElement(this);');
 	title.innerHTML = 'KubeJS Offline v' + PROJECT_INFO.mod_version;
 	img.src = 'https://raw.githubusercontent.com/Hunter19823/kubejsoffline/master/kubejs_offline_logo.png';
 	img.style.height = '7em';
@@ -44,7 +42,7 @@ function createHomePage() {
 		span = document.createElement('span');
 		span.innerHTML = keys[i];
 		let period = keys[i]?.lastIndexOf('.');
-		table = createTableWithHeaders(createSortableTable(period === -1 ? keys[i] : keys[i].substring(period + 1)), span);
+		table = createTableWithHeaders(createSortableTable(period === -1 ? keys[i] : keys[i].substring(period + 1)), 'Link', span);
 		for (let j = 0; j < EVENTS[keys[i]].length; j++) {
 			let row = addRow(table, EVENTS[keys[i]][j]);
 			appendAttributesToClassTableRow(row, EVENTS[keys[i]][j]);

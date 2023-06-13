@@ -3,7 +3,9 @@ function changeURL(url) {
 	onHashChange();
 }
 
-
+function changeURLFromElement(element) {
+	changeURL(element.getAttribute('href'));
+}
 function createLink(element, id, rawId = null, focus = null) {
 	element.classList.add('link');
 	let redirect = id;
@@ -22,7 +24,8 @@ function createLink(element, id, rawId = null, focus = null) {
 	if (focus) {
 		redirect += `?focus=${focus}`;
 	}
-	element.onclick = () => changeURL(`#${redirect}`);
+	element.setAttribute('href', `#${redirect}`);
+	element.setAttribute('onclick', 'changeURLFromElement(this);');
 
 	return element;
 }
@@ -237,12 +240,22 @@ function appendAttributesToRelationshipToTableRow(row, relationship, relationshi
 	}
 }
 
+const LINK_MAP = {};
+function handleClickLink(element) {
+	LINK_MAP[element.id]();
+}
 function createLinkSpan(action) {
 	let clipboard = span('');
 	clipboard.innerHTML = '&#128279;'
-	clipboard.setAttribute('class', 'link');
+	clipboard.setAttribute('class', 'clickable');
 	clipboard.setAttribute('title', 'Copy Link to clipboard');
-	clipboard.onclick = () => {
+	clipboard.setAttribute('onclick', 'handleClickLink(this)');
+	// Assign a random ID to the span
+	clipboard.id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+	// Add the action to the map
+	LINK_MAP[clipboard.id] =  () => {
+		clipboard = document.getElementById(clipboard.id);
 		action();
 		// Change the innerHTML to a checkmark
 		clipboard.innerHTML = '&#10003;';
@@ -255,28 +268,28 @@ function createLinkSpan(action) {
 	return clipboard;
 }
 
-function copyLinkToClipboard(link) {
+function copyLinkToClipboard(link, currentElementID = null) {
 	return createLinkSpan(() => {
 		navigator.clipboard.writeText(link).then(r => console.log("Successfully Copied link to clipboard"));
+		if(currentElementID) {
+			focusElement(currentElementID);
+		}
 	});
 }
 
 
 function addClassToTable(table, class_id) {
 	let clazz = getClass(class_id);
-	let copyLink = copyLinkToClipboard(clazz.hrefLink());
-	let row = addRow(table, div(copyLink, span(class_id)), createShortLink(class_id), span(clazz.package()), createFullSignature(class_id));
+	let row = addRow(table, span(class_id), createShortLink(class_id), span(clazz.package()), createFullSignature(class_id));
 	appendAttributesToClassTableRow(row, class_id);
 }
 
 function addMethodToTable(table, classID, method, current_class_id = null) {
-	let copyLink = copyLinkToClipboard(method.hrefLink());
-	let row = addRow(table, div(copyLink, href(span(classID), `#${getClass(classID).type()}`)), createMethodSignature(method.data), createFullSignature(classID));
+	let row = addRow(table, href(span(classID), `#${getClass(classID).type()}`), createMethodSignature(method.data), createFullSignature(classID));
 	appendAttributesToMethodTableRow(row, classID, method, current_class_id);
 }
 
 function addFieldToTable(table, class_id, field, current_class_id = null) {
-	let copyLink = copyLinkToClipboard(field.hrefLink());
-	let row = addRow(table, div(copyLink, href(span(class_id), `#${getClass(class_id).type()}`)), createFieldSignature(field.data), createFullSignature(class_id));
+	let row = addRow(table, href(span(class_id), `#${getClass(class_id).type()}`), createFieldSignature(field.data), createFullSignature(class_id));
 	appendAttributesToFieldTableRow(row, class_id, field, current_class_id);
 }
