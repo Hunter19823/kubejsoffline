@@ -745,11 +745,8 @@ function addSearchDetails(title, list, focus, page_number, page_size) {
 	headerTitle.style.fontSize = 'revert';
 	div.append(headerTitle);
 
-	function linkify(tag, callback) {
-		tag.onclick = callback;
-		tag.style.textDecoration = 'underline';
-		tag.style.color = '#8cb4ff';
-		tag.style.cursor = 'pointer';
+	function linkify(tag) {
+		tag.classList.add('link');
 	}
 
 	let lastPage = Math.ceil(list.length / page_size) - 1;
@@ -770,11 +767,10 @@ function addSearchDetails(title, list, focus, page_number, page_size) {
 		_last_search_parameters.set('page', Math.min(currentPage - 1, lastPage));
 		_last_search_parameters.set('size', page_size);
 		_last_search_parameters.set('focus', focus);
-		prev.setAttribute('href', `#?${_last_search_parameters.toString()}`)
+		const PREV_PAGE = `#?${_last_search_parameters.toString()}`;
+		prev.setAttribute('href', `#?${PREV_PAGE}`)
 		prev.setAttribute('onclick', 'changeURLFromElement(this);');
-		linkify(prev, () => {
-			changeURL(`#?${_last_search_parameters.toString()}`);
-		});
+		linkify(prev);
 	}
 
 	// Add the number of results and how many total results there are
@@ -789,11 +785,10 @@ function addSearchDetails(title, list, focus, page_number, page_size) {
 		_last_search_parameters.set('page', currentPage + 1);
 		_last_search_parameters.set('size', page_size);
 		_last_search_parameters.set('focus', focus);
-		next.setAttribute('href', `#?${_last_search_parameters.toString()}`)
+		const NEXT_PAGE = _last_search_parameters.toString();
+		next.setAttribute('href', `#?${NEXT_PAGE}`)
 		next.setAttribute('onclick', 'changeURLFromElement(this);');
-		linkify(next, () => {
-			changeURL(`#?${_last_search_parameters.toString()}`);
-		});
+		linkify(next) ;
 	}
 
 	return div;
