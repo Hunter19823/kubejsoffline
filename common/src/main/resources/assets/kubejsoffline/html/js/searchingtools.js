@@ -767,7 +767,7 @@ function addSearchDetails(title, list, focus, page_number, page_size) {
 		_last_search_parameters.set('page', Math.min(currentPage - 1, lastPage));
 		_last_search_parameters.set('size', page_size);
 		_last_search_parameters.set('focus', focus);
-		const PREV_PAGE = `#?${_last_search_parameters.toString()}`;
+		const PREV_PAGE = _last_search_parameters.toString();
 		prev.setAttribute('href', `#?${PREV_PAGE}`)
 		prev.setAttribute('onclick', 'changeURLFromElement(this);');
 		linkify(prev);
