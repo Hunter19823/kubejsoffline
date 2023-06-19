@@ -3,10 +3,8 @@ function createPageHeader() {
 	let title = document.createElement('h1');
 	let img = document.createElement('img');
 	header.id = 'page-header';
-	header.style.textDecoration = 'underline';
-	header.style.color = '#8cb4ff';
-	header.style.cursor = 'pointer';
-	header.style.display = 'block-inline';
+	header.classList.add('header-div');
+	header.classList.add('link');
 	title.setAttribute('href', '#');
 	img.setAttribute('href', '#');
 	title.setAttribute('onclick', 'changeURLFromElement(this);');
