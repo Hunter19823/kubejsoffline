@@ -28,7 +28,20 @@ public class ReflectionHelperForge implements ReflectionHelper {
 		Vfs.addDefaultURLTypes(new Vfs.UrlType() {
 			@Override
 			public boolean matches(URL url) {
-				return ("union".equals(url.getProtocol())) && !((url).toExternalForm().matches(".+\\.jar!/.+"));
+				String externalForm = url.toExternalForm();
+//				LOG.info("Checking if URL matches union type: "+externalForm);
+				boolean endsInOpenJar = externalForm.matches(".+\\.jar!/.+");
+				boolean match = ("union".equals(url.getProtocol())) && !(endsInOpenJar) && externalForm.contains(".jar");
+//				if(match){
+//					LOG.info("URL '{}' matches union type",externalForm);
+//					try {
+//						URI uri = url.toURI();
+//						LOG.info("URI '{}' || Path '{}'", uri, uri.getPath());
+//					} catch (URISyntaxException e) {
+//						LOG.warn("Failed to get path from URL: "+externalForm);
+//					}
+//				}
+				return match;
 			}
 
 			@Override
@@ -37,14 +50,25 @@ public class ReflectionHelperForge implements ReflectionHelper {
 				if(path.indexOf('/') == 0) {
 					path = path.substring(1);
 				}
+				// Check if this is being run in a linux operating system.
+				if(File.separatorChar == '/') {
+					path = "/"+path;
+				}
 				int jar = path.indexOf(".jar");
 				if(jar != -1) {
 					path = path.substring(0,jar+4);
 				}
+				//LOG.info("Creating new File for path: '{}'", path);
 				File file = new File(path);
 				if(file.exists()){
-					return new ZipDir(new JarFile(file));
+					//LOG.info("File exists for path: '{}'", path);
+					JarFile jarFile = new JarFile(file);
+					//LOG.info("Created new JarFile for path: '{}' JarName: '{}'",path, jarFile.getName());
+					ZipDir zipDir = new ZipDir(jarFile);
+					//LOG.info("Created new ZipDir for path: '{}' ZipDirPath: '{}'",path, zipDir.getPath());
+					return zipDir;
 				}else{
+					LOG.warn("File does not exist for path: '{}'", path);
 					return null;
 				}
 			}

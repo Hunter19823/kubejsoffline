@@ -22,7 +22,7 @@ function createMethodTable(id) {
 		if (methods.length === 0) {
 			return;
 		}
-		table = createTableWithHeaders(createSortableTable('methods'), 'Methods', 'Return Type');
+		table = createTableWithHeaders(createSortableTable('methods'), 'Link', 'Methods', 'Return Type');
 		for (method of methods) {
 			meth = getMethod(method);
 			row = addRow(table, createMethodSignature(method), createFullSignature(getMethod(method).returnType()));
@@ -35,9 +35,9 @@ function createFieldTable(id) {
 	let target = getClass(id);
 	let fields = target.fields();
 	let table = null;
-	let field = null;
-	let row = null;
 	let data = null;
+	let row = null;
+	let field = null;
 	if (fields && GLOBAL_SETTINGS.showFields) {
 		fields = fields.filter((field) => {
 			let f = getField(field);
@@ -55,14 +55,15 @@ function createFieldTable(id) {
 		if (fields.length === 0) {
 			return;
 		}
-		table = createTableWithHeaders(createSortableTable('fields'), 'Fields', 'Type');
-		for (field of fields) {
-			data = getField(field);
-			row = addRow(table, createFieldSignature(field), createFullSignature(getField(field).type()));
-			appendAttributesToFieldTableRow(row, data.declaredIn(), data, target.id());
+		table = createTableWithHeaders(createSortableTable('fields'), 'Link', 'Fields', 'Type');
+		for (data of fields) {
+			field = getField(data);
+			row = addRow(table, createFieldSignature(data), createFullSignature(getField(data).type()));
+			appendAttributesToFieldTableRow(row, field.declaredIn(), field, target.id());
 		}
 	}
 }
+
 function createConstructorTable(id) {
 	let target = getClass(id);
 	let constructors = target.constructors();
@@ -87,7 +88,7 @@ function createConstructorTable(id) {
 		if (constructors.length === 0) {
 			return;
 		}
-		table = createTableWithHeaders(createSortableTable('constructors'), 'Constructors');
+		table = createTableWithHeaders(createSortableTable('constructors'), 'Link', 'Constructors');
 		for (constructor of constructors) {
 			cons = getConstructor(constructor);
 			row = addRow(table, createConstructorSignature(constructor, id));
@@ -104,12 +105,14 @@ function createRelationshipTable(id) {
 	let table = createTableWithHeaders(createSortableTable('relations'), 'Relationships', 'RelatedClass');
 	let seen = new Set();
 	let relation = null;
+	let row = null;
 	for (let i = 0; i < RELATIONS.length; i++) {
 		relation = data.relation(i);
 		if (relation) {
 			for (let j = 0; j < relation.length; j++) {
 				if (!seen.has(relation[j])) {
-					addRow(table, span(RELATIONS[i]), createFullSignature(relation[j]));
+					row = addRow(table, span(RELATIONS[i]), createFullSignature(relation[j]));
+					appendAttributesToRelationshipToTableRow(row, relation[j], RELATIONS[i], data.id())
 					seen.add(relation[j]);
 				}
 			}

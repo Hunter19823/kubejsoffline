@@ -9,4 +9,6 @@ const GLOBAL_SETTINGS = {
 	"showProtected": true,
 	"showPackage": true,
 	"showRelationships": true,
+	"defaultSearchPageSize": 25,
+	"debug": false,
 };

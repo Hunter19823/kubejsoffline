@@ -34,7 +34,9 @@ function getAnySuperClass(id) {
 
 	return null;
 }
+
 const LOOK_UP_CACHE = new Map();
+
 function getClass(id) {
 	let output = {};
 	if (id === null || id === undefined) {
@@ -66,18 +68,6 @@ function getClass(id) {
 			if (!isNaN(num)) {
 				return getClass(num);
 			}
-			// Assume it's a search query
-			if (id.match(/[a-zA-Z-]+--.+/)) {
-				let split = id.split("--");
-				if (split.length !== 2) {
-					console.error("Invalid search query: " + id);
-					return null;
-				}
-				let search = split[0];
-				let page = split[1];
-				searchForTerms(search, page);
-				return null;
-			}
 			let lowerID = id.toLowerCase();
 			if (LOOK_UP_CACHE.has(lowerID)) {
 				return getClass(LOOK_UP_CACHE.get(lowerID));
@@ -104,14 +94,7 @@ function getClass(id) {
 			}
 			// See if the string is a class simple name
 			for (let i = 0; i < DATA.length; i++) {
-				if (lowerID === getClass(i)?.simplename()?.toLowerCase()) {
-					return getClass(i);
-				}
-			}
-			// See if the string is included in a class name
-			for (let i = LOOK_UP_CACHE.size; i < DATA.length; i++) {
-				let lower = DATA[i][PROPERTY.TYPE_IDENTIFIER]?.toLowerCase();
-				if (lowerID.includes(lower)) {
+				if (getClass(i)?.simplename()?.toLowerCase() === lowerID) {
 					return getClass(i);
 				}
 			}
@@ -139,6 +122,9 @@ function getClass(id) {
 
 	output.simplename = function () {
 		let fullName = this.type();
+		if (this.data._cachedSimpleName) {
+			return this.data._cachedSimpleName;
+		}
 		// Remove any Generics
 		let index = fullName.indexOf("<");
 		if (index !== -1) {
@@ -154,11 +140,15 @@ function getClass(id) {
 		if (index !== -1) {
 			fullName = fullName.substring(0, index);
 		}
+		this.data._cachedSimpleName = fullName;
 		return fullName;
 	}
 
 	output.package = function () {
 		let pkg = this.data[PROPERTY.PACKAGE_NAME];
+		if (this.data._cachedPackageName) {
+			return this.data._cachedPackageName;
+		}
 		if (pkg === null || pkg === undefined) {
 			let fullName = this.type();
 			// Remove any Generics
@@ -176,6 +166,7 @@ function getClass(id) {
 			if (index !== -1) {
 				pkg = fullName.substring(0, index);
 			}
+			this.data._cachedPackageName = pkg;
 			return fullName;
 		}
 		return pkg;
@@ -365,7 +356,9 @@ function getClass(id) {
 	}
 
 	output.hrefLink = function () {
-		return window.location.pathname + '#' + this.type();
+		let url = DecodeURL();
+		url.params.set("focus", this.type());
+		return url.href();
 	}
 
 	return output;
@@ -397,6 +390,10 @@ function getParameter(paramData) {
 
 	output.dataIndex = function () {
 		return this.data.dataIndex;
+	}
+
+	output.id = function () {
+		return this.type();
 	}
 
 	return output;
@@ -444,7 +441,7 @@ function getMethod(methodData) {
 
 	output.toKubeJSStaticCall = function () {
 		let parent = getClass(this.declaredIn());
-		let out = `// KJSODocs: ${parent.hrefLink()}\n$${parent.simplename().toUpperCase()}.${this.name()}(`;
+		let out = `// KJSODocs: ${this.hrefLink()}\n$${parent.simplename().toUpperCase()}.${this.name()}(`;
 		for (let i = 0; i < this.parameters().length; i++) {
 			out += getParameter(this.parameters()[i]).name();
 			if (i < this.parameters().length - 1) {
@@ -453,6 +450,19 @@ function getMethod(methodData) {
 		}
 		out += `);`;
 		return out;
+	}
+
+	output.id = function () {
+		// Generate a unique HTML ID for this method
+		return getClass(this.declaredIn()).type() + "." + this.name() + "(" + this.parameters().map((param) => {
+			return getParameter(param).id();
+		}).join(",") + ")";
+	}
+
+	output.hrefLink = function () {
+		let url = DecodeURL();
+		url.params.set("focus", this.id());
+		return url.href();
 	}
 
 	return output;
@@ -495,6 +505,17 @@ function getField(fieldData) {
 		return `// KJSODocs: ${getClass(this.type()).hrefLink()}\n$${parent.simplename().toUpperCase()}.${this.name()};`;
 	}
 
+	output.id = function () {
+		// Generate a unique HTML ID for this field
+		return getClass(this.declaredIn()).type() + "." + this.name();
+	}
+
+	output.hrefLink = function () {
+		let url = DecodeURL();
+		url.params.set("focus", this.id());
+		return url.href();
+	}
+
 	return output;
 }
 
@@ -532,7 +553,7 @@ function getConstructor(constructorData) {
 
 	output.toKubeJSStaticCall = function () {
 		let parent = getClass(this.declaredIn());
-		let out = `// KJSODocs: ${parent.hrefLink()}\nlet ${parent.simplename()} = new $${parent.simplename().toUpperCase()}(`;
+		let out = `// KJSODocs: ${this.hrefLink()}\nlet ${parent.simplename()} = new $${parent.simplename().toUpperCase()}(`;
 		for (let i = 0; i < this.parameters().length; i++) {
 			out += getParameter(this.parameters()[i]).name();
 			if (i < this.parameters().length - 1) {
@@ -541,6 +562,19 @@ function getConstructor(constructorData) {
 		}
 		out += ");";
 		return out;
+	}
+
+	output.id = function () {
+		// Generate a unique HTML ID for this constructor
+		return getClass(this.declaredIn()).type() + ".__init__(" + this.parameters().map((param) => {
+			return getParameter(param).id();
+		}).join(",") + ")";
+	}
+
+	output.hrefLink = function () {
+		let url = DecodeURL();
+		url.params.set("focus", this.id());
+		return url.href();
 	}
 
 	return output;

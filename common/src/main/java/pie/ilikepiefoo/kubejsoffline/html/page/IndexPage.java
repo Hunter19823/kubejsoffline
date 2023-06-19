@@ -28,6 +28,7 @@ public class IndexPage extends HTMLFile {
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/projectinfo.js"));
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/modifier.js"));
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/globalsettings.js"));
+		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/stickytools.js"));
 //		HEADER_TAG.add(new CustomAssetTag("script","html/js/debugtools.js"));
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/classdatatools.js"));
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/createhtmltools.js"));

@@ -90,6 +90,7 @@ function createBaseContextMenu() {
 	function addSettingItem(name, setting) {
 		return addToggleMenuItem(name, () => {
 			GLOBAL_SETTINGS[setting] = !GLOBAL_SETTINGS[setting];
+			console.log("Setting item triggered: " + GLOBAL_SETTINGS[setting]);
 			onHashChange();
 		}, GLOBAL_SETTINGS[setting]);
 	}
@@ -189,6 +190,7 @@ function createBaseContextMenu() {
 		history.forward();
 	});
 	addMenuItem('Reload', () => {
+		console.log("Reload Triggered...");
 		onHashChange();
 	});
 	addMenuItem('Go To Home Page', () => {

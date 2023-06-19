@@ -43,10 +43,24 @@ function addRow(table, ...data) {
 	return tr;
 }
 
+function div(...args) {
+	let div = document.createElement('div');
+	for (let arg of args) {
+		div.appendChild(arg);
+	}
+	return div;
+}
+
 function span(text) {
 	let span = document.createElement('span');
 	span.innerText = text;
 	return span;
+}
+
+function header(text, level = 2) {
+	let header = document.createElement('h' + level);
+	header.innerText = text;
+	return header;
 }
 
 function breakLine() {
@@ -111,9 +125,9 @@ function li(content) {
 }
 
 function href(element, url) {
-	element.style.textDecoration = 'underline';
-	element.style.color = '#8cb4ff';
-	element.style.cursor = 'pointer';
+	element.classList.add('link')
+	element.setAttribute('href', url);
+	element.setAttribute('onclick', 'handleClickLink(this)');
 	element.onclick = () => {
 		changeURL(url);
 	};

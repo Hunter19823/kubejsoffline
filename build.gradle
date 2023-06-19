@@ -30,7 +30,7 @@ subprojects {
 
 	tasks.withType(ProcessResources) {
 		processResources {
-			inputs.property 'version', project.version
+			outputs.upToDateWhen { false }
 
 			filesMatching([rootProject.forge_config, rootProject.fabric_config, "pack.mcmeta", "assets/kubejsoffline/html/js/projectinfo.js"]) {
 				expand project.properties
