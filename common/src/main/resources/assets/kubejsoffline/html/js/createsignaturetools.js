@@ -1,4 +1,5 @@
 function changeURL(url) {
+	console.log("Changing URL to: " + url);
 	history.pushState("", document.title, window.location.pathname + url);
 	onHashChange();
 }
@@ -272,6 +273,7 @@ function copyLinkToClipboard(link, currentElementID = null) {
 	return createLinkSpan(() => {
 		navigator.clipboard.writeText(link).then(r => console.log("Successfully Copied link to clipboard"));
 		if(currentElementID) {
+			console.log("Focusing link element: "+ currentElementID);
 			focusElement(currentElementID);
 		}
 	});

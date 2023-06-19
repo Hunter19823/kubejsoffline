@@ -36,6 +36,7 @@ function loadClass(id) {
 }
 
 function focusElement(elementId) {
+	console.log("Focusing element " + elementId);
 	if (!elementId) {
 		elementId = "page-header";
 	}
