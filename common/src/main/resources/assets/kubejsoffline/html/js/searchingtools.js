@@ -797,6 +797,7 @@ function addSearchDetails(title, list, focus, page_number, page_size) {
 function createSearchBar() {
 	// Create one div that contains the search bar
 	let searchDiv = document.createElement('div');
+	searchDiv.append(document.createElement('br'));
 	searchDiv.id = 'search-bar';
 
 	// Create two elements, one for a search type, the other for search input

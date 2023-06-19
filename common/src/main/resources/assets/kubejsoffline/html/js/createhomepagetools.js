@@ -9,7 +9,7 @@ function createPageHeader() {
 	img.setAttribute('href', '#');
 	title.setAttribute('onclick', 'changeURLFromElement(this);');
 	img.setAttribute('onclick', 'changeURLFromElement(this);');
-	title.innerHTML = 'KubeJS Offline v' + PROJECT_INFO.mod_version;
+	title.innerHTML = `KubeJS Offline v${PROJECT_INFO.mod_version} [${PROJECT_INFO.minecraft_version}]`;
 	img.src = 'https://raw.githubusercontent.com/Hunter19823/kubejsoffline/master/kubejs_offline_logo.png';
 	img.style.height = '7em';
 	img.onerror = () => {
