@@ -48,10 +48,10 @@ function focusElement(elementId) {
 		}
 		element.classList.add("focused");
 		console.log("Focused element " + elementId);
-		if(element.tagName === "H1" || element.tagName === "H2"){
+		if (element.tagName === "H1" || element.tagName === "H2") {
 			element.scrollIntoView();
 			console.log("Brought Search element into view: " + elementId);
-		}else {
+		} else {
 			const elementRect = element.getBoundingClientRect();
 			const absoluteElementTop = elementRect.top + window.scrollY;
 			const middle = absoluteElementTop - (window.innerHeight / 2);
@@ -109,12 +109,11 @@ function onHashChange() {
 		window.location.assign(window.location.pathname + "#" + hash + "?" + queryString);
 		return;
 	}
-	if(hash.includes("%E2%80%94")) {
+	if (hash.includes("%E2%80%94")) {
 		console.log("Removing %E2%80%94 from URL and reloading it as a hash for optimization purposes.");
 		window.location.assign(window.location.pathname + "#" + hash.replace("%E2%80%94", "--"));
 		return;
 	}
-
 
 
 	// Let's quickly check if we have the old way of searching where we use -- instead of ?.
@@ -149,7 +148,7 @@ function onHashChange() {
 	let hasState = false;
 
 	// Is this the home page?
-	if(decoded.isHome()) {
+	if (decoded.isHome()) {
 		console.log("Loading Homepage.");
 
 		// Load the home page.
@@ -160,8 +159,8 @@ function onHashChange() {
 	}
 
 	// Is this a class page?
-	if(decoded.isClass()) {
-		if(hasState) {
+	if (decoded.isClass()) {
+		if (hasState) {
 			console.error("Error state in URL detected.Cannot be a class and a homepage at the same time.");
 			return;
 		}
@@ -174,8 +173,8 @@ function onHashChange() {
 	}
 
 	// Is this a search page?
-	if(decoded.isSearch()) {
-		if(hasState) {
+	if (decoded.isSearch()) {
+		if (hasState) {
 			console.error("Error state in URL detected. Cannot be a search and a class/homepage at the same time.");
 			return;
 		}
@@ -187,11 +186,11 @@ function onHashChange() {
 		hasState = true;
 	}
 
-	if(!hasState) {
+	if (!hasState) {
 		console.error("Error state in URL detected. Unable to determine what page to load.");
 		return;
 	}
-	if(hasState) {
+	if (hasState) {
 		// Add sort tables.
 		addSortTables();
 
@@ -206,7 +205,7 @@ function onHashChange() {
 	}
 
 	// Now that we've loaded the page, we can scroll to the highlighted text.
-	if(decoded.chromeHighlightText) {
+	if (decoded.chromeHighlightText) {
 		// Decode the text.
 		let text = decodeURIComponent(decoded.chromeHighlightText);
 		// Scroll to the text.
@@ -260,10 +259,10 @@ function DecodeURL() {
 	}
 
 	output.isSearch = function () {
-		if (this.getParamSizeSafe() === 0){
+		if (this.getParamSizeSafe() === 0) {
 			return false;
 		}
-		if(this.getParamSizeSafe() !== 1) {
+		if (this.getParamSizeSafe() !== 1) {
 			return true;
 		}
 		// If thee is no focus, then it's a search as the only parameter must be the search term.
@@ -271,7 +270,7 @@ function DecodeURL() {
 	}
 
 	output.isClass = function () {
-		if (this.isSearch()){
+		if (this.isSearch()) {
 			return false;
 		}
 		return this.hash?.length > 0;
@@ -308,14 +307,14 @@ document.onload = () => {
 }
 
 
-
 function createInPageLog() {
 	let log = document.createElement("div");
 	log.id = "log";
 	log.classList.add("refresh-persistent");
 	document.body.append(log);
 }
-if(GLOBAL_SETTINGS.debug) {
+
+if (GLOBAL_SETTINGS.debug) {
 	const MESSAGES = [];
 	(function () {
 		const old = console.log;

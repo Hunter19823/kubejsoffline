@@ -34,7 +34,9 @@ function getAnySuperClass(id) {
 
 	return null;
 }
+
 const LOOK_UP_CACHE = new Map();
+
 function getClass(id) {
 	let output = {};
 	if (id === null || id === undefined) {

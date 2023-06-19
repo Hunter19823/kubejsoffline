@@ -7,6 +7,7 @@ function changeURL(url) {
 function changeURLFromElement(element) {
 	changeURL(element.getAttribute('href'));
 }
+
 function createLink(element, id, rawId = null, focus = null) {
 	element.classList.add('link');
 	let redirect = id;
@@ -242,9 +243,11 @@ function appendAttributesToRelationshipToTableRow(row, relationship, relationshi
 }
 
 const LINK_MAP = {};
+
 function handleClickLink(element) {
 	LINK_MAP[element.id]();
 }
+
 function createLinkSpan(action) {
 	let clipboard = span('');
 	clipboard.innerHTML = '&#128279;'
@@ -255,7 +258,7 @@ function createLinkSpan(action) {
 	clipboard.id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
 	// Add the action to the map
-	LINK_MAP[clipboard.id] =  () => {
+	LINK_MAP[clipboard.id] = () => {
 		clipboard = document.getElementById(clipboard.id);
 		action();
 		// Change the innerHTML to a checkmark
@@ -272,8 +275,8 @@ function createLinkSpan(action) {
 function copyLinkToClipboard(link, currentElementID = null) {
 	return createLinkSpan(() => {
 		navigator.clipboard.writeText(link).then(r => console.log("Successfully Copied link to clipboard"));
-		if(currentElementID) {
-			console.log("Focusing link element: "+ currentElementID);
+		if (currentElementID) {
+			console.log("Focusing link element: " + currentElementID);
 			focusElement(currentElementID);
 		}
 	});

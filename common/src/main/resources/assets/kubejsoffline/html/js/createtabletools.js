@@ -63,6 +63,7 @@ function createFieldTable(id) {
 		}
 	}
 }
+
 function createConstructorTable(id) {
 	let target = getClass(id);
 	let constructors = target.constructors();

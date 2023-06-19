@@ -272,12 +272,12 @@ function addSortTables() {
 			sortDiv.appendChild(sortLabel);
 			sortDiv.appendChild(options);
 			table.parentNode.insertBefore(sortDiv, table);
-			if(!DecodeURL().isSearch())
+			if (!DecodeURL().isSearch())
 				sortTable(table, SORT_FUNCTIONS.default);
 		}
 	}
 
-	if(GLOBAL_SETTINGS.debug) {
+	if (GLOBAL_SETTINGS.debug) {
 		document.body.append(document.getElementById('log'));
 
 		console.log("Finished adding sort tables and removing log to force logs to be at the bottom of the page.");

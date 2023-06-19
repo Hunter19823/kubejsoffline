@@ -415,7 +415,6 @@ function dataFilter() {
 	}
 
 
-
 	// Filters
 	output.matchesClass = function (data) {
 		if (this._classFilters.length === 0) {
@@ -511,16 +510,16 @@ function dataFilter() {
 	}
 
 	output.sortResults = function () {
-		this.results.classes.sort((a,b) => {
+		this.results.classes.sort((a, b) => {
 			return getClass(a).simplename().localeCompare(getClass(b).simplename());
 		});
-		this.results.fields.sort((a,b) => {
+		this.results.fields.sort((a, b) => {
 			return getField(a).name().localeCompare(getField(b).name());
 		});
-		this.results.methods.sort((a,b) => {
+		this.results.methods.sort((a, b) => {
 			return getMethod(a).name().localeCompare(getMethod(b).name());
 		});
-		this.results.parameters.sort((a,b) => {
+		this.results.parameters.sort((a, b) => {
 			return getMethod(a).name().localeCompare(getMethod(b).name());
 		});
 		return this;
@@ -651,7 +650,7 @@ function searchFromParameters(parameters) {
 		return true;
 	}
 
-	if(!_last_search_parameters || !compareSearchParameters(_last_search_parameters, parameters)) {
+	if (!_last_search_parameters || !compareSearchParameters(_last_search_parameters, parameters)) {
 		// The search parameters have changed or don't exist, so we need to create a new filter
 		console.log("Creating new filter either because the search parameters have changed or don't exist");
 		_last_search_parameters = parameters;
@@ -695,12 +694,12 @@ function loadSearchResults(page_number, page_size) {
 	let results = _last_filter.getResults();
 
 	function createResultTable(title, table_id, list, addRowAction, ...headers) {
-		if(list.length === 0) {
+		if (list.length === 0) {
 			return;
 		}
 
 		// Add the search details
-		document.body.append(addSearchDetails(title, list, table_id+'-header', page_number, page_size));
+		document.body.append(addSearchDetails(title, list, table_id + '-header', page_number, page_size));
 
 		// Create a class table
 		let classTable = createTableWithHeaders(createSortableTable(table_id), ...headers);
@@ -727,7 +726,7 @@ function loadSearchResults(page_number, page_size) {
 	createResultTable("Matching Methods", 'method-table', results.methods, (table, data) => {
 		let methodData = getMethod(data);
 		addMethodToTable(table, methodData.declaredIn(), methodData);
-	},'Link', 'Declared In', 'Method Signature', 'Declaration Class');
+	}, 'Link', 'Declared In', 'Method Signature', 'Declaration Class');
 
 	createResultTable("Matching Parameters", 'parameter-table', results.parameters, (table, data) => {
 		let methodData = getMethod(data);
@@ -788,7 +787,7 @@ function addSearchDetails(title, list, focus, page_number, page_size) {
 		const NEXT_PAGE = _last_search_parameters.toString();
 		next.setAttribute('href', `#?${NEXT_PAGE}`)
 		next.setAttribute('onclick', 'changeURLFromElement(this);');
-		linkify(next) ;
+		linkify(next);
 	}
 
 	return div;

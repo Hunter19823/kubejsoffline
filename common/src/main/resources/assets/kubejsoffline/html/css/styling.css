@@ -317,7 +317,6 @@ input:checked + .slider:before {
     display: inline-block;
 }
 
-
 .link-container {
     display: flex;
     align-items: center;
