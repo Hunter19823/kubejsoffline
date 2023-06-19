@@ -42,18 +42,22 @@ function focusElement(elementId) {
 	}
 	let element = document.getElementById(elementId);
 	if (element) {
-		element.scrollIntoView();
 		for (const e of document.getElementsByClassName("focused")) {
 			console.log("UnFocused element " + e.id);
 			e.classList.remove("focused");
 		}
 		element.classList.add("focused");
 		console.log("Focused element " + elementId);
-		const elementRect = element.getBoundingClientRect();
-		const absoluteElementTop = elementRect.top + window.scrollY;
-		const middle = absoluteElementTop - (window.innerHeight / 2);
-		window.scrollTo(0, middle);
-		console.log("Scrolled to middle of element " + elementId);
+		if(element.tagName === "H1" || element.tagName === "H2"){
+			element.scrollIntoView();
+			console.log("Brought Search element into view: " + elementId);
+		}else {
+			const elementRect = element.getBoundingClientRect();
+			const absoluteElementTop = elementRect.top + window.scrollY;
+			const middle = absoluteElementTop - (window.innerHeight / 2);
+			window.scrollTo(0, middle);
+			console.log("Scrolled to middle of element " + elementId);
+		}
 	}
 }
 
@@ -150,14 +154,6 @@ function onHashChange() {
 
 		// Load the home page.
 		createHomePage();
-		// Add sort tables.
-		addSortTables();
-		// Focus the element.
-		focusElement(decoded.getFocusOrDefaultHeader());
-		// Add link icons.
-		addLinkIcons();
-		// Add Sticky Headers.
-		handleStickyElements();
 
 		hasState = true;
 
@@ -174,18 +170,6 @@ function onHashChange() {
 		// Load the class.
 		loadClass(decoded.hash);
 
-		// Add sort tables.
-		addSortTables();
-
-		// Focus the element.
-		focusElement(decoded.getFocusOrDefaultHeader());
-
-		// Add link icons.
-		addLinkIcons();
-
-		// Add Sticky Headers.
-		handleStickyElements();
-
 		hasState = true;
 	}
 
@@ -198,19 +182,7 @@ function onHashChange() {
 		console.log("Loading search from URL.");
 
 		// Load the search.
-		searchFromParameters(decoded.params);
-
-		// Add sort tables.
-		addSortTables();
-
-		// Focus the element.
-		focusElement(decoded.getFocusOrDefaultHeader());
-
-		// Add link icons.
-		addLinkIcons();
-
-		// Add Sticky Headers.
-		handleStickyElements();
+		searchFromParameters(DecodeURL().params);
 
 		hasState = true;
 	}
@@ -218,6 +190,19 @@ function onHashChange() {
 	if(!hasState) {
 		console.error("Error state in URL detected. Unable to determine what page to load.");
 		return;
+	}
+	if(hasState) {
+		// Add sort tables.
+		addSortTables();
+
+		// Add link icons.
+		addLinkIcons();
+
+		// Add Sticky Headers.
+		handleStickyElements();
+
+		// Focus the element.
+		focusElement(decoded.getFocusOrDefaultHeader());
 	}
 
 	// Now that we've loaded the page, we can scroll to the highlighted text.
@@ -307,22 +292,24 @@ function DecodeURL() {
 }
 
 addEventListener('popstate', (event) => {
+	console.log("Popstate.");
 	onHashChange();
 });
 
 
 window.onload = () => {
+	console.log("Window Loaded.");
 	onHashChange();
 }
 
 document.onload = () => {
+	console.log("Document Loaded.");
 	createInPageLog();
 }
 
 
 
-function createInPageLog()
-{
+function createInPageLog() {
 	let log = document.createElement("div");
 	log.id = "log";
 	log.classList.add("refresh-persistent");
