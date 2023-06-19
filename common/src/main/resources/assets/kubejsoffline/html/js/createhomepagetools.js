@@ -6,6 +6,7 @@ function createPageHeader() {
 	header.style.textDecoration = 'underline';
 	header.style.color = '#8cb4ff';
 	header.style.cursor = 'pointer';
+	header.style.display = 'block-inline';
 	title.setAttribute('href', '#');
 	img.setAttribute('href', '#');
 	title.setAttribute('onclick', 'changeURLFromElement(this);');
