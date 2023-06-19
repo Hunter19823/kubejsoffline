@@ -47,14 +47,13 @@ function addLinkIcons() {
 		let url = DecodeURL();
 		url.params.set("focus", element.id);
 		const linkIcon = copyLinkToClipboard(url.href(), element.id);
-		linkIcon.style.marginRight = '5px'; // Adjust the spacing between the icon and the element
+		linkIcon.classList.add('link-container');
 
 		// Check if the element is a table row
 		if (element.tagName.toLowerCase() === 'tr') {
 			// Create a new table cell
 			const td = document.createElement('td');
-			td.style.display = 'flex';
-			td.style.alignItems = 'center';
+			td.classList.add('link-container');
 
 			// Clone the existing content of the table row
 			const rowContent = Array.from(element.children);
@@ -73,11 +72,7 @@ function addLinkIcons() {
 		} else {
 			// For other elements, create a new div
 			const div = document.createElement('div');
-			div.style.display = 'flex';
-			div.style.alignItems = 'center';
-
-			// Create the unicode link icon (you can replace the icon with your desired unicode character)
-			linkIcon.style.marginRight = '5px'; // Adjust the spacing between the icon and the element
+			div.classList.add('link-container');
 
 			// Clone the element and append it to the new div
 			const elementClone = element.cloneNode(true);

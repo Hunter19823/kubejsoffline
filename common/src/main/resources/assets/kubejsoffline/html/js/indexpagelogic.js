@@ -198,11 +198,11 @@ function onHashChange() {
 		// Add link icons.
 		addLinkIcons();
 
-		// Add Sticky Headers.
-		handleStickyElements();
-
 		// Focus the element.
 		focusElement(decoded.getFocusOrDefaultHeader());
+
+		// Add Sticky Headers.
+		handleStickyElements();
 	}
 
 	// Now that we've loaded the page, we can scroll to the highlighted text.

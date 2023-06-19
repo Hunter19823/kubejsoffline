@@ -312,3 +312,19 @@ input:checked + .slider:before {
     z-index: 999;
     background: #201c21;
 }
+
+.header-div {
+    display: inline-block;
+}
+
+
+.link-container {
+    display: flex;
+    align-items: center;
+}
+
+td.link-container  {
+    width: 1.5em;
+    display: flex;
+    align-items: center;
+}
