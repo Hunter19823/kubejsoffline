@@ -14,8 +14,9 @@ public class MethodJSON {
 		JsonObject object = new JsonObject();
 		// Name of the method
 		var temp = SafeOperations.safeUnwrapName(method);
-		if(temp != null)
-			object.addProperty("name", temp);
+		if (temp != null) {
+			object.addProperty(JSONProperty.METHOD_NAME.jsName, CompressionJSON.getInstance().compress(temp));
+		}
 
 		// Return type of the method
 		var type = SafeOperations.safeUnwrapReturnType(method);

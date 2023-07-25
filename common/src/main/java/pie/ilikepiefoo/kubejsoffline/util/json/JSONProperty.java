@@ -3,6 +3,11 @@ package pie.ilikepiefoo.kubejsoffline.util.json;
 import com.google.gson.JsonObject;
 
 public enum JSONProperty {
+	// Compression Tag Properties
+	VERSION("v"),
+
+
+	// DATA TAG Properties
 	TYPE_ID("id"),
 	TYPE_IDENTIFIER("t"),
 	BASE_CLASS_NAME("name"),

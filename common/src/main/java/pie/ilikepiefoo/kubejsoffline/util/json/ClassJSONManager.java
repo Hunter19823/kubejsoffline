@@ -73,7 +73,7 @@ public class ClassJSONManager {
 			final JsonObject object = new JsonObject();
 			object.addProperty(JSONProperty.TYPE_ID.jsName, id);
 			this.typeData.add(object);
-			object.addProperty(JSONProperty.TYPE_IDENTIFIER.jsName, typeName);
+			object.addProperty(JSONProperty.TYPE_IDENTIFIER.jsName, CompressionJSON.getInstance().compress(typeName));
 			return id;
 		});
 		final int id = this.typeIDMap.get(typeName);

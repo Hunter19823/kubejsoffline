@@ -1,6 +1,10 @@
+function exists(thing) {
+	return thing !== null && thing !== undefined;
+}
+
 function getAnySuperClass(id) {
 	let data = null;
-	if (id === null || id === undefined) {
+	if (!exists(id)) {
 		return null;
 	}
 
@@ -9,7 +13,7 @@ function getAnySuperClass(id) {
 			data = getClass(id).data;
 			break;
 		case "object":
-			if (id['data'] !== null && id['data'] !== undefined) {
+			if (exists(id['data'])) {
 				data = id.data;
 			} else {
 				data = id;
@@ -20,15 +24,15 @@ function getAnySuperClass(id) {
 			return null;
 	}
 
-	if (data === null || data === undefined) {
+	if (!exists(data)) {
 		return null;
 	}
 
-	if (data[PROPERTY.SUPER_CLASS] !== null && data[PROPERTY.SUPER_CLASS] !== undefined) {
+	if (exists(data[PROPERTY.SUPER_CLASS])) {
 		return data[PROPERTY.SUPER_CLASS];
 	}
 
-	if (data[PROPERTY.GENERIC_SUPER_CLASS] !== null && data[PROPERTY.GENERIC_SUPER_CLASS] !== undefined) {
+	if (exists(data[PROPERTY.GENERIC_SUPER_CLASS])) {
 		return data[PROPERTY.GENERIC_SUPER_CLASS];
 	}
 
@@ -39,7 +43,7 @@ const LOOK_UP_CACHE = new Map();
 
 function getClass(id) {
 	let output = {};
-	if (id === null || id === undefined) {
+	if (!exists(id)) {
 		console.error("Invalid class id: " + id);
 		return null;
 	}
@@ -49,16 +53,16 @@ function getClass(id) {
 				console.error("Invalid class id: " + id);
 				return null;
 			}
-			if (DATA[id] === null || DATA[id] === undefined) {
+			if (!exists(DATA[id])) {
 				console.error("Invalid class data: " + id);
 				return null;
 			}
 			output.data = DATA[id];
 			break;
 		case "object":
-			if (id['data'] !== null && id['data'] !== undefined) {
+			if (exists(id['data'])) {
 				output.data = id.data;
-			} else if (id['id'] !== null && id['id'] !== undefined) {
+			} else if (exists(id['id'])) {
 				output.data = DATA[id.id];
 			}
 			break;
@@ -80,7 +84,7 @@ function getClass(id) {
 			}
 			// See if the string is a class type
 			for (let i = LOOK_UP_CACHE.size; i < DATA.length; i++) {
-				let lower = DATA[i][PROPERTY.TYPE_IDENTIFIER]?.toLowerCase();
+				let lower = getClass(i).type().toLowerCase();
 				LOOK_UP_CACHE.set(lower, i);
 				if (lowerID === lower) {
 					return getClass(i);
@@ -88,7 +92,7 @@ function getClass(id) {
 			}
 			// See if the string is a class name
 			for (let i = 0; i < DATA.length; i++) {
-				if (lowerID === DATA[i][PROPERTY.BASE_CLASS_NAME]?.toLowerCase()) {
+				if (lowerID === getClass(i).name().toLowerCase()) {
 					return getClass(i);
 				}
 			}
@@ -109,11 +113,21 @@ function getClass(id) {
 	}
 
 	output.name = function () {
-		return this.data[PROPERTY.BASE_CLASS_NAME];
+		if (!this.data._name_cache) {
+			if (exists(this.data[PROPERTY.BASE_CLASS_NAME])) {
+				this.data._name_cache = uncompressString(this.data[PROPERTY.BASE_CLASS_NAME]);
+			} else {
+				this.data._name_cache = this.type();
+			}
+		}
+		return this.data._name_cache;
 	}
 
 	output.type = function () {
-		return this.data[PROPERTY.TYPE_IDENTIFIER];
+		if (!this.data._type_cache) {
+			this.data._type_cache = uncompressString(this.data[PROPERTY.TYPE_IDENTIFIER]);
+		}
+		return this.data._type_cache;
 	}
 
 	output.rawtype = function () {
@@ -149,7 +163,7 @@ function getClass(id) {
 		if (this.data._cachedPackageName) {
 			return this.data._cachedPackageName;
 		}
-		if (pkg === null || pkg === undefined) {
+		if (!exists(pkg)) {
 			let fullName = this.type();
 			// Remove any Generics
 			let index = fullName.indexOf("<");
@@ -174,7 +188,7 @@ function getClass(id) {
 
 	output.paramargs = function () {
 		let args = this.data[PROPERTY.PARAMETERIZED_ARGUMENTS];
-		if (args === null || args === undefined || args.length === 0) {
+		if (!exists(args) || args.length === 0) {
 			return null;
 		}
 		return args;
@@ -182,7 +196,7 @@ function getClass(id) {
 
 	output.arrayDepth = function () {
 		let depth = this.data[PROPERTY.ARRAY_DEPTH];
-		if (depth === null || depth === undefined) {
+		if (!exists(depth)) {
 			return 0;
 		}
 		return depth;
@@ -195,13 +209,13 @@ function getClass(id) {
 	output.interfaces = function () {
 		let interfaces = new Set();
 		this._follow_inheritance((data) => {
-			if (data[PROPERTY.INTERFACES] !== null && data[PROPERTY.INTERFACES] !== undefined) {
+			if (exists(data[PROPERTY.INTERFACES])) {
 				for (let i = 0; i < data[PROPERTY.INTERFACES].length; i++) {
 					data[PROPERTY.INTERFACES][i].declaringClass = data[PROPERTY.TYPE_ID];
 					interfaces.add(data[PROPERTY.INTERFACES][i]);
 				}
 			}
-			if (data[PROPERTY.GENERIC_INTERFACES] !== null && data[PROPERTY.GENERIC_INTERFACES] !== undefined) {
+			if (exists(data[PROPERTY.GENERIC_INTERFACES])) {
 				for (let i = 0; i < data[PROPERTY.GENERIC_INTERFACES].length; i++) {
 					data[PROPERTY.GENERIC_INTERFACES][i].declaringClass = data[PROPERTY.TYPE_ID];
 					interfaces.add(data[PROPERTY.GENERIC_INTERFACES][i]);
@@ -218,7 +232,7 @@ function getClass(id) {
 		let fields = new Set();
 
 		function addFields(data) {
-			if (data[PROPERTY.FIELDS] !== null && data[PROPERTY.FIELDS] !== undefined) {
+			if (exists(data[PROPERTY.FIELDS])) {
 				for (let i = 0; i < data[PROPERTY.FIELDS].length; i++) {
 					data[PROPERTY.FIELDS][i].declaringClass = data[PROPERTY.TYPE_ID];
 					fields.add(data[PROPERTY.FIELDS][i]);
@@ -253,7 +267,7 @@ function getClass(id) {
 		let methods = new Set();
 
 		function addMethods(data) {
-			if (data[PROPERTY.METHODS] !== null && data[PROPERTY.METHODS] !== undefined) {
+			if (exists(data[PROPERTY.METHODS])) {
 				for (let i = 0; i < data[PROPERTY.METHODS].length; i++) {
 					data[PROPERTY.METHODS][i].declaringClass = data[PROPERTY.TYPE_ID];
 					methods.add(data[PROPERTY.METHODS][i]);
@@ -285,7 +299,7 @@ function getClass(id) {
 
 	output.constructors = function () {
 		let constructors = new Set();
-		if (this.data[PROPERTY.CONSTRUCTORS] !== null && this.data[PROPERTY.CONSTRUCTORS] !== undefined) {
+		if (exists(this.data[PROPERTY.CONSTRUCTORS])) {
 			for (let i = 0; i < this.data[PROPERTY.CONSTRUCTORS].length; i++) {
 				this.data[PROPERTY.CONSTRUCTORS][i].declaringClass = this.data[PROPERTY.TYPE_ID];
 				this.data[PROPERTY.CONSTRUCTORS][i].dataIndex = i;
@@ -302,7 +316,7 @@ function getClass(id) {
 	output.annotations = function () {
 		let annotations = new Set();
 		this._follow_inheritance((data) => {
-			if (data[PROPERTY.ANNOTATIONS] !== null && data[PROPERTY.ANNOTATIONS] !== undefined) {
+			if (exists(data[PROPERTY.ANNOTATIONS])) {
 				for (let i = 0; i < data[PROPERTY.ANNOTATIONS].length; i++) {
 					data[PROPERTY.ANNOTATIONS][i].dataIndex = i;
 					annotations.add(data[PROPERTY.ANNOTATIONS][i]);
@@ -321,7 +335,7 @@ function getClass(id) {
 	output._follow_inheritance = function (action) {
 		let seen = new Set();
 		let current = this.id();
-		while (current !== null && current !== undefined && !seen.has(current)) {
+		while (exists(current) && !seen.has(current)) {
 			action(DATA[current]);
 			seen.add(current);
 			current = getAnySuperClass(current);
@@ -330,7 +344,7 @@ function getClass(id) {
 	}
 
 	output.relation = function (index) {
-		if (index === null || index === undefined) {
+		if (!exists(index)) {
 			return null;
 		}
 		if (index >= 0 && index < RELATIONS.length) {
@@ -369,7 +383,10 @@ function getParameter(paramData) {
 	output.data = paramData;
 
 	output.name = function () {
-		return this.data[PROPERTY.PARAMETER_NAME];
+		if (!exists(this.data._name_cache)) {
+			this.data._name_cache = uncompressString(this.data[PROPERTY.PARAMETER_NAME]);
+		}
+		return this.data._name_cache;
 	}
 
 	output.type = function () {
@@ -382,7 +399,7 @@ function getParameter(paramData) {
 
 	output.annotations = function () {
 		let annotations = this.data[PROPERTY.PARAMETER_ANNOTATIONS];
-		if (annotations === null || annotations === undefined || annotations.length === 0) {
+		if (!exists(this.data[PROPERTY.PARAMETER_ANNOTATIONS]) || annotations.length === 0) {
 			return null;
 		}
 		return new Set(annotations);
@@ -404,7 +421,10 @@ function getMethod(methodData) {
 	output.data = methodData;
 
 	output.name = function () {
-		return this.data[PROPERTY.METHOD_NAME];
+		if (!exists(this.data._name_cache)) {
+			this.data._name_cache = uncompressString(this.data[PROPERTY.METHOD_NAME]);
+		}
+		return this.data._name_cache;
 	}
 
 	output.returnType = function () {
@@ -417,7 +437,7 @@ function getMethod(methodData) {
 
 	output.annotations = function () {
 		let annotations = this.data[PROPERTY.METHOD_ANNOTATIONS];
-		if (annotations === null || annotations === undefined || annotations.length === 0) {
+		if (!exists(annotations) || annotations.length === 0) {
 			return null;
 		}
 		return new Set(annotations);
@@ -425,7 +445,7 @@ function getMethod(methodData) {
 
 	output.parameters = function () {
 		let parameters = this.data[PROPERTY.PARAMETERS];
-		if (parameters === null || parameters === undefined || parameters.length === 0) {
+		if (!exists(parameters) || parameters.length === 0) {
 			return [];
 		}
 		return parameters;
@@ -473,7 +493,10 @@ function getField(fieldData) {
 	output.data = fieldData;
 
 	output.name = function () {
-		return this.data[PROPERTY.FIELD_NAME];
+		if (!exists(this.data._name_cache)) {
+			this.data._name_cache = uncompressString(this.data[PROPERTY.FIELD_NAME]);
+		}
+		return this.data._name_cache;
 	}
 
 	output.type = function () {
@@ -486,7 +509,7 @@ function getField(fieldData) {
 
 	output.annotations = function () {
 		let annotations = this.data[PROPERTY.FIELD_ANNOTATIONS];
-		if (annotations === null || annotations === undefined || annotations.length === 0) {
+		if (!exists(annotations) || annotations.length === 0) {
 			return null;
 		}
 		return new Set(annotations);
@@ -529,7 +552,7 @@ function getConstructor(constructorData) {
 
 	output.annotations = function () {
 		let annotations = this.data[PROPERTY.CONSTRUCTOR_ANNOTATIONS];
-		if (annotations === null || annotations === undefined || annotations.length === 0) {
+		if (!exists(annotations) || annotations.length === 0) {
 			return null;
 		}
 		return new Set(annotations);
@@ -537,7 +560,7 @@ function getConstructor(constructorData) {
 
 	output.parameters = function () {
 		let parameters = this.data[PROPERTY.PARAMETERS];
-		if (parameters === null || parameters === undefined || parameters.length === 0) {
+		if (!exists(parameters) || parameters.length === 0) {
 			return [];
 		}
 		return parameters;

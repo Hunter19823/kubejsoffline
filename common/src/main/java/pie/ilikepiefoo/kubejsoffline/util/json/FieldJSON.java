@@ -20,7 +20,7 @@ public class FieldJSON {
 		var object = new JsonObject();
 
 		// Add the name of the field
-		object.addProperty(JSONProperty.FIELD_NAME.jsName, SafeOperations.safeUnwrapName(field));
+		object.addProperty(JSONProperty.FIELD_NAME.jsName, CompressionJSON.getInstance().compress(SafeOperations.safeUnwrapName(field)));
 		object.addProperty(JSONProperty.FIELD_TYPE.jsName, typeJson.get(JSONProperty.TYPE_ID.jsName).getAsInt());
 
 		TypeJSON.attachGenericAndArrayData(typeJson, field::getType);

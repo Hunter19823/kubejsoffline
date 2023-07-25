@@ -14,6 +14,7 @@ import pie.ilikepiefoo.kubejsoffline.html.tag.Tag;
 import pie.ilikepiefoo.kubejsoffline.util.ClassFinder;
 import pie.ilikepiefoo.kubejsoffline.util.json.ClassJSON;
 import pie.ilikepiefoo.kubejsoffline.util.json.ClassJSONManager;
+import pie.ilikepiefoo.kubejsoffline.util.json.CompressionJSON;
 import pie.ilikepiefoo.kubejsoffline.util.json.RelationsJSON;
 
 import java.io.File;
@@ -47,7 +48,7 @@ public class DocumentationThread extends Thread {
 		}
 		// Log the bindings.
 		int step = 0;
-		final int totalSteps = 9;
+		final int totalSteps = 10;
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] Initializing ClassFinder and Reflections Library...", ++step, totalSteps));
 		final long start = System.currentTimeMillis();
 		long timeMillis = System.currentTimeMillis();
@@ -101,6 +102,7 @@ public class DocumentationThread extends Thread {
 		ClassFinder.INSTANCE.clear();
 		ClassJSONManager.getInstance().clear();
 		DocumentationConfig.clearInstance();
+		CompressionJSON.getInstance().clear();
 		timeMillis = System.currentTimeMillis() - timeMillis;
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] Data cleared and dereferenced in %,dms", step, totalSteps, timeMillis));
 		final long end = System.currentTimeMillis();
@@ -109,6 +111,7 @@ public class DocumentationThread extends Thread {
 		if (null != output) {
 			sendLink(String.format("[KJS Offline] [Step %d/%d] The Documentation page can be found at kubejs/documentation/index.html or by clicking ", step, totalSteps), "here", "kubejs/documentation/index.html");
 		}
+		sendMessage(String.format("[KJS Offline] [Step %d/%d] Total File Size: %,.3fMb", ++step, totalSteps, (double) getFile().length() / 1024.0 / 1024.0));
 	}
 
 	private static void sendMessage(final String message) {

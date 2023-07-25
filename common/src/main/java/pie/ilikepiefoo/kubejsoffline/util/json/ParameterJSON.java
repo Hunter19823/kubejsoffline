@@ -16,7 +16,7 @@ public class ParameterJSON {
 		var temp = SafeOperations.safeUnwrapName(parameter);
 		if(temp == null || temp.isBlank())
 			return null;
-		object.addProperty(JSONProperty.PARAMETER_NAME.jsName, temp);
+		object.addProperty(JSONProperty.PARAMETER_NAME.jsName, CompressionJSON.getInstance().compress(temp));
 
 		var type = TypeJSON.of(SafeOperations.safeUnwrapReturnType(parameter));
 		if(type == null)

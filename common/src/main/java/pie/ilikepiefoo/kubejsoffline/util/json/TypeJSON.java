@@ -32,8 +32,10 @@ public class TypeJSON {
 		}
 		try {
 			attachGenericAndArrayData(object, type);
-
-			object.addProperty(JSONProperty.BASE_CLASS_NAME.jsName, name);
+			var compressedTypeName = CompressionJSON.getInstance().compress(name);
+			if (!compressedTypeName.equals(object.get(JSONProperty.TYPE_IDENTIFIER.jsName).getAsString())) {
+				object.addProperty(JSONProperty.BASE_CLASS_NAME.jsName, compressedTypeName);
+			}
 		} catch (final IllegalStateException e) {
 			LOG.error("Failed to attach generic and array data to type '{}' ('{}')", name, type);
 			LOG.info(object);

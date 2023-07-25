@@ -30,19 +30,23 @@ public class ClassJSON {
 			return;
 		}
 		JsonObject object = TypeJSON.of(subject);
-		if(object == null)
+		if (object == null) {
 			return;
+		}
 
 		attachType(object, JSONProperty.SUPER_CLASS.jsName, subject::getSuperclass);
 		attachType(object, JSONProperty.GENERIC_SUPER_CLASS.jsName, subject::getGenericSuperclass);
 		attachTypes(object, JSONProperty.INTERFACES.jsName, subject::getInterfaces);
 		attachTypes(object, JSONProperty.GENERIC_INTERFACES.jsName, subject::getGenericInterfaces);
-		SafeOperations.tryGet(subject::getPackageName).ifPresent(s -> object.addProperty(JSONProperty.PACKAGE_NAME.jsName, s));
+		if (subject.isPrimitive()) {
+			SafeOperations.tryGet(subject::getPackageName).ifPresent(s -> object.addProperty(JSONProperty.PACKAGE_NAME.jsName, s));
+		}
 
 		// Add Annotations
 		var array = AnnotationJSON.of(subject);
-		if (array.size() > 0)
+		if (array.size() > 0) {
 			object.add(JSONProperty.ANNOTATIONS.jsName, array);
+		}
 
 		// Add modifiers
 		object.addProperty(JSONProperty.MODIFIERS.jsName, subject.getModifiers());
