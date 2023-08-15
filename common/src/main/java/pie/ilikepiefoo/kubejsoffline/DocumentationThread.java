@@ -110,8 +110,10 @@ public class DocumentationThread extends Thread {
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] %,d classes found, %,d relationships found", ++step, totalSteps, totalClassSize, totalRelationSize));
 		if (null != output) {
 			sendLink(String.format("[KJS Offline] [Step %d/%d] The Documentation page can be found at kubejs/documentation/index.html or by clicking ", step, totalSteps), "here", "kubejs/documentation/index.html");
+			sendMessage(String.format("[KJS Offline] [Step %d/%d] Total File Size: ~%,.3fMb", ++step, totalSteps, (double) getFile().length() / 1024.0 / 1024.0));
+		} else {
+			sendMessage(String.format("[KJS Offline] [Step %d/%d] Documentation page failed to generate!", step, totalSteps - 1));
 		}
-		sendMessage(String.format("[KJS Offline] [Step %d/%d] Total File Size: %,.3fMb", ++step, totalSteps, (double) getFile().length() / 1024.0 / 1024.0));
 	}
 
 	private static void sendMessage(final String message) {
