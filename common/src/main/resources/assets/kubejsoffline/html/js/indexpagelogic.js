@@ -220,6 +220,8 @@ function DecodeURL() {
 		hash = hash.substring(1);
 	}
 
+	hash = decodeURI(hash);
+
 	if (hash.includes(":~:")) {
 		let split = hash.split(":~:");
 		hash = split[0];
@@ -227,7 +229,7 @@ function DecodeURL() {
 	}
 	output.params = new URLSearchParams("");
 
-	if (hash.includes("?")) {
+	if (hash.includes("?") && !hash.includes("? extends ")) {
 		let split = hash.split("?");
 		hash = split[0];
 		output.params = new URLSearchParams(split[1]);

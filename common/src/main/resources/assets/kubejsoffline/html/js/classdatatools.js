@@ -102,7 +102,8 @@ function getClass(id) {
 					return getClass(i);
 				}
 			}
-			break;
+
+			return null;
 		default:
 			console.error("Unsupported class type provided to getClass: " + id + " (" + typeof (id) + ")");
 			return null;
