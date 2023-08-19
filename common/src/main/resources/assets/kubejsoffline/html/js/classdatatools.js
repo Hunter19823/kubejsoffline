@@ -225,28 +225,31 @@ function getClass(id) {
 		if (this.data._cachedPackageName) {
 			return this.data._cachedPackageName;
 		}
-		if (!exists(pkg)) {
-			let fullName = this.type();
-			// Remove any Generics
-			let index = fullName.indexOf("<");
-			if (index !== -1) {
-				fullName = fullName.substring(0, index);
-			}
-			// Remove any array brackets
-			index = fullName.indexOf("[");
-			if (index !== -1) {
-				fullName = fullName.substring(0, index);
-			}
-			// Remove class name
-			index = fullName.lastIndexOf(".");
-			if (index !== -1) {
-				fullName = fullName.substring(0, index);
-			}
 
-			this.data._cachedPackageName = fullName;
-			return fullName;
+		if (exists(pkg)) {
+			this.data._cachedPackageName = loadPackageName(pkg);
+			return this.data._cachedPackageName;
 		}
-		return pkg;
+
+		let fullName = this.type();
+		// Remove any Generics
+		let index = fullName.indexOf("<");
+		if (index !== -1) {
+			fullName = fullName.substring(0, index);
+		}
+		// Remove any array brackets
+		index = fullName.indexOf("[");
+		if (index !== -1) {
+			fullName = fullName.substring(0, index);
+		}
+		// Remove class name
+		index = fullName.lastIndexOf(".");
+		if (index !== -1) {
+			fullName = fullName.substring(0, index);
+		}
+
+		this.data._cachedPackageName = fullName;
+		return fullName;
 	}
 
 	output.paramargs = function () {

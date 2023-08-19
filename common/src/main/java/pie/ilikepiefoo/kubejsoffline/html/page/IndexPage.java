@@ -10,6 +10,7 @@ import pie.ilikepiefoo.kubejsoffline.util.json.BindingsJSON;
 import pie.ilikepiefoo.kubejsoffline.util.json.ClassJSONManager;
 import pie.ilikepiefoo.kubejsoffline.util.json.CompressionJSON;
 import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
+import pie.ilikepiefoo.kubejsoffline.util.json.PackageJSONManager;
 
 public class IndexPage extends HTMLFile {
 
@@ -23,6 +24,7 @@ public class IndexPage extends HTMLFile {
 		ClassJSONManager.getInstance().filterRelationshipData();
 		this.HEADER_TAG.add(new JSONDataTag("DATA", ClassJSONManager.getInstance().getTypeData(), gson));
 		this.HEADER_TAG.add(new JSONDataTag("STRING_COMPRESSION_DATA", CompressionJSON.getInstance().getData(), gson));
+		this.HEADER_TAG.add(new JSONDataTag("PACKAGE_COMPRESSION_DATA", PackageJSONManager.getInstance().getPackageData(), gson));
 		this.HEADER_TAG.add(new JSONDataTag("EVENTS", object, gson));
 		this.HEADER_TAG.add(new JSONDataTag("RELATIONS", RelationType.getRelationTypeData(), gson));
 		this.HEADER_TAG.add(new JSONDataTag("BINDINGS", BindingsJSON.get(), gson));
@@ -33,6 +35,7 @@ public class IndexPage extends HTMLFile {
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/stickytools.js"));
 //		HEADER_TAG.add(new CustomAssetTag("script","html/js/debugtools.js"));
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/compressiontools.js"));
+		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/packagetools.js"));
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/classdatatools.js"));
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/createhtmltools.js"));
 		this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/createsignaturetools.js"));

@@ -38,9 +38,7 @@ public class ClassJSON {
 		attachType(object, JSONProperty.GENERIC_SUPER_CLASS.jsName, subject::getGenericSuperclass);
 		attachTypes(object, JSONProperty.INTERFACES.jsName, subject::getInterfaces);
 		attachTypes(object, JSONProperty.GENERIC_INTERFACES.jsName, subject::getGenericInterfaces);
-		if (subject.isPrimitive()) {
-			SafeOperations.tryGet(subject::getPackageName).ifPresent(s -> object.addProperty(JSONProperty.PACKAGE_NAME.jsName, s));
-		}
+		PackageJSONManager.getInstance().attachPackageData(object, subject);
 
 		// Add Annotations
 		var array = AnnotationJSON.of(subject);
