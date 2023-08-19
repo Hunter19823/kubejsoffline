@@ -27,7 +27,7 @@ public class ParameterJSON {
 		TypeJSON.attachGenericAndArrayData(type, parameter::getParameterizedType);
 
 		var annotations = AnnotationJSON.of(parameter);
-		if(annotations.size() > 0)
+		if (!annotations.isEmpty())
 			object.add(JSONProperty.PARAMETER_ANNOTATIONS.jsName, annotations);
 
 		return object;

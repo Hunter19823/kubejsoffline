@@ -28,7 +28,7 @@ public class FieldJSON {
 
 		// Annotations of the field.
 		var annotations = AnnotationJSON.of(field);
-		if(annotations.size() > 0)
+		if (!annotations.isEmpty())
 			object.add(JSONProperty.FIELD_ANNOTATIONS.jsName, annotations);
 
 		// Modifiers of the field
