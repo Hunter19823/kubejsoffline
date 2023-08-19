@@ -706,7 +706,11 @@ function getAnnotation(annotationData) {
 	}
 
 	output.string = function () {
-		return this.data[PROPERTY.ANNOTATION_STRING];
+		if (exists(this.data[PROPERTY.ANNOTATION_STRING])) {
+			return uncompressString(this.data[PROPERTY.ANNOTATION_STRING]);
+		} else {
+			return "";
+		}
 	}
 
 	return output;

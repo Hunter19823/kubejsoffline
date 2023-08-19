@@ -21,9 +21,24 @@ public class AnnotationJSON {
 			object.addProperty(JSONProperty.ANNOTATION_TYPE.jsName, type.get(JSONProperty.TYPE_ID.jsName).getAsInt());
 
 		var description = SafeOperations.tryGet(annotation::toString);
-		description.ifPresent(s -> object.addProperty(JSONProperty.ANNOTATION_STRING.jsName, s));
+		description.ifPresent(s -> {
+			var trimmed = trim(s);
+			if (!trimmed.isEmpty()) {
+				object.addProperty(JSONProperty.ANNOTATION_STRING.jsName, CompressionJSON.getInstance().compress(trimmed));
+			}
+		});
 
 		return object;
+	}
+
+	/**
+	 * In order to reduce file size, all annotations will have @fullClassName(...) trimmed to just the contents within the parenthesis.
+	 *
+	 * @param s the string to trim.
+	 * @return the trimmed string.
+	 */
+	public static String trim(@Nonnull String s) {
+		return s.substring(s.indexOf('(') + 1, s.lastIndexOf(')'));
 	}
 
 	@Nonnull

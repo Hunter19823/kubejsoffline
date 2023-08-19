@@ -192,9 +192,11 @@ function createConstructorSignature(constructor_data, classID) {
 function createAnnotationSignature(annotation_data) {
 	let annotation = getAnnotation(annotation_data);
 	let out = document.createElement('span');
-	out.append(span(getClass(annotation.type()).simplename()));
+	let type = getClass(annotation.type());
+	let simple_name = span(type.simplename());
+	let annotation_string = `@${type.type()}(${annotation.string()})`;
 	out.append(br());
-	out.append(annotation.string());
+	out.append(annotation_string);
 	return out;
 }
 
