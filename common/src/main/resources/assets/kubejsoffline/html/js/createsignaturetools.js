@@ -37,16 +37,22 @@ function createShortLink(id, parents) {
 		parents = new Set();
 	}
 	if (parents.has(id)) {
-		let rout = span(getClass(id).simplename());
+		let rout = span(getClass(id).name());
 		createLink(rout, id, getClass(id).rawtype());
 		return rout;
 	}
 	parents.add(id);
 	let out = document.createElement('span');
 	let data = getClass(id);
-	let type = span(data.simplename());
+	let type = span(data.name());
 	let args = data.paramargs();
 	let depth = null;
+	if (data.isInnerClass()) {
+		let firstHalf = createShortLink(data.outerclass(), parents);
+		let middle = span('$');
+		out.append(firstHalf);
+		out.append(middle);
+	}
 	createLink(type, id, data.rawtype());
 	out.append(type);
 	if (args) {
@@ -69,33 +75,42 @@ function createShortLink(id, parents) {
 }
 
 function createFullSignature(id, parents) {
-	if (!parents) {
-		parents = new Set();
-	} else {
-		if (parents.has(id)) {
-			let rout = span(getClass(id).simplename());
-			createLink(rout, id, getClass(id).rawtype());
-			return rout;
-		}
-	}
-	parents.add(id);
+	// if (!parents) {
+	// 	parents = new Set();
+	// } else {
+	// 	if (parents.has(id)) {
+	// 		let rout = span(getClass(id).name());
+	// 		createLink(rout, id, getClass(id).rawtype());
+	// 		return rout;
+	// 	}
+	// }
+	// parents.add(id);
 	let data = getClass(id);
 	let out = document.createElement('span');
-	let parts = data.name().split('.');
-	let part = null;
-	let sp = null;
-	let args = data.paramargs();
-	for (let i = 0; i < parts.length; i++) {
-		part = parts[i];
-		sp = span(part);
-		out.appendChild(sp);
-		if (i < parts.length - 1) {
+	let name = span(data.name());
+	if (data.isInnerClass()) {
+		let firstHalf = createFullSignature(data.outerclass(), parents);
+		let middle = span('$');
+		out.append(firstHalf);
+		out.append(middle);
+	} else {
+		let package = data.package();
+		if (!exists(package)) {
+			package = "";
+			console.error("Package does not exist for: " + data.name(), data.data);
+		}
+		let parts = package.split('.');
+		let part = null;
+		for (let i = 0; i < parts.length; i++) {
+			part = parts[i];
+			out.appendChild(span(part));
 			out.append('.');
-		} else {
-			createLink(sp, id, data.rawtype());
-			appendAnnotationToolTip(sp, data.annotations());
 		}
 	}
+	let args = data.paramargs();
+	createLink(name, id, data.rawtype());
+	appendAnnotationToolTip(name, data.annotations());
+	out.appendChild(name);
 	if (args) {
 		out.append('<');
 		for (let i = 0; i < args.length; i++) {

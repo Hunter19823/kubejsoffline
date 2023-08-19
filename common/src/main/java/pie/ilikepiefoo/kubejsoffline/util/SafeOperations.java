@@ -122,6 +122,11 @@ public class SafeOperations {
 			joiner.add(safeUniqueTypeName(componentType));
 			arraySize++;
 		} else if (type instanceof ParameterizedType parameterizedType) {
+			final var ownerType = tryGet(parameterizedType::getOwnerType).orElse(null);
+			if (null != ownerType) {
+				joiner.add(safeUniqueTypeName(ownerType));
+				joiner.add("$");
+			}
 			final var rawType = tryGet(parameterizedType::getRawType).orElse(null);
 			if (null == rawType) {
 				return null;
@@ -132,6 +137,13 @@ public class SafeOperations {
 			}
 			if (0 == joiner.length()) {
 				joiner.add(rawType.getTypeName());
+			} else if (null != ownerType) {
+				if (rawType instanceof Class<?> clazz) {
+					joiner.add(clazz.getSimpleName());
+				} else {
+					LOG.warn("Unable to get simple name of owner type: {}", ownerType);
+					joiner.add(rawType.getTypeName());
+				}
 			}
 			if (0 < args.length) {
 				final StringJoiner paramJoiner = new StringJoiner(",");

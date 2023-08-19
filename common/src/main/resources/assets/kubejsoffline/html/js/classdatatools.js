@@ -117,17 +117,81 @@ function getClass(id) {
 			if (exists(this.data[PROPERTY.BASE_CLASS_NAME])) {
 				this.data._name_cache = uncompressString(this.data[PROPERTY.BASE_CLASS_NAME]);
 			} else {
-				this.data._name_cache = this.type();
+				let baseClass = this.baseclass();
+				if (baseClass === this.id()) {
+					this.data._name_cache = this.simplename();
+				} else {
+					this.data._name_cache = getClass(baseClass).name();
+				}
 			}
 		}
 		return this.data._name_cache;
 	}
 
-	output.type = function () {
+	output.type = function (seen = new Set()) {
 		if (!this.data._type_cache) {
-			this.data._type_cache = uncompressString(this.data[PROPERTY.TYPE_IDENTIFIER]);
+			this._loadType(seen);
 		}
 		return this.data._type_cache;
+	}
+
+	output._loadType = function (seen = new Set()) {
+		if (seen.has(this.id())) {
+			this.data._type_cache = "...";
+			console.error("Circular reference detected while loading type for class " + this.name() + " (" + this.id() + ").");
+			seen.forEach((id) => {
+				console.error(getClass(id).name() + " (" + id + ")");
+			});
+			return;
+		}
+		seen.add(this.id());
+		if (exists(this.data[PROPERTY.TYPE_IDENTIFIER])) {
+			if (exists(this.data[PROPERTY.OWNER_TYPE]) || exists(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE])) {
+				this.data["_oldType"] = this.data[PROPERTY.TYPE_IDENTIFIER];
+				delete this.data[PROPERTY.TYPE_IDENTIFIER];
+				this._loadType();
+				return;
+			}
+			this.data._type_cache = uncompressString(this.data[PROPERTY.TYPE_IDENTIFIER]);
+			return;
+		}
+		// When the type identifier is not present, it means that the class is either a generic type, parameterized type, or array type
+		// In these cases, the base type is stored in the RAW_PARAMETERIZED_TYPE property.
+		// We need to build the type identifier from the base type, type parameters, and array dimensions.
+		let typeName = null;
+		if (exists(this.data[PROPERTY.OWNER_TYPE])) {
+			if (!exists(this.data[PROPERTY.BASE_CLASS_NAME])) {
+				console.error("Unable to load type for class " + this.name() + " (" + this.id() + "). It does not contain the name of the subclass.");
+				return;
+			}
+			let ownerType = getClass(this.data[PROPERTY.OWNER_TYPE]).type(seen);
+			let simpleName = uncompressString(this.data[PROPERTY.BASE_CLASS_NAME]);
+			typeName = ownerType + "$" + simpleName;
+		} else if (!exists(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE])) {
+			console.error("Unable to load type for class " + this.name() + " (" + this.id() + "). It does not contain a raw parameterized type or owner type!");
+			return;
+		} else {
+			typeName = getClass(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]).type(seen);
+		}
+		let paramArgs = this.paramargs();
+		if (exists(paramArgs)) {
+			typeName += "<";
+			for (let i = 0; i < paramArgs.length; i++) {
+				if (i > 0) {
+					typeName += ",";
+				}
+				typeName += getClass(paramArgs[i]).type(seen);
+			}
+			typeName += ">";
+		}
+		let arrayDimensions = this.arrayDepth();
+		if (arrayDimensions > 0) {
+			for (let i = 0; i < arrayDimensions; i++) {
+				typeName += "[]";
+			}
+		}
+
+		this.data._type_cache = typeName;
 	}
 
 	output.rawtype = function () {
@@ -139,20 +203,17 @@ function getClass(id) {
 		if (this.data._cachedSimpleName) {
 			return this.data._cachedSimpleName;
 		}
-		// Remove any Generics
-		let index = fullName.indexOf("<");
-		if (index !== -1) {
-			fullName = fullName.substring(0, index);
+		// For every period character, remove all alphanumeric characters before it and the period itself using regex and a while loop
+		let index = fullName.indexOf(".");
+		while (index !== -1) {
+			fullName = fullName.replace(new RegExp("[a-zA-Z0-9_]*\\."), "");
+			index = fullName.indexOf(".");
 		}
-		// Remove package name
-		index = fullName.lastIndexOf(".");
-		if (index !== -1) {
-			fullName = fullName.substring(index + 1);
-		}
-		// Remove any array brackets
+		// Remove any array brackets that may be present on the end of the type.
 		index = fullName.indexOf("[");
-		if (index !== -1) {
-			fullName = fullName.substring(0, index);
+		while (index !== -1) {
+			fullName = fullName.substring(0, index) + fullName.substring(index + 2);
+			index = fullName.indexOf("[");
 		}
 		this.data._cachedSimpleName = fullName;
 		return fullName;
@@ -178,9 +239,10 @@ function getClass(id) {
 			// Remove class name
 			index = fullName.lastIndexOf(".");
 			if (index !== -1) {
-				pkg = fullName.substring(0, index);
+				fullName = fullName.substring(0, index);
 			}
-			this.data._cachedPackageName = pkg;
+
+			this.data._cachedPackageName = fullName;
 			return fullName;
 		}
 		return pkg;
@@ -192,6 +254,37 @@ function getClass(id) {
 			return null;
 		}
 		return args;
+	}
+
+	output.isGeneric = function () {
+		return exists(this.data[PROPERTY.PARAMETERIZED_ARGUMENTS]);
+	}
+
+	output.isInnerClass = function () {
+		return exists(this.data[PROPERTY.OWNER_TYPE]);
+	}
+
+	output.outerclass = function () {
+		return this.data[PROPERTY.OWNER_TYPE];
+	}
+
+	output.baseclass = function () {
+		let output = this.id();
+		while (getClass(output).isInnerClass()) {
+			output = getClass(output).outerclass();
+		}
+		while (getClass(output).isParameterizedType()) {
+			output = getClass(output).rawtype();
+		}
+		return output;
+	}
+
+	output.isParameterizedType = function () {
+		return exists(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]);
+	}
+
+	output.isWildcard = function () {
+		return this.name().includes("?");
 	}
 
 	output.arrayDepth = function () {

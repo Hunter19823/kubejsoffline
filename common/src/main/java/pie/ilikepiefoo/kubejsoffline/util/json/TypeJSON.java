@@ -32,16 +32,27 @@ public class TypeJSON {
 		}
 		try {
 			attachGenericAndArrayData(object, type);
-			var compressedTypeName = CompressionJSON.getInstance().compress(name);
-			if (!compressedTypeName.equals(object.get(JSONProperty.TYPE_IDENTIFIER.jsName).getAsString())) {
-				object.addProperty(JSONProperty.BASE_CLASS_NAME.jsName, compressedTypeName);
-			}
+//			var compressedTypeName = CompressionJSON.getInstance().compress(name);
+//			if (object.has(JSONProperty.TYPE_IDENTIFIER.jsName) && !compressedTypeName.equals(object.get(JSONProperty.TYPE_IDENTIFIER.jsName).getAsString())) {
+//				object.addProperty(JSONProperty.BASE_CLASS_NAME.jsName, compressedTypeName);
+//			}
 		} catch (final IllegalStateException e) {
 			LOG.error("Failed to attach generic and array data to type '{}' ('{}')", name, type);
 			LOG.info(object);
 			throw e;
 		}
 
+		// In the example ArrayList<String>$Entry<String>
+		// the Owner Type is ArrayList<String>
+		// the Raw-Parameterized Type should be ignored.
+		if (object.has(JSONProperty.OWNER_TYPE.jsName)) {
+			object.remove(JSONProperty.RAW_PARAMETERIZED_TYPE.jsName);
+			object.remove(JSONProperty.TYPE_IDENTIFIER.jsName);
+		}
+
+		if (object.has(JSONProperty.RAW_PARAMETERIZED_TYPE.jsName)) {
+			object.remove(JSONProperty.TYPE_IDENTIFIER.jsName);
+		}
 
 		return object;
 	}
@@ -71,15 +82,45 @@ public class TypeJSON {
 			}
 		}
 		if (type instanceof ParameterizedType parameterizedType) {
-			SafeOperations.tryGet(parameterizedType::getRawType)
-					.ifPresent((rawType) -> {
-						final var typeObject = of(rawType);
-						if (null != typeObject && 0 != typeObject.size()) {
+			// If it has a
+			SafeOperations.tryGet(parameterizedType::getOwnerType).ifPresentOrElse(
+					(ownerType) -> {
+						final var ownerObject = of(ownerType);
+						if (null != ownerObject && 0 != ownerObject.size()) {
 							object.addProperty(
-									JSONProperty.RAW_PARAMETERIZED_TYPE.jsName,
-									typeObject.get(JSONProperty.TYPE_ID.jsName).getAsInt());
+									JSONProperty.OWNER_TYPE.jsName,
+									ownerObject.get(JSONProperty.TYPE_ID.jsName).getAsInt()
+							);
+							SafeOperations.tryGet(parameterizedType::getRawType).ifPresent((rawType) -> {
+								if (rawType instanceof Class<?> subclass) {
+									object.addProperty(
+											JSONProperty.BASE_CLASS_NAME.jsName,
+											CompressionJSON.getInstance().compress(subclass.getSimpleName())
+									);
+								}
+							});
 						}
-					});
+					},
+					() -> SafeOperations.tryGet(parameterizedType::getRawType)
+							.ifPresent((rawType) -> {
+								var id = ClassJSONManager.getInstance().getTypeID(rawType);
+								if (id == null) {
+									LOG.warn("Skipping raw type of '{}' as it contains no ID!", rawType);
+									return;
+								}
+								if (id.equals(object.get(JSONProperty.TYPE_ID.jsName).getAsInt())) {
+									LOG.warn("Skipping raw type of '{}' as it is the same as the current type!", rawType);
+									return;
+								}
+								final var typeObject = of(rawType);
+								if (null != typeObject && 0 != typeObject.size()) {
+									object.addProperty(
+											JSONProperty.RAW_PARAMETERIZED_TYPE.jsName,
+											typeObject.get(JSONProperty.TYPE_ID.jsName).getAsInt());
+								}
+							})
+			);
+
 			addGenericData(object, parameterizedType::getActualTypeArguments);
 		}
 
