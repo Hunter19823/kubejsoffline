@@ -24,7 +24,7 @@ public class AnnotationJSON {
 		description.ifPresent(s -> {
 			var trimmed = trim(s);
 			if (!trimmed.isEmpty()) {
-				object.addProperty(JSONProperty.ANNOTATION_STRING.jsName, CompressionJSON.getInstance().compress(trimmed));
+				object.addProperty(JSONProperty.ANNOTATION_STRING.jsName, trimmed);
 			}
 		});
 
