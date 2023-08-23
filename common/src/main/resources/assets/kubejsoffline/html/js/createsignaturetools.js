@@ -32,6 +32,18 @@ function createLink(element, id, rawId = null, focus = null) {
 	return element;
 }
 
+function removeExtends(name) {
+	let phrase = "? extends ";
+	if (name.startsWith(phrase)) {
+		return name.substring(phrase.length);
+	}
+	phrase = "? super ";
+	if (name.startsWith(phrase)) {
+		return name.substring(phrase.length);
+	}
+	return name;
+}
+
 function createShortLink(id, parents) {
 	if (!parents) {
 		parents = new Set();
@@ -87,7 +99,7 @@ function createFullSignature(id, parents) {
 	// parents.add(id);
 	let data = getClass(id);
 	let out = document.createElement('span');
-	let name = span(data.name());
+	let name = span(removeExtends(data.name()));
 	if (data.isInnerClass()) {
 		let firstHalf = createFullSignature(data.outerclass(), parents);
 		let middle = span('$');
