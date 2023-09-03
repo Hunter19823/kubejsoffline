@@ -79,19 +79,16 @@ public class SafeOperations {
 			if (null == lowerBounds && null == upperBounds) {
 				return boundsJoiner.toString();
 			}
-			if (null == upperBounds) {
-				if (0 == lowerBounds.length) {
-					return boundsJoiner.toString();
-				}
-				if (Object.class != lowerBounds[0]) {
-					boundsJoiner.add("super");
-					boundsJoiner.add(lowerBounds[0].getTypeName());
-				}
-			} else {
-				if (0 < upperBounds.length) {
-					boundsJoiner.add("extends");
-					boundsJoiner.add(upperBounds[0].getTypeName());
-				}
+			Type bound = null;
+			if (lowerBounds != null && lowerBounds.length >= 1) {
+				bound = lowerBounds[0];
+				boundsJoiner.add("super");
+			} else if (upperBounds != null && upperBounds.length >= 1) {
+				bound = upperBounds[0];
+				boundsJoiner.add("extends");
+			}
+			if (null != bound) {
+				boundsJoiner.add(safeUniqueTypeName(bound));
 			}
 			return boundsJoiner.toString();
 		} else if (type instanceof Class<?> clazz) {
