@@ -34,17 +34,24 @@ public class ClassJSON {
 			return;
 		}
 
+		// TODO: Do not include any other data if the class is an array.
+		// Instead, include the component type, and a reference to the array class.
+//		if(subject.isArray()) {
+//			while(subject.isArray()) {
+//				subject = subject.getComponentType();
+//			}
+//			object.addProperty();
+//		}
+
 		attachType(object, JSONProperty.SUPER_CLASS.jsName, subject::getSuperclass);
 		attachType(object, JSONProperty.GENERIC_SUPER_CLASS.jsName, subject::getGenericSuperclass);
 		attachTypes(object, JSONProperty.INTERFACES.jsName, subject::getInterfaces);
 		attachTypes(object, JSONProperty.GENERIC_INTERFACES.jsName, subject::getGenericInterfaces);
-		if (subject.isPrimitive()) {
-			SafeOperations.tryGet(subject::getPackageName).ifPresent(s -> object.addProperty(JSONProperty.PACKAGE_NAME.jsName, s));
-		}
+		PackageJSONManager.getInstance().attachPackageData(object, subject);
 
 		// Add Annotations
 		var array = AnnotationJSON.of(subject);
-		if (array.size() > 0) {
+		if (!array.isEmpty()) {
 			object.add(JSONProperty.ANNOTATIONS.jsName, array);
 		}
 
@@ -55,21 +62,21 @@ public class ClassJSON {
 		array = FieldJSON.of((Field[]) SafeOperations.tryGetFirst(
 				subject::getDeclaredFields
 		).orElse(null));
-		if (array.size() > 0)
+		if (!array.isEmpty())
 			object.add(JSONProperty.FIELDS.jsName, array);
 
 		// Add Methods
 		array = MethodJSON.of((Method[]) SafeOperations.tryGetFirst(
 				subject::getDeclaredMethods
 		).orElse(null));
-		if (array.size() > 0)
+		if (!array.isEmpty())
 			object.add(JSONProperty.METHODS.jsName, array);
 
 		// Add Constructors
 		array = ConstructorJSON.of((Constructor<?>[]) SafeOperations.tryGetFirst(
 				subject::getDeclaredConstructors
 		).orElse(null));
-		if (array.size() > 0)
+		if (!array.isEmpty())
 			object.add(JSONProperty.CONSTRUCTORS.jsName, array);
 	}
 
@@ -81,7 +88,7 @@ public class ClassJSON {
 				if (temp != null && temp.has(JSONProperty.TYPE_ID.jsName))
 					array.add(temp.get(JSONProperty.TYPE_ID.jsName).getAsInt());
 			}
-			if(array.size() > 0)
+			if (!array.isEmpty())
 				object.add(key, array);
 		});
 	}

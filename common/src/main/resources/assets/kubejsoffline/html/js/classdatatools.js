@@ -62,8 +62,8 @@ function getClass(id) {
 		case "object":
 			if (exists(id['data'])) {
 				output.data = id.data;
-			} else if (exists(id['id'])) {
-				output.data = DATA[id.id];
+			} else if (exists(id[PROPERTY.TYPE_ID])) {
+				output.data = DATA[id[PROPERTY.TYPE_ID]];
 			}
 			break;
 		case "string":
@@ -102,10 +102,15 @@ function getClass(id) {
 					return getClass(i);
 				}
 			}
-			break;
+
+			return null;
 		default:
 			console.error("Unsupported class type provided to getClass: " + id + " (" + typeof (id) + ")");
 			return null;
+	}
+
+	if (!exists(output.data)) {
+		console.error("Invalid class data: ", id, typeof (id));
 	}
 
 	output.id = function () {
@@ -161,14 +166,14 @@ function getClass(id) {
 		let typeName = null;
 		if (exists(this.data[PROPERTY.OWNER_TYPE])) {
 			if (!exists(this.data[PROPERTY.BASE_CLASS_NAME])) {
-				console.error("Unable to load type for class " + this.name() + " (" + this.id() + "). It does not contain the name of the subclass.");
+				console.error("Unable to load type for class ", this.data, " (" + this.id() + "). It does not contain the name of the subclass.");
 				return;
 			}
 			let ownerType = getClass(this.data[PROPERTY.OWNER_TYPE]).type(seen);
 			let simpleName = uncompressString(this.data[PROPERTY.BASE_CLASS_NAME]);
 			typeName = ownerType + "$" + simpleName;
 		} else if (!exists(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE])) {
-			console.error("Unable to load type for class " + this.name() + " (" + this.id() + "). It does not contain a raw parameterized type or owner type!");
+			console.error("Unable to load type for class ", this, " (" + this.id() + "). It does not contain a raw parameterized type or owner type!");
 			return;
 		} else {
 			typeName = getClass(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]).type(seen);
@@ -224,28 +229,31 @@ function getClass(id) {
 		if (this.data._cachedPackageName) {
 			return this.data._cachedPackageName;
 		}
-		if (!exists(pkg)) {
-			let fullName = this.type();
-			// Remove any Generics
-			let index = fullName.indexOf("<");
-			if (index !== -1) {
-				fullName = fullName.substring(0, index);
-			}
-			// Remove any array brackets
-			index = fullName.indexOf("[");
-			if (index !== -1) {
-				fullName = fullName.substring(0, index);
-			}
-			// Remove class name
-			index = fullName.lastIndexOf(".");
-			if (index !== -1) {
-				fullName = fullName.substring(0, index);
-			}
 
-			this.data._cachedPackageName = fullName;
-			return fullName;
+		if (exists(pkg)) {
+			this.data._cachedPackageName = loadPackageName(pkg);
+			return this.data._cachedPackageName;
 		}
-		return pkg;
+
+		let fullName = this.type();
+		// Remove any Generics
+		let index = fullName.indexOf("<");
+		if (index !== -1) {
+			fullName = fullName.substring(0, index);
+		}
+		// Remove any array brackets
+		index = fullName.indexOf("[");
+		if (index !== -1) {
+			fullName = fullName.substring(0, index);
+		}
+		// Remove class name
+		index = fullName.lastIndexOf(".");
+		if (index !== -1) {
+			fullName = fullName.substring(0, index);
+		}
+
+		this.data._cachedPackageName = fullName;
+		return fullName;
 	}
 
 	output.paramargs = function () {
@@ -705,7 +713,11 @@ function getAnnotation(annotationData) {
 	}
 
 	output.string = function () {
-		return this.data[PROPERTY.ANNOTATION_STRING];
+		if (exists(this.data[PROPERTY.ANNOTATION_STRING])) {
+			return (this.data[PROPERTY.ANNOTATION_STRING]);
+		} else {
+			return "";
+		}
 	}
 
 	return output;

@@ -15,6 +15,7 @@ import pie.ilikepiefoo.kubejsoffline.util.ClassFinder;
 import pie.ilikepiefoo.kubejsoffline.util.json.ClassJSON;
 import pie.ilikepiefoo.kubejsoffline.util.json.ClassJSONManager;
 import pie.ilikepiefoo.kubejsoffline.util.json.CompressionJSON;
+import pie.ilikepiefoo.kubejsoffline.util.json.PackageJSONManager;
 import pie.ilikepiefoo.kubejsoffline.util.json.RelationsJSON;
 
 import java.io.File;
@@ -103,6 +104,7 @@ public class DocumentationThread extends Thread {
 		ClassJSONManager.getInstance().clear();
 		DocumentationConfig.clearInstance();
 		CompressionJSON.getInstance().clear();
+		PackageJSONManager.getInstance().clear();
 		timeMillis = System.currentTimeMillis() - timeMillis;
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] Data cleared and dereferenced in %,dms", step, totalSteps, timeMillis));
 		final long end = System.currentTimeMillis();
