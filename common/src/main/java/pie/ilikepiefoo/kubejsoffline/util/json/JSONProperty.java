@@ -22,6 +22,7 @@ public enum JSONProperty {
 	FIELDS("f"),
 	METHODS("m"),
 	PARAMETERS("p"),
+	VALUE("v"),
 
 	ARRAY_DEPTH("d"),
 	PARAMETERIZED_ARGUMENTS(PARAMETERS.jsName),
@@ -42,6 +43,13 @@ public enum JSONProperty {
 	FIELD_NAME(BASE_CLASS_NAME.jsName),
 	FIELD_ANNOTATIONS(ANNOTATIONS.jsName),
 	FIELD_TYPE(TYPE_ID.jsName),
+	FIELD_VALUE(VALUE.jsName),
+
+
+	EXECUTABLE_VALUE(VALUE.jsName),
+	EXECUTABLE_NAME(BASE_CLASS_NAME.jsName),
+	EXECUTABLE_ANNOTATIONS(ANNOTATIONS.jsName),
+	EXECUTABLE_RETURN_TYPE(TYPE_ID.jsName),
 
 	ANNOTATION_TYPE(TYPE_ID.jsName),
 	ANNOTATION_STRING("s"),
@@ -54,8 +62,9 @@ public enum JSONProperty {
 	BINDING_TYPE_PRIMITIVE("primitive"),
 	BINDING_STRING("s"),
 	BINDING_FUNCTION("f"),
-	BINDING_OBJECT("o"),
+	BINDING_OBJECT("o")
 	;
+
 	public final String jsName;
 
 	JSONProperty(final String jsName) {
