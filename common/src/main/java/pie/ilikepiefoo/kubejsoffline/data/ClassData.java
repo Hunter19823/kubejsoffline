@@ -11,12 +11,12 @@ public class ClassData extends CommonData {
 	private final int id;
 	private final String fullyQualifiedName;
 
-	private List<Integer> inheritedClasses;
-	private List<Integer> implementedInterfaces;
+	private List<ClassData> inheritedClasses;
+	private List<ClassData> implementedInterfaces;
 	private List<ConstructorData> constructors;
 	private List<FieldData> fields;
 	private List<MethodData> methods;
-	private List<Integer> genericParameters;
+	private List<ClassData> genericParameters;
 
 	public ClassData(int modifiers, int id, @Nonnull String fullyQualifiedName) {
 		super(modifiers);
@@ -25,7 +25,7 @@ public class ClassData extends CommonData {
 	}
 
 	@Nonnull
-	public ClassData addInheritedClass(@Nonnull Integer inheritedClass) {
+	public ClassData addInheritedClass(@Nonnull ClassData inheritedClass) {
 		if (inheritedClasses == null) {
 			inheritedClasses = new ArrayList<>();
 		}
@@ -34,7 +34,7 @@ public class ClassData extends CommonData {
 	}
 
 	@Nonnull
-	public List<Integer> getInheritedClasses() {
+	public List<ClassData> getInheritedClasses() {
 		if (inheritedClasses == null) {
 			return List.of();
 		}
@@ -42,7 +42,7 @@ public class ClassData extends CommonData {
 	}
 
 	@Nonnull
-	public ClassData addImplementedInterface(@Nonnull Integer implementedInterface) {
+	public ClassData addImplementedInterface(@Nonnull ClassData implementedInterface) {
 		if (implementedInterfaces == null) {
 			implementedInterfaces = new ArrayList<>();
 		}
@@ -51,7 +51,7 @@ public class ClassData extends CommonData {
 	}
 
 	@Nonnull
-	public List<Integer> getImplementedInterfaces() {
+	public List<ClassData> getImplementedInterfaces() {
 		if (implementedInterfaces == null) {
 			return List.of();
 		}
@@ -110,7 +110,7 @@ public class ClassData extends CommonData {
 	}
 
 	@Nonnull
-	public ClassData addGenericParameter(@Nonnull Integer genericParameter) {
+	public ClassData addGenericParameter(@Nonnull ClassData genericParameter) {
 		if (genericParameters == null) {
 			genericParameters = new ArrayList<>();
 		}
@@ -119,7 +119,7 @@ public class ClassData extends CommonData {
 	}
 
 	@Nonnull
-	public List<Integer> getGenericParameters() {
+	public List<ClassData> getGenericParameters() {
 		if (genericParameters == null) {
 			return List.of();
 		}
@@ -132,10 +132,10 @@ public class ClassData extends CommonData {
 		output.addProperty(JSONProperty.TYPE_ID.jsName, getId());
 		output.addProperty(JSONProperty.TYPE_IDENTIFIER.jsName, getFullyQualifiedName());
 		if (!getInheritedClasses().isEmpty()) {
-			output.add(JSONProperty.SUPER_CLASS.jsName, JSONLike.toJSON(getInheritedClasses()));
+			output.add(JSONProperty.SUPER_CLASS.jsName, JSONLike.toJSON(getInheritedClasses().stream().map(ClassData::getId).toList()));
 		}
 		if (!getImplementedInterfaces().isEmpty()) {
-			output.add(JSONProperty.INTERFACES.jsName, JSONLike.toJSON(getImplementedInterfaces()));
+			output.add(JSONProperty.INTERFACES.jsName, JSONLike.toJSON(getImplementedInterfaces().stream().map(ClassData::getId).toList()));
 		}
 		if (!getFields().isEmpty()) {
 			output.add(JSONProperty.FIELDS.jsName, JSONLike.toJSON(getFields()));
@@ -144,7 +144,7 @@ public class ClassData extends CommonData {
 			output.add(JSONProperty.METHODS.jsName, JSONLike.toJSON(getMethods()));
 		}
 		if (!getGenericParameters().isEmpty()) {
-			output.add(JSONProperty.PARAMETERIZED_ARGUMENTS.jsName, JSONLike.toJSON(getGenericParameters()));
+			output.add(JSONProperty.PARAMETERIZED_ARGUMENTS.jsName, JSONLike.toJSON(getGenericParameters().stream().map(ClassData::getId).toList()));
 		}
 
 		return output;

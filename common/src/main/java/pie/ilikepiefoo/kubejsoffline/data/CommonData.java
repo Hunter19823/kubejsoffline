@@ -101,7 +101,7 @@ public class CommonData implements JSONLike {
 			object.addProperty(JSONProperty.EXECUTABLE_NAME.jsName, name);
 		}
 		if (type != null) {
-			object.addProperty(JSONProperty.EXECUTABLE_RETURN_TYPE.jsName, type.getId());
+			object.addProperty(JSONProperty.EXECUTABLE_TYPE.jsName, type.getId());
 		}
 		return object;
 	}
