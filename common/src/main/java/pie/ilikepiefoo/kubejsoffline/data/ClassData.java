@@ -158,4 +158,9 @@ public class ClassData extends CommonData {
 	public String getFullyQualifiedName() {
 		return fullyQualifiedName;
 	}
+
+	@Override
+	public int hashCode() {
+		return getFullyQualifiedName().hashCode();
+	}
 }

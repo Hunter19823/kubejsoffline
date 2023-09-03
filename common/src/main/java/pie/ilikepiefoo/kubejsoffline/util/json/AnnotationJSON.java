@@ -21,6 +21,9 @@ public class AnnotationJSON {
 			object.addProperty(JSONProperty.ANNOTATION_TYPE.jsName, type.get(JSONProperty.TYPE_ID.jsName).getAsInt());
 
 		var description = SafeOperations.tryGet(annotation::toString);
+		if (description.isEmpty()) {
+			return null;
+		}
 		description.ifPresent(s -> {
 			var trimmed = trim(s);
 			if (!trimmed.isEmpty()) {
