@@ -22,7 +22,7 @@ public class DocumentCommand implements CommandRegistrationEvent {
 		dispatcher.register(Commands.literal(KubeJSOffline.MOD_ID)
 				.requires((source) -> source.hasPermission(2))
 				.executes((context) -> {
-					context.getSource().sendSuccess(ComponentUtils.create("KubeJS Offline has started... Please wait..."), false);
+					context.getSource().sendSuccess(() -> ComponentUtils.create("KubeJS Offline has started... Please wait..."), false);
 					DocumentationThread thread = new DocumentationThread();
 					thread.start();
 					return 1;

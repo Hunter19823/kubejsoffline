@@ -84,17 +84,25 @@ allprojects {
             url = "https://maven.architectury.dev"
             content {
                 includeGroup "me.shedaniel"
-            }
-        }
+			}
+		}
 
-        maven {
-            // saps.dev Maven (KubeJS and Rhino)
-            url = "https://maven.saps.dev/minecraft"
-            content {
-                includeGroup "dev.latvian.mods"
-            }
-        }
-    }
+		maven {
+			// saps.dev Maven (KubeJS and Rhino)
+			url = "https://maven.saps.dev/minecraft"
+			content {
+				includeGroup "dev.latvian.mods"
+			}
+		}
+
+		// jitpack (mixinextras only)
+		maven {
+			url "https://jitpack.io"
+			content {
+				includeGroup "com.github.llamalad7.mixinextras"
+			}
+		}
+	}
 
     tasks.withType(JavaCompile) {
         options.encoding = "UTF-8"
