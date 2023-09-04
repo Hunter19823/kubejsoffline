@@ -41,8 +41,7 @@ dependencies {
 	minecraftLibraries("org.reflections:reflections:${project.reflections_version}")
 	minecraftLibraries("org.javassist:javassist:${project.javassist_version}")
 
-	implementation(annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-common:${rootProject.mixin_extras}"))
-	implementation(include("com.github.llamalad7.mixinextras:mixinextras-forge:${rootProject.mixin_extras}"))
+	annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-forge:${rootProject.mixin_extras}")
 }
 
 shadowJar {

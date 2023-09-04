@@ -26,7 +26,7 @@ dependencies {
 
 	shadowImplementation "org.reflections:reflections:${project.reflections_version}"
 
-	implementation(annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-fabric:${rootProject.mixin_extras}"))
+	annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-common:${rootProject.mixin_extras}")
 }
 
 
