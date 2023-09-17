@@ -14,9 +14,13 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class SafeOperations {
 	private static final Logger LOG = LogManager.getLogger();
@@ -51,115 +55,7 @@ public class SafeOperations {
 		if (null == type) {
 			return null;
 		}
-		int arraySize = 0;
-		final StringJoiner joiner = new StringJoiner("");
-		if (type instanceof TypeVariable<?> variable) {
-			final var bounds = tryGet(variable::getBounds).orElse(null);
-			if (null != bounds && 0 < bounds.length) {
-				if (1 != bounds.length) {
-					joiner.add("?").add("extends");
-					for (int i = 0; i < bounds.length; i++) {
-						joiner.add(bounds[i].getTypeName());
-						if (i < bounds.length - 1) {
-							joiner.add("&");
-						}
-					}
-				} else {
-					joiner.add(bounds[0].getTypeName());
-				}
-			} else {
-				joiner.add("java.lang.Object");
-			}
-			return joiner.toString();
-		} else if (type instanceof WildcardType wild) {
-			final var lowerBounds = tryGet(wild::getLowerBounds).orElse(null);
-			final var upperBounds = tryGet(wild::getUpperBounds).orElse(null);
-			final StringJoiner boundsJoiner = new StringJoiner(" ");
-			boundsJoiner.add("?");
-			if (null == lowerBounds && null == upperBounds) {
-				return boundsJoiner.toString();
-			}
-			Type bound = null;
-			if (lowerBounds != null && lowerBounds.length >= 1) {
-				bound = lowerBounds[0];
-				boundsJoiner.add("super");
-			} else if (upperBounds != null && upperBounds.length >= 1) {
-				bound = upperBounds[0];
-				boundsJoiner.add("extends");
-			}
-			if (null != bound) {
-				boundsJoiner.add(safeUniqueTypeName(bound));
-			}
-			return boundsJoiner.toString();
-		} else if (type instanceof Class<?> clazz) {
-			while (clazz.isArray()) {
-				arraySize++;
-				clazz = clazz.getComponentType();
-			}
-			type = clazz;
-			final var name = tryGet(clazz::getName);
-			if (name.isEmpty() || name.get().isBlank()) {
-				return null;
-			}
-			if (getRemap().isPresent()) {
-				final var remapped = getRemap().get().getMappedClass(clazz);
-				if (null != remapped && !remapped.isBlank()) {
-					joiner.add(remapped);
-				} else {
-					joiner.add(name.get());
-				}
-			} else {
-				joiner.add(name.get());
-			}
-		} else if (type instanceof GenericArrayType genericArrayType) {
-			final var componentType = tryGet(genericArrayType::getGenericComponentType).orElse(null);
-			if (null == componentType) {
-				return null;
-			}
-			joiner.add(safeUniqueTypeName(componentType));
-			arraySize++;
-		} else if (type instanceof ParameterizedType parameterizedType) {
-			final var ownerType = tryGet(parameterizedType::getOwnerType).orElse(null);
-			if (null != ownerType) {
-				joiner.add(safeUniqueTypeName(ownerType));
-				joiner.add("$");
-			}
-			final var rawType = tryGet(parameterizedType::getRawType).orElse(null);
-			if (null == rawType) {
-				return null;
-			}
-			final var args = tryGet(parameterizedType::getActualTypeArguments).orElse(null);
-			if (null == args) {
-				return null;
-			}
-			if (0 == joiner.length()) {
-				joiner.add(rawType.getTypeName());
-			} else if (null != ownerType) {
-				if (rawType instanceof Class<?> clazz) {
-					joiner.add(clazz.getSimpleName());
-				} else {
-					LOG.warn("Unable to get simple name of owner type: {}", ownerType);
-					joiner.add(rawType.getTypeName());
-				}
-			}
-			if (0 < args.length) {
-				final StringJoiner paramJoiner = new StringJoiner(",");
-				for (final Type ptype : args) {
-					final var out = safeUniqueTypeName(ptype);
-					if (null == out) {
-						return null;
-					}
-					paramJoiner.add(out);
-				}
-				joiner.add("<" + paramJoiner + ">");
-			}
-			return joiner.toString();
-		}
-
-		for (int i = 0; i < arraySize; i++) {
-			joiner.add("[]");
-		}
-		return joiner.toString();
+		return getNestedTypeName(type, null);
 	}
 
 	public static Type safeUnwrapReturnType(final Object obj) {
@@ -358,6 +254,182 @@ public class SafeOperations {
 			}
 		}
 		return Optional.empty();
+	}
+
+	public static boolean filterBounds( Type[] bounds ) {
+		return null != bounds && bounds.length > 0;
+	}
+
+	public static Type[] getAllNonObjects( Type[] bounds ) {
+		if (null == bounds || bounds.length == 0) {
+			return new Type[]{};
+		}
+		return Arrays.stream(bounds).filter(( bound ) -> bound != Object.class).toArray(Type[]::new);
+	}
+
+	public static String getNestedTypeName( Type type, Set<String> typeVariables ) {
+		if (null == type) {
+			return null;
+		}
+		if (typeVariables == null) {
+			typeVariables = new HashSet<>();
+		}
+		if (type instanceof TypeVariable<?> variable) {
+			if (typeVariables.contains(variable.getName())) {
+				return variable.getName();
+			}
+			typeVariables.add(variable.getName());
+			final var variableType = tryGet(variable::getBounds).filter(SafeOperations::filterBounds).map(SafeOperations::getAllNonObjects).filter(
+					SafeOperations::filterBounds);
+			final StringJoiner spacedJoiner = new StringJoiner(" ");
+			spacedJoiner.add(variable.getName());
+			if (variableType.isEmpty()) {
+				return spacedJoiner.toString();
+			}
+			spacedJoiner.add("extends");
+			spacedJoiner.add(getJoinedBound(variableType.get(), typeVariables));
+			return spacedJoiner.toString();
+		}
+		if (type instanceof WildcardType wildcardType) {
+			final var lowerBounds = tryGet(wildcardType::getLowerBounds).filter(SafeOperations::filterBounds);
+			final var upperBounds = tryGet(wildcardType::getUpperBounds).filter(SafeOperations::filterBounds).map(
+					SafeOperations::getAllNonObjects).filter(SafeOperations::filterBounds);
+			final StringJoiner boundsJoiner = new StringJoiner(" ");
+			boundsJoiner.add("?");
+			if (lowerBounds.isPresent()) {
+				boundsJoiner.add("super");
+				boundsJoiner.add(getJoinedBound(lowerBounds.get(), typeVariables));
+				return boundsJoiner.toString();
+			}
+			if (upperBounds.isEmpty()) {
+				return boundsJoiner.toString();
+			}
+			boundsJoiner.add("extends");
+			boundsJoiner.add(getJoinedBound(upperBounds.get(), typeVariables));
+			return boundsJoiner.toString();
+		}
+		if (type instanceof GenericArrayType genericArrayType) {
+			final var componentType = tryGet(genericArrayType::getGenericComponentType).orElse(null);
+			if (null == componentType) {
+				LOG.warn("Unable to get component type of generic array type: {}", genericArrayType);
+				return null;
+			}
+			int arraySize = 0;
+			Type nonGenericArrayType = genericArrayType;
+			while (nonGenericArrayType instanceof GenericArrayType arrayType) {
+				nonGenericArrayType = arrayType.getGenericComponentType();
+				arraySize++;
+			}
+			return getNestedTypeName(nonGenericArrayType, typeVariables) + "[]".repeat(arraySize);
+		}
+
+		if (type instanceof ParameterizedType parameterizedType) {
+			final StringJoiner joiner = new StringJoiner("");
+			final var leftHalf = tryGet(parameterizedType::getOwnerType);
+			final var rightHalfNoGenerics = tryGet(parameterizedType::getRawType).map(( rawType ) -> {
+				if (rawType instanceof Class<?> clazz) {
+					return clazz;
+				}
+				LOG.warn("Unable to get raw type of parameterized type: {}", parameterizedType);
+				return null;
+			});
+			final var rightHalfGenerics = tryGet(parameterizedType::getActualTypeArguments).filter(( arguments ) -> arguments.length > 0);
+			// If the right half is empty, then we can't get the full name of the type.
+			if (rightHalfNoGenerics.isEmpty()) {
+				LOG.warn("Unable to get raw type of parameterized type: {}", parameterizedType);
+				return null;
+			}
+			if (rightHalfGenerics.isEmpty()) {
+				LOG.warn("Unable to get generic arguments of parameterized type: {}", parameterizedType);
+				return null;
+			}
+			// If the left half is present, then we need to add it to the joiner.
+			if (leftHalf.isPresent()) {
+				joiner.add(getNestedTypeName(leftHalf.get(), typeVariables));
+				joiner.add("$");
+				var nonArray = getNonArrayClass(rightHalfNoGenerics.get());
+				var remappedName = getRemappedClassName(nonArray);
+				if (remappedName == null) {
+					LOG.warn("Unable to get name of class: {}", nonArray);
+					return null;
+				}
+				if (remappedName.equalsIgnoreCase(nonArray.getName())) {
+					remappedName = nonArray.getSimpleName();
+				}
+				joiner.add(remappedName);
+			}
+			else {
+				joiner.add(getNestedTypeName(rightHalfNoGenerics.get(), typeVariables));
+			}
+			joiner.add("<");
+			final var commaJoiner = new StringJoiner(",");
+			for (var variable : rightHalfGenerics.get()) {
+				final var name = getNestedTypeName(variable, typeVariables);
+				if (null == name) {
+					LOG.warn("Unable to get name of generic type: {} ({})", variable, type.getTypeName());
+					return null;
+				}
+				commaJoiner.add(name);
+			}
+			joiner.merge(commaJoiner);
+			joiner.add(">");
+			for (int i = 0; i < getArraySize(rightHalfNoGenerics.get()); i++) {
+				joiner.add("[]");
+			}
+			return joiner.toString();
+		}
+
+		if (!( type instanceof Class<?> clazz )) {
+			LOG.warn("Unknown Type: {} ({} [{}])", type, type.getTypeName(), type.getClass());
+			return null;
+		}
+		final StringJoiner joiner = new StringJoiner("");
+		final int arraySize = getArraySize(clazz);
+		var name = getRemappedClassName(getNonArrayClass(clazz));
+		if (name == null) {
+			LOG.warn("Unable to get name of class: {}", clazz);
+			return null;
+		}
+		joiner.add(name);
+
+		for (int i = 0; i < arraySize; i++) {
+			joiner.add("[]");
+		}
+		return joiner.toString();
+	}
+
+	public static String getRemappedClassName( Class<?> clazz ) {
+		var name = tryGet(clazz::getName).orElse(null);
+		if (getRemap().isPresent()) {
+			final var remapped = getRemap().get().getMappedClass(clazz);
+			if (null != remapped && !remapped.isBlank()) {
+				return remapped;
+			}
+		}
+		return name;
+	}
+
+	private static int getArraySize( Class<?> nonArrayClass ) {
+		int arraySize = 0;
+		while (nonArrayClass.isArray()) {
+			arraySize++;
+			nonArrayClass = nonArrayClass.getComponentType();
+		}
+		return arraySize;
+	}
+
+	private static Class<?> getNonArrayClass( Class<?> clazz ) {
+		while (clazz.isArray()) {
+			clazz = clazz.getComponentType();
+		}
+		return clazz;
+	}
+
+	public static String getJoinedBound( Type[] bounds, Set<String> seenVariables ) {
+		if (null == bounds || bounds.length == 0) {
+			return "";
+		}
+		return Arrays.stream(bounds).map(( bound ) -> getNestedTypeName(bound, seenVariables)).collect(Collectors.joining(" & "));
 	}
 
 }

@@ -94,4 +94,30 @@ public class GenericsExample<EXAMPLE> {
 	public <T extends String, V extends EventJS> Map<T, V> getMap(final T t, final V v) {
 		return new HashMap<>();
 	}
+
+    public <G extends ExampleInterface<G> & Map<String,ExampleInterface<? extends G[]>[]>, T extends G> Map<T[],G[][][][][]>[] getMap2( final T... t ) {
+        return null;
+    }
+
+    public class ExampleInterface<CONFUSING_INNER_CLASS_GENERIC> {
+        public CONFUSING_INNER_CLASS_GENERIC getClassVariable() {
+            return null;
+        }
+
+        public EXAMPLE getExampleVariable() {
+            return null;
+        }
+
+        public <CONFUSING_INNER_CLASS_GENERIC extends Number> CONFUSING_INNER_CLASS_GENERIC getGenericMethodWithHiddenVariableName(
+                CONFUSING_INNER_CLASS_GENERIC t ) {
+            return t;
+        }
+
+        public <T extends GenericsExample<? extends GenericsExample<? super GenericsExample<EXAMPLE>[]>[]>, EXAMPLE extends T> Map<EXAMPLE[],
+                T[][][][][]>[] getGenericHell(
+                T... t ) {
+            return null;
+        }
+
+    }
 }
