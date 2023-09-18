@@ -10,9 +10,8 @@ import java.util.List;
 
 public class ParameterData extends CommonData {
 
-	public ParameterData(int modifier, @Nonnull String name, @Nonnull ClassData type) {
-		super(modifier);
-		setName(name);
+	public ParameterData( int modifier, @Nonnull String name, @Nonnull TypeData type ) {
+		super(name, modifier);
 		setType(type);
 	}
 
@@ -29,7 +28,8 @@ public class ParameterData extends CommonData {
 		JsonObject object = new JsonObject();
 		object.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
 		object.addProperty(JSONProperty.PARAMETER_NAME.jsName, getName());
-		object.addProperty(JSONProperty.PARAMETER_TYPE.jsName, getType().getId());
+		// TODO: Fix this.
+		object.add(JSONProperty.PARAMETER_TYPE.jsName, getType().toJSON());
 		if (!getAnnotations().isEmpty()) {
 			object.add(JSONProperty.PARAMETER_ANNOTATIONS.jsName, AnnotationData.toJSON(getAnnotations()));
 		}

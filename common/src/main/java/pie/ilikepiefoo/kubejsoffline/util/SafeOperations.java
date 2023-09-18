@@ -63,24 +63,16 @@ public class SafeOperations {
 			return null;
 		}
 		if (obj instanceof Field field) {
-			return (Type) tryGetFirst(
+			return tryGetFirst(
 					field::getGenericType,
 					field::getType
 			).orElse(null);
 		}
 		if (obj instanceof Method method) {
-			return (Type) (
-					tryGetFirst(
-							method::getGenericReturnType,
-							method::getReturnType
-					).orElse(null));
+			return tryGetFirst(method::getGenericReturnType, method::getReturnType).orElse(null);
 		}
 		if (obj instanceof Parameter parameter) {
-			return (Type) (
-					tryGetFirst(
-							parameter::getParameterizedType,
-							parameter::getType
-					).orElse(null));
+			return tryGetFirst(parameter::getParameterizedType, parameter::getType).orElse(null);
 		}
 		if (obj instanceof ParameterizedType parameterizedType) {
 			return parameterizedType;
@@ -89,7 +81,7 @@ public class SafeOperations {
 			return clazz;
 		}
 		if (obj instanceof AnnotatedType annotatedType) {
-			return (Type) tryGetFirst(
+			return tryGetFirst(
 					annotatedType::getType
 			).orElse(null);
 		}
@@ -243,11 +235,12 @@ public class SafeOperations {
 		}
 	}
 
-	public static Optional<?> tryGetFirst(final Supplier<?>... suppliers) {
+	@SafeVarargs
+	public static <D> Optional<D> tryGetFirst( final Supplier<D>... suppliers ) {
 		if (null == suppliers) {
 			return Optional.empty();
 		}
-		for (final Supplier<?> supplier : suppliers) {
+		for (final Supplier<D> supplier : suppliers) {
 			final var out = tryGet(supplier);
 			if (out.isPresent()) {
 				return out;

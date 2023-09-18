@@ -4,49 +4,55 @@ import com.google.gson.JsonElement;
 import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ClassData extends CommonData {
-	private final int id;
-	private final String fullyQualifiedName;
+	protected final int id;
+	@Nonnull
+	protected final String fullyQualifiedName;
+	protected ClassData outerClass;
+	@Nonnull
+	protected Class<?> sourceClass;
 
-	private List<ClassData> inheritedClasses;
+	private List<ClassData> superClasses;
 	private List<ClassData> implementedInterfaces;
 	private List<ConstructorData> constructors;
 	private List<FieldData> fields;
 	private List<MethodData> methods;
-	private List<ClassData> genericParameters;
+	private List<TypeData> genericParameters;
 
-	public ClassData(int modifiers, int id, @Nonnull String fullyQualifiedName) {
-		super(modifiers);
+	public ClassData( @Nonnull String fullyQualifiedName, int modifiers, Class<?> sourceClass, int id ) {
+		super(fullyQualifiedName, modifiers);
 		this.id = id;
 		this.fullyQualifiedName = fullyQualifiedName;
+		this.sourceClass = sourceClass;
 	}
 
 	@Nonnull
-	public ClassData addInheritedClass(@Nonnull ClassData inheritedClass) {
-		if (inheritedClasses == null) {
-			inheritedClasses = new ArrayList<>();
+	public ClassData addSuperClasses( @Nonnull ClassData... data ) {
+		if (this.superClasses == null) {
+			this.superClasses = new ArrayList<>();
 		}
-		getInheritedClasses().add(inheritedClass);
+		getSuperClasses().addAll(List.of(data));
 		return this;
 	}
 
 	@Nonnull
-	public List<ClassData> getInheritedClasses() {
-		if (inheritedClasses == null) {
+	public List<ClassData> getSuperClasses() {
+		if (superClasses == null) {
 			return List.of();
 		}
-		return inheritedClasses;
+		return superClasses;
 	}
 
 	@Nonnull
-	public ClassData addImplementedInterface(@Nonnull ClassData implementedInterface) {
-		if (implementedInterfaces == null) {
-			implementedInterfaces = new ArrayList<>();
+	public ClassData addImplementedInterfaces( @Nonnull ClassData... data ) {
+		if (this.implementedInterfaces == null) {
+			this.implementedInterfaces = new ArrayList<>();
 		}
-		getImplementedInterfaces().add(implementedInterface);
+		getImplementedInterfaces().addAll(List.of(data));
 		return this;
 	}
 
@@ -59,11 +65,11 @@ public class ClassData extends CommonData {
 	}
 
 	@Nonnull
-	public ClassData addField(@Nonnull FieldData field) {
-		if (fields == null) {
-			fields = new ArrayList<>();
+	public ClassData addFields( @Nonnull FieldData... data ) {
+		if (this.fields == null) {
+			this.fields = new ArrayList<>();
 		}
-		getFields().add(field);
+		getFields().addAll(List.of(data));
 		return this;
 	}
 
@@ -76,11 +82,11 @@ public class ClassData extends CommonData {
 	}
 
 	@Nonnull
-	public ClassData addMethod(@Nonnull MethodData method) {
+	public ClassData addMethods( @Nonnull MethodData... data ) {
 		if (methods == null) {
-			methods = new ArrayList<>();
+			this.methods = new ArrayList<>();
 		}
-		getMethods().add(method);
+		getMethods().addAll(List.of(data));
 		return this;
 	}
 
@@ -93,11 +99,11 @@ public class ClassData extends CommonData {
 	}
 
 	@Nonnull
-	public ClassData addConstructor(@Nonnull ConstructorData constructor) {
-		if (constructors == null) {
-			constructors = new ArrayList<>();
+	public ClassData addConstructors( @Nonnull ConstructorData... data ) {
+		if (this.constructors == null) {
+			this.constructors = new ArrayList<>();
 		}
-		getConstructors().add(constructor);
+		getConstructors().addAll(List.of(data));
 		return this;
 	}
 
@@ -110,20 +116,40 @@ public class ClassData extends CommonData {
 	}
 
 	@Nonnull
-	public ClassData addGenericParameter(@Nonnull ClassData genericParameter) {
-		if (genericParameters == null) {
-			genericParameters = new ArrayList<>();
+	public ClassData addGenericParameters( @Nonnull TypeData... data ) {
+		if (this.genericParameters == null) {
+			this.genericParameters = new ArrayList<>();
 		}
-		getGenericParameters().add(genericParameter);
+		getGenericParameters().addAll(List.of(data));
 		return this;
 	}
 
 	@Nonnull
-	public List<ClassData> getGenericParameters() {
+	public List<TypeData> getGenericParameters() {
 		if (genericParameters == null) {
 			return List.of();
 		}
 		return genericParameters;
+	}
+
+	@Nullable
+	public ClassData getOuterClass() {
+		return outerClass;
+	}
+
+	@Nonnull
+	public ClassData setOuterClass( @Nonnull ClassData outerClass ) {
+		this.outerClass = outerClass;
+		return this;
+	}
+
+	@Nonnull
+	public Class<?> getSourceClass() {
+		return sourceClass;
+	}
+
+	public void setSourceClass( Class<?> sourceClass ) {
+		this.sourceClass = sourceClass;
 	}
 
 	@Override
@@ -131,8 +157,8 @@ public class ClassData extends CommonData {
 		var output = super.toJSON().getAsJsonObject();
 		output.addProperty(JSONProperty.TYPE_ID.jsName, getId());
 		output.addProperty(JSONProperty.TYPE_IDENTIFIER.jsName, getFullyQualifiedName());
-		if (!getInheritedClasses().isEmpty()) {
-			output.add(JSONProperty.SUPER_CLASS.jsName, JSONLike.toJSON(getInheritedClasses().stream().map(ClassData::getId).toList()));
+		if (!getSuperClasses().isEmpty()) {
+			output.add(JSONProperty.SUPER_CLASS.jsName, JSONLike.toJSON(getSuperClasses().stream().map(ClassData::getId).toList()));
 		}
 		if (!getImplementedInterfaces().isEmpty()) {
 			output.add(JSONProperty.INTERFACES.jsName, JSONLike.toJSON(getImplementedInterfaces().stream().map(ClassData::getId).toList()));
@@ -144,7 +170,8 @@ public class ClassData extends CommonData {
 			output.add(JSONProperty.METHODS.jsName, JSONLike.toJSON(getMethods()));
 		}
 		if (!getGenericParameters().isEmpty()) {
-			output.add(JSONProperty.PARAMETERIZED_ARGUMENTS.jsName, JSONLike.toJSON(getGenericParameters().stream().map(ClassData::getId).toList()));
+			// TODO: Fix this
+			output.add(JSONProperty.PARAMETERIZED_ARGUMENTS.jsName, JSONLike.toJSON(getGenericParameters()));
 		}
 
 		return output;

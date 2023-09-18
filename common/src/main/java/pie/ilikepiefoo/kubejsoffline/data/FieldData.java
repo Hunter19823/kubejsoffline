@@ -6,14 +6,17 @@ import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FieldData implements JSONLike {
 	private final int modifiers;
 	private final String name;
-	private final ClassData type;
+	private final TypeData type;
+	private List<AnnotationData> annotations;
 	private Object value;
 
-	public FieldData(int modifiers, String name, ClassData type) {
+	public FieldData( int modifiers, String name, TypeData type ) {
 		this.modifiers = modifiers;
 		this.name = name;
 		this.type = type;
@@ -47,7 +50,8 @@ public class FieldData implements JSONLike {
 		JsonObject object = new JsonObject();
 		object.addProperty(JSONProperty.MODIFIERS.jsName, modifiers);
 		object.addProperty(JSONProperty.FIELD_NAME.jsName, name);
-		object.addProperty(JSONProperty.FIELD_TYPE.jsName, getType().getId());
+		// TODO: Fix this
+		object.add(JSONProperty.FIELD_TYPE.jsName, getType().toJSON());
 		if (value != null) {
 			object.addProperty(JSONProperty.FIELD_VALUE.jsName, value.toString());
 		}
@@ -55,7 +59,22 @@ public class FieldData implements JSONLike {
 	}
 
 	@Nonnull
-	public ClassData getType() {
+	public TypeData getType() {
 		return type;
 	}
+
+	public void addAnnotations( AnnotationData[] data ) {
+		if (this.annotations == null) {
+			this.annotations = new ArrayList<>();
+		}
+		getAnnotations().addAll(List.of(data));
+	}
+
+	public List<AnnotationData> getAnnotations() {
+		if (annotations == null) {
+			return List.of();
+		}
+		return annotations;
+	}
+
 }

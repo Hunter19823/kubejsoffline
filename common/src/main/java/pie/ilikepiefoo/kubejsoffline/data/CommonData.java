@@ -9,24 +9,24 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CommonData implements JSONLike {
-	private final int modifiers;
-	private List<ParameterData> parameters;
-	private List<AnnotationData> annotations;
-	private String name;
-	private ClassData type;
-	private Object value;
+public class CommonData extends TypeData {
+	protected final int modifiers;
+	protected List<ParameterData> parameters;
+	protected List<AnnotationData> annotations;
+	protected TypeData type;
+	protected Object value;
 
-	public CommonData(int modifiers) {
+	public CommonData( String name, int modifiers ) {
+		super(name);
 		this.modifiers = modifiers;
 	}
 
 	@Nonnull
-	public CommonData addParameter(@Nonnull ParameterData parameterData) {
+	public CommonData addParameters( @Nonnull ParameterData... data ) {
 		if (parameters == null) {
 			parameters = new ArrayList<>();
 		}
-		getParameters().add(parameterData);
+		getParameters().addAll(List.of(data));
 		return this;
 	}
 
@@ -39,11 +39,11 @@ public class CommonData implements JSONLike {
 	}
 
 	@Nonnull
-	public CommonData addAnnotation(@Nonnull AnnotationData annotationData) {
+	public CommonData addAnnotations( @Nonnull AnnotationData... data ) {
 		if (annotations == null) {
 			annotations = new ArrayList<>();
 		}
-		getAnnotations().add(annotationData);
+		getAnnotations().addAll(List.of(data));
 		return this;
 	}
 
@@ -68,25 +68,21 @@ public class CommonData implements JSONLike {
 		this.value = value;
 	}
 
-	public String getName() {
-		return name;
-	}
-
 	public void setName(@Nullable String name) {
 		this.name = name;
 	}
 
-	public ClassData getType() {
+	public TypeData getType() {
 		return type;
 	}
 
-	public void setType(@Nullable ClassData returnType) {
+	public void setType( @Nullable TypeData returnType ) {
 		this.type = returnType;
 	}
 
 	@Override
 	public JsonElement toJSON() {
-		JsonObject object = new JsonObject();
+		JsonObject object = (JsonObject) super.toJSON();
 		object.addProperty(JSONProperty.MODIFIERS.jsName, modifiers);
 		if (!getParameters().isEmpty()) {
 			object.add(JSONProperty.PARAMETERS.jsName, JSONLike.toJSON(getParameters()));
@@ -97,11 +93,9 @@ public class CommonData implements JSONLike {
 		if (value != null) {
 			object.addProperty(JSONProperty.EXECUTABLE_VALUE.jsName, value.toString());
 		}
-		if (name != null) {
-			object.addProperty(JSONProperty.EXECUTABLE_NAME.jsName, name);
-		}
 		if (type != null) {
-			object.addProperty(JSONProperty.EXECUTABLE_TYPE.jsName, type.getId());
+			// TODO: Fix this
+			object.add(JSONProperty.EXECUTABLE_TYPE.jsName, type.toJSON());
 		}
 		return object;
 	}

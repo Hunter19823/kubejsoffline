@@ -8,9 +8,6 @@ import pie.ilikepiefoo.kubejsoffline.util.SafeOperations;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.function.Supplier;
 
@@ -59,21 +56,21 @@ public class ClassJSON {
 		object.addProperty(JSONProperty.MODIFIERS.jsName, subject.getModifiers());
 
 		// Add Fields
-		array = FieldJSON.of((Field[]) SafeOperations.tryGetFirst(
+		array = FieldJSON.of(SafeOperations.tryGetFirst(
 				subject::getDeclaredFields
 		).orElse(null));
 		if (!array.isEmpty())
 			object.add(JSONProperty.FIELDS.jsName, array);
 
 		// Add Methods
-		array = MethodJSON.of((Method[]) SafeOperations.tryGetFirst(
+		array = MethodJSON.of(SafeOperations.tryGetFirst(
 				subject::getDeclaredMethods
 		).orElse(null));
 		if (!array.isEmpty())
 			object.add(JSONProperty.METHODS.jsName, array);
 
 		// Add Constructors
-		array = ConstructorJSON.of((Constructor<?>[]) SafeOperations.tryGetFirst(
+		array = ConstructorJSON.of(SafeOperations.tryGetFirst(
 				subject::getDeclaredConstructors
 		).orElse(null));
 		if (!array.isEmpty())
