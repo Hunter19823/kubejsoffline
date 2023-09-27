@@ -1,5 +1,6 @@
 package pie.ilikepiefoo.kubejsoffline.data.populate;
 
+import com.google.gson.JsonArray;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pie.ilikepiefoo.kubejsoffline.data.AnnotationData;
@@ -26,6 +27,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -53,7 +55,7 @@ public class DataPopulate {
 	/**
 	 * The purpose of this method is to wrap a reference to a class, generic type, array type,
 	 * or wildcard type into a TypeData object.
-	 * All ClassData objects will only wrap their super classes and implemented interfaces.
+	 * All ClassData objects will only wrap their superclasses and implemented interfaces.
 	 * All methods, fields, constructors, and annotations should be handled by the populate method.
 	 *
 	 * @param subject The type to wrap.
@@ -86,7 +88,11 @@ public class DataPopulate {
 			componentType = ( (GenericArrayType) componentType ).getGenericComponentType();
 			depth++;
 		}
+
 		if (!( componentType instanceof Class<?> clazz )) {
+			if (depth > 0) {
+				return saveData(new ArrayTypeData(uniqueName, wrap(componentType), depth), uniqueName);
+			}
 			LOG.warn("Component type '{}' is not a class!", componentType);
 			return null;
 		}
@@ -96,7 +102,7 @@ public class DataPopulate {
 		}
 
 		if (depth > 0) {
-			return new ArrayTypeData(uniqueName, wrap(componentType), depth);
+			return saveData(new ArrayTypeData(uniqueName, wrap(clazz), depth), uniqueName);
 		}
 
 		return getClassData(clazz);
@@ -109,7 +115,8 @@ public class DataPopulate {
 		if (lower.isEmpty() && upper.isEmpty()) {
 			return wrap(Object.class);
 		}
-		return new WildcardData(SafeOperations.safeUniqueTypeName(wildcardType), wrap(lower.or(() -> upper).get()));
+		var data = new WildcardData(SafeOperations.safeUniqueTypeName(wildcardType), wrap(lower.or(() -> upper).get()));
+		return saveData(data, data.getName());
 	}
 
 	@Nonnull
@@ -136,6 +143,7 @@ public class DataPopulate {
 		var type = new ClassData(SafeOperations.safeUniqueTypeName(parameterizedType), rootClass.getModifiers(), subClassType, classCount++);
 		CLASS_DATA.put(type.getFullyQualifiedName(), type);
 		type.setSourceClass(subClassType);
+		type.setRawClass(rootClass);
 		SafeOperations.tryGet(parameterizedType::getOwnerType).ifPresent(( ownerType ) -> type.setOuterClass((ClassData) wrap(ownerType)));
 
 		var result = SafeOperations.tryGet(parameterizedType::getActualTypeArguments).map(Arrays::stream).map(( t ) -> t.map(this::wrap)).map(
@@ -180,29 +188,40 @@ public class DataPopulate {
 		TYPE_VARIABLES.clear();
 	}
 
-	/**
-	 * The goal of this method is to populate the data of a class.
-	 * This includes fields, methods, constructors, and annotations.
-	 *
-	 * @param data The class data to populate.
-	 */
-	public void populate( ClassData data ) {
+	public void populateTree(ClassData data) {
 		if (data == null) {
 			return;
 		}
-		var clazz = data.getSourceClass();
+		if (data.populated.get()) {
+			return;
+		}
+		this.populate(data);
+		data.getSuperClasses().parallelStream().forEach(this::populateTree);
+		data.getImplementedInterfaces().parallelStream().forEach(this::populateTree);
+		this.populateTree(data.getOuterClass());
+	}
 
-		// Add Annotations
-		data.addAnnotations(this.getAnnotations(clazz));
-
-		// Add Fields
-		data.addFields(this.getFields(clazz.getDeclaredFields()));
-
-		// Add Methods
-		data.addMethods(this.getMethods(clazz.getDeclaredMethods()));
-
-		// Add Constructors
-		data.addConstructors(this.getConstructors(clazz.getDeclaredConstructors()));
+	private ParameterData[] getParameters( Parameter[] parameters ) {
+		if (parameters == null || parameters.length == 0) {
+			return new ParameterData[ 0 ];
+		}
+		ParameterData[] array = new ParameterData[ parameters.length ];
+		for (int i = 0; i < parameters.length; i++) {
+			Type type = SafeOperations.tryGetFirst(
+					parameters[i]::getParameterizedType,
+					parameters[i]::getType
+			).orElseThrow();
+			if (type == null) {
+				throw new NullPointerException("Type cannot be null");
+			}
+			array[i] = new ParameterData(
+					parameters[i].getModifiers(),
+					SafeOperations.safeUnwrapName(parameters[i]),
+					wrap(type)
+			);
+			array[ i ].addAnnotations(this.getAnnotations(parameters[ i ]));
+		}
+		return array;
 	}
 
 	private ConstructorData[] getConstructors( Constructor<?>[] data ) {
@@ -245,15 +264,19 @@ public class DataPopulate {
 		return array;
 	}
 
-	private ParameterData[] getParameters( Parameter[] parameters ) {
-		if (parameters == null || parameters.length == 0) {
-			return new ParameterData[ 0 ];
-		}
-		ParameterData[] array = new ParameterData[ parameters.length ];
-		for (int i = 0; i < parameters.length; i++) {
-			array[ i ] = new ParameterData(parameters[ i ].getModifiers(), SafeOperations.safeUnwrapName(parameters[ i ]),
-										   wrap(parameters[ i ].getParameterizedType()));
-			array[ i ].addAnnotations(this.getAnnotations(parameters[ i ]));
+	public JsonArray toJsonArray() {
+		JsonArray array = new JsonArray();
+		LOG.info("Populating {} classes", CLASS_DATA.size());
+		ClassData[] classData = CLASS_DATA
+				.values()
+				.parallelStream()
+				.filter((data) -> data instanceof ClassData)
+				.map((data) -> (ClassData) data)
+				.sorted(Comparator.comparingInt(ClassData::getId))
+				.map(this::populate)
+				.toArray(ClassData[]::new);
+		for (ClassData data : classData) {
+			array.add(data.toJSON());
 		}
 		return array;
 	}
@@ -272,6 +295,41 @@ public class DataPopulate {
 			array[ i ] = new AnnotationData(wrapToClassData(data[ i ].annotationType()), data[ i ].toString());
 		}
 		return array;
+	}
+
+	/**
+	 * The goal of this method is to populate the data of a class.
+	 * This includes fields, methods, constructors, and annotations.
+	 *
+	 * @param data The class data to populate.
+	 * @return The populated class data.
+	 */
+	public ClassData populate(ClassData data) {
+		if (data == null) {
+			return null;
+		}
+		if (data.populated.getAndSet(true)) {
+			return data;
+		}
+		var clazz = data.getSourceClass();
+
+		// Add Annotations
+		data.setAnnotations(this.getAnnotations(clazz));
+
+		// Add Fields
+		data.setFields(this.getFields(clazz.getDeclaredFields()));
+
+		// Add Methods
+		data.setMethods(this.getMethods(clazz.getDeclaredMethods()));
+
+		// Add Constructors
+		data.setConstructors(this.getConstructors(clazz.getDeclaredConstructors()));
+
+		return data;
+	}
+
+	private TypeData saveData(TypeData data, String name) {
+		return CLASS_DATA.computeIfAbsent(name, (key) -> data);
 	}
 
 }

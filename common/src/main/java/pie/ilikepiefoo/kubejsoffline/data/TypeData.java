@@ -62,4 +62,10 @@ public abstract class TypeData implements JSONLike {
         return object;
     }
 
+	public JsonObject toReference() {
+		JsonObject object = new JsonObject();
+		object.addProperty(JSONProperty.TYPE_NAME.jsName, getName());
+		return object;
+	}
+
 }

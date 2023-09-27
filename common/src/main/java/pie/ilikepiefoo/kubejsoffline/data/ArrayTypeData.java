@@ -1,5 +1,8 @@
 package pie.ilikepiefoo.kubejsoffline.data;
 
+import com.google.gson.JsonObject;
+import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
+
 public class ArrayTypeData extends TypeData {
     protected TypeData type;
     protected int depth;
@@ -18,4 +21,15 @@ public class ArrayTypeData extends TypeData {
         return depth;
     }
 
+	@Override
+	protected boolean isArray() {
+		return true;
+	}
+
+	@Override
+	public JsonObject toReference() {
+		JsonObject object = type.toReference();
+		object.addProperty(JSONProperty.ARRAY_DEPTH.jsName, getDepth());
+		return object;
+	}
 }

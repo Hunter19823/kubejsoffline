@@ -12,6 +12,9 @@ public class ParameterData extends CommonData {
 
 	public ParameterData( int modifier, @Nonnull String name, @Nonnull TypeData type ) {
 		super(name, modifier);
+		if (type == null) {
+			throw new NullPointerException("Type cannot be null");
+		}
 		setType(type);
 	}
 
@@ -25,11 +28,10 @@ public class ParameterData extends CommonData {
 
 	@Override
 	public JsonElement toJSON() {
-		JsonObject object = new JsonObject();
+		JsonObject object = super.toReference();
 		object.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
 		object.addProperty(JSONProperty.PARAMETER_NAME.jsName, getName());
-		// TODO: Fix this.
-		object.add(JSONProperty.PARAMETER_TYPE.jsName, getType().toJSON());
+		object.add(JSONProperty.PARAMETER_TYPE.jsName, getType().toReference());
 		if (!getAnnotations().isEmpty()) {
 			object.add(JSONProperty.PARAMETER_ANNOTATIONS.jsName, AnnotationData.toJSON(getAnnotations()));
 		}

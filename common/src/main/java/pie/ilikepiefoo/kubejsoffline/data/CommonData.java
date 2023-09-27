@@ -72,31 +72,39 @@ public class CommonData extends TypeData {
 		this.name = name;
 	}
 
-	public TypeData getType() {
-		return type;
+	public void setParameters(List<ParameterData> parameters) {
+		this.parameters = parameters;
 	}
 
-	public void setType( @Nullable TypeData returnType ) {
-		this.type = returnType;
+	public void setAnnotations(List<AnnotationData> annotations) {
+		this.annotations = annotations;
 	}
 
 	@Override
 	public JsonElement toJSON() {
 		JsonObject object = (JsonObject) super.toJSON();
-		object.addProperty(JSONProperty.MODIFIERS.jsName, modifiers);
+		object.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
 		if (!getParameters().isEmpty()) {
 			object.add(JSONProperty.PARAMETERS.jsName, JSONLike.toJSON(getParameters()));
 		}
 		if (!getAnnotations().isEmpty()) {
 			object.add(JSONProperty.ANNOTATIONS.jsName, JSONLike.toJSON(getAnnotations()));
 		}
-		if (value != null) {
-			object.addProperty(JSONProperty.EXECUTABLE_VALUE.jsName, value.toString());
+		if (getValue() != null) {
+			object.addProperty(JSONProperty.EXECUTABLE_VALUE.jsName, getValue().toString());
 		}
-		if (type != null) {
-			// TODO: Fix this
-			object.add(JSONProperty.EXECUTABLE_TYPE.jsName, type.toJSON());
+		if (getType() != null) {
+			object.add(JSONProperty.TYPE_IDENTIFIER.jsName, getType().toReference());
 		}
 		return object;
+	}
+
+	@Nullable
+	public TypeData getType() {
+		return type;
+	}
+
+	public void setType(@Nonnull TypeData returnType) {
+		this.type = returnType;
 	}
 }

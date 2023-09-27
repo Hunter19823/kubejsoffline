@@ -6,25 +6,42 @@ public enum JSONProperty {
 	// Compression Tag Properties
 	VERSION("v"),
 
+	// NEW DATA TAG Properties
+	TYPE_NAME("type_name"),
+	TYPE_VARIABLES("type_variables"),
+	TYPE_VARIABLE_NAME("type_variable_name"),
+	TYPE_VARIABLE_BOUNDS("type_bounds"),
+
+	ARRAY_TYPE("array_type"),
+	ARRAY_NAME("array_name"),
+
+	WILDCARD_TYPE("wildcard_type"),
+	WILDCARD_UPPER_BOUNDS("wildcard_type"),
+	WILDCARD_LOWER_BOUNDS("wildcard_lower_bounds"),
+
+	CLASS_REFERENCE("class_reference"),
+	CLASS_PARAMETERIZED_ARGUMENTS("class_parameterized_arguments"),
+	CLASS_NAME("class_name"),
+
 
 	// DATA TAG Properties
-	TYPE_ID("T"),
-	TYPE_IDENTIFIER("t"),
-	BASE_CLASS_NAME("n"),
-	SUPER_CLASS("s"),
+	TYPE_ID("id"),
+	TYPE_IDENTIFIER("type_identifier"),
+	BASE_CLASS_NAME("base_class_name"),
+	SUPER_CLASS("super_class"),
 	GENERIC_SUPER_CLASS("S"),
 	INTERFACES("i"),
 	GENERIC_INTERFACES("I"),
 	PACKAGE_NAME("P"),
-	ANNOTATIONS("a"),
-	MODIFIERS("M"),
-	CONSTRUCTORS("c"),
-	FIELDS("f"),
-	METHODS("m"),
-	PARAMETERS("p"),
-	VALUE("v"),
+	ANNOTATIONS("annotations"),
+	MODIFIERS("modifiers"),
+	CONSTRUCTORS("constructors"),
+	FIELDS("fields"),
+	METHODS("methods"),
+	PARAMETERS("parameters"),
+	VALUE("raw_value"),
 
-	ARRAY_DEPTH("d"),
+	ARRAY_DEPTH("depth"),
 	PARAMETERIZED_ARGUMENTS(PARAMETERS.jsName),
 	RAW_PARAMETERIZED_TYPE("r"),
 	OWNER_TYPE("o"),
@@ -47,7 +64,7 @@ public enum JSONProperty {
 
 
 	EXECUTABLE_VALUE(VALUE.jsName),
-	EXECUTABLE_NAME(BASE_CLASS_NAME.jsName),
+	EXECUTABLE_NAME("name"),
 	EXECUTABLE_ANNOTATIONS(ANNOTATIONS.jsName),
 	EXECUTABLE_TYPE(TYPE_ID.jsName),
 

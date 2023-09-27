@@ -1,5 +1,9 @@
 package pie.ilikepiefoo.kubejsoffline.data;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,4 +43,14 @@ public class TypeVariableData extends TypeData {
         return true;
     }
 
+	@Override
+	public JsonObject toReference() {
+		JsonObject object = super.toReference();
+		JsonArray bounds = new JsonArray();
+		for (TypeData bound : getBounds()) {
+			bounds.add(bound.toReference());
+		}
+		object.add(JSONProperty.TYPE_VARIABLE_BOUNDS.jsName, bounds);
+		return object;
+	}
 }
