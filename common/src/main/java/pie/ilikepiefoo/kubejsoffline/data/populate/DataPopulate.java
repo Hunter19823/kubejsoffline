@@ -33,303 +33,308 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class DataPopulate {
-	private static final Logger LOG = LogManager.getLogger();
-	private static DataPopulate instance;
-	private final TreeMap<String,TypeData> CLASS_DATA;
-	private final Map<TypeVariable<?>,TypeVariableData> TYPE_VARIABLES;
-	private int classCount;
+    private static final Logger LOG = LogManager.getLogger();
+    private static DataPopulate instance;
+    private final TreeMap<String, TypeData> CLASS_DATA;
+    private final Map<TypeVariable<?>, TypeVariableData> TYPE_VARIABLES;
+    private int classCount;
 
-	public DataPopulate() {
-		this.classCount = 0;
-		this.CLASS_DATA = new TreeMap<>();
-		this.TYPE_VARIABLES = new HashMap<>();
-	}
+    public DataPopulate() {
+        this.classCount = 0;
+        this.CLASS_DATA = new TreeMap<>();
+        this.TYPE_VARIABLES = new HashMap<>();
+    }
 
-	public static DataPopulate getInstance() {
-		if (instance == null) {
-			instance = new DataPopulate();
-		}
-		return instance;
-	}
+    public static DataPopulate getInstance() {
+        if (instance == null) {
+            instance = new DataPopulate();
+        }
+        return instance;
+    }
 
-	/**
-	 * The purpose of this method is to wrap a reference to a class, generic type, array type,
-	 * or wildcard type into a TypeData object.
-	 * All ClassData objects will only wrap their superclasses and implemented interfaces.
-	 * All methods, fields, constructors, and annotations should be handled by the populate method.
-	 *
-	 * @param subject The type to wrap.
-	 * @return The wrapped type.
-	 */
-	public synchronized TypeData wrap( Type subject ) {
-		if (subject == null) {
-			return null;
-		}
-		String uniqueName = SafeOperations.safeUniqueTypeName(subject);
-		if (CLASS_DATA.containsKey(uniqueName)) {
-			return CLASS_DATA.get(uniqueName);
-		}
+    /**
+     * The purpose of this method is to wrap a reference to a class, generic type, array type,
+     * or wildcard type into a TypeData object.
+     * All ClassData objects will only wrap their superclasses and implemented interfaces.
+     * All methods, fields, constructors, and annotations should be handled by the populate method.
+     *
+     * @param subject The type to wrap.
+     * @return The wrapped type.
+     */
+    public synchronized TypeData wrap(Type subject) {
+        if (subject == null) {
+            return null;
+        }
+        String uniqueName = SafeOperations.safeUniqueTypeName(subject);
 
-		if (subject instanceof WildcardType wildcardType) {
-			return getWildcard(wildcardType);
-		}
+        if (CLASS_DATA.containsKey(uniqueName)) {
+            return CLASS_DATA.get(uniqueName);
+        }
 
-		if (subject instanceof TypeVariable<?> parameterizedType) {
-			return getTypeVariable(parameterizedType);
-		}
+        if (subject instanceof WildcardType wildcardType) {
+            return getWildcard(wildcardType);
+        }
 
-		if (subject instanceof ParameterizedType parameterizedType) {
-			return getParameterizedType(parameterizedType);
-		}
+        if (subject instanceof TypeVariable<?> parameterizedType) {
+            return getTypeVariable(parameterizedType);
+        }
 
-		int depth = 0;
-		Type componentType = subject;
-		while (componentType instanceof GenericArrayType) {
-			componentType = ( (GenericArrayType) componentType ).getGenericComponentType();
-			depth++;
-		}
+        if (subject instanceof ParameterizedType parameterizedType) {
+            return getParameterizedType(parameterizedType);
+        }
 
-		if (!( componentType instanceof Class<?> clazz )) {
-			if (depth > 0) {
-				return saveData(new ArrayTypeData(uniqueName, wrap(componentType), depth), uniqueName);
-			}
-			LOG.warn("Component type '{}' is not a class!", componentType);
-			return null;
-		}
-		while (clazz.isArray()) {
-			clazz = clazz.getComponentType();
-			depth++;
-		}
+        int depth = 0;
+        Type componentType = subject;
+        while (componentType instanceof GenericArrayType) {
+            componentType = ((GenericArrayType) componentType).getGenericComponentType();
+            depth++;
+        }
 
-		if (depth > 0) {
-			return saveData(new ArrayTypeData(uniqueName, wrap(clazz), depth), uniqueName);
-		}
+        if (!(componentType instanceof Class<?> clazz)) {
+            if (depth > 0) {
+                return saveData(new ArrayTypeData(uniqueName, wrap(componentType), depth), uniqueName);
+            }
+            LOG.warn("Component type '{}' is not a class!", componentType);
+            return null;
+        }
+        while (clazz.isArray()) {
+            clazz = clazz.getComponentType();
+            depth++;
+        }
 
-		return getClassData(clazz);
-	}
+        if (depth > 0) {
+            return saveData(new ArrayTypeData(uniqueName, wrap(clazz), depth), uniqueName);
+        }
 
-	@Nonnull
-	private TypeData getWildcard( WildcardType wildcardType ) {
-		var upper = SafeOperations.tryGet(wildcardType::getUpperBounds).filter(( bounds ) -> bounds.length > 1).map(( bounds ) -> bounds[ 0 ]);
-		var lower = SafeOperations.tryGet(wildcardType::getLowerBounds).filter(( bounds ) -> bounds.length > 1).map(( bounds ) -> bounds[ 0 ]);
-		if (lower.isEmpty() && upper.isEmpty()) {
-			return wrap(Object.class);
-		}
-		var data = new WildcardData(SafeOperations.safeUniqueTypeName(wildcardType), wrap(lower.or(() -> upper).get()));
-		return saveData(data, data.getName());
-	}
+        return getClassData(clazz);
+    }
 
-	@Nonnull
-	private TypeData getTypeVariable( TypeVariable<?> parameterizedType ) {
-		if (TYPE_VARIABLES.containsKey(parameterizedType)) {
-			return TYPE_VARIABLES.get(parameterizedType);
-		}
-		var type = new TypeVariableData(SafeOperations.safeUniqueTypeName(parameterizedType), parameterizedType.getName());
-		TYPE_VARIABLES.put(parameterizedType, type);
+    @Nonnull
+    private TypeData getWildcard(WildcardType wildcardType) {
+        var upper = SafeOperations.tryGet(wildcardType::getUpperBounds).filter((bounds) -> bounds.length > 1).map((bounds) -> bounds[0]);
+        var lower = SafeOperations.tryGet(wildcardType::getLowerBounds).filter((bounds) -> bounds.length > 1).map((bounds) -> bounds[0]);
+        if (lower.isEmpty() && upper.isEmpty()) {
+            return wrap(Object.class);
+        }
+        var data = new WildcardData(SafeOperations.safeUniqueTypeName(wildcardType), wrap(lower.or(() -> upper).get()));
+        return saveData(data, data.getName());
+    }
 
-		var result = SafeOperations.tryGet(parameterizedType::getBounds).map(Arrays::stream).map(( t ) -> t.map(this::wrap)).map(
-				( t ) -> t.toArray(TypeData[]::new));
+    @Nonnull
+    private TypeData getTypeVariable(TypeVariable<?> parameterizedType) {
+        if (TYPE_VARIABLES.containsKey(parameterizedType)) {
+            return TYPE_VARIABLES.get(parameterizedType);
+        }
+        var type = new TypeVariableData(SafeOperations.safeUniqueTypeName(parameterizedType), parameterizedType.getName());
+        TYPE_VARIABLES.put(parameterizedType, type);
 
-		result.ifPresent(type::addBounds);
+        var result = SafeOperations.tryGet(parameterizedType::getBounds).map(Arrays::stream).map((t) -> t.map(this::wrap)).map(
+                (t) -> t.toArray(TypeData[]::new));
 
-		return type;
-	}
+        result.ifPresent(type::addBounds);
 
-	@Nonnull
-	private TypeData getParameterizedType( ParameterizedType parameterizedType ) {
-		ClassData rootClass = wrapToClassData(parameterizedType.getRawType());
-		var subClassType = rootClass.getSourceClass();
+        return type;
+    }
 
-		var type = new ClassData(SafeOperations.safeUniqueTypeName(parameterizedType), rootClass.getModifiers(), subClassType, classCount++);
-		CLASS_DATA.put(type.getFullyQualifiedName(), type);
-		type.setSourceClass(subClassType);
-		type.setRawClass(rootClass);
-		SafeOperations.tryGet(parameterizedType::getOwnerType).ifPresent(( ownerType ) -> type.setOuterClass((ClassData) wrap(ownerType)));
+    @Nonnull
+    private TypeData getParameterizedType(ParameterizedType parameterizedType) {
+        ClassData rootClass = wrapToClassData(parameterizedType.getRawType());
+        var subClassType = rootClass.getSourceClass();
+        if (subClassType == null) {
+            LOG.warn("Unable to get source class for '{}'", rootClass.getName());
+            throw new NullPointerException("Unable to get source class for '" + rootClass.getName() + "'");
+        }
 
-		var result = SafeOperations.tryGet(parameterizedType::getActualTypeArguments).map(Arrays::stream).map(( t ) -> t.map(this::wrap)).map(
-				( t ) -> t.toArray(TypeData[]::new));
+        var type = new ClassData(SafeOperations.safeUniqueTypeName(parameterizedType), rootClass.getModifiers(), subClassType, classCount++);
+        CLASS_DATA.put(type.getFullyQualifiedName(), type);
+        type.setSourceClass(subClassType);
+        type.setRawClass(rootClass);
+        SafeOperations.tryGet(parameterizedType::getOwnerType).ifPresent((ownerType) -> type.setOuterClass((ClassData) wrap(ownerType)));
 
-		result.ifPresent(type::addGenericParameters);
+        var result = SafeOperations.tryGet(parameterizedType::getActualTypeArguments).map(Arrays::stream).map((t) -> t.map(this::wrap)).map(
+                (t) -> t.toArray(TypeData[]::new));
 
-		return type;
-	}
+        result.ifPresent(type::addGenericParameters);
 
-	private ClassData getClassData( Class<?> clazz ) {
-		String name = SafeOperations.safeUniqueTypeName(clazz);
-		if (CLASS_DATA.containsKey(name)) {
-			return (ClassData) CLASS_DATA.get(name);
-		}
-		var type = new ClassData(name, clazz.getModifiers(), clazz, classCount++);
-		CLASS_DATA.put(name, type);
-		type.setSourceClass(clazz);
+        return type;
+    }
 
-		SafeOperations.tryGetFirst(clazz::getGenericSuperclass, clazz::getSuperclass).map(this::wrapToClassData).ifPresent(type::addSuperClasses);
+    private ClassData getClassData(Class<?> clazz) {
+        String name = SafeOperations.safeUniqueTypeName(clazz);
+        if (CLASS_DATA.containsKey(name)) {
+            return (ClassData) CLASS_DATA.get(name);
+        }
+        var type = new ClassData(name, clazz.getModifiers(), clazz, classCount++);
+        CLASS_DATA.put(name, type);
+        type.setSourceClass(clazz);
 
-		SafeOperations.tryGet(clazz::getGenericInterfaces).map(Arrays::stream).map(( t ) -> t.map(this::wrapToClassData)).map(
-				( t ) -> t.toArray(ClassData[]::new)).ifPresent(type::addImplementedInterfaces);
+        SafeOperations.tryGetFirst(clazz::getGenericSuperclass, clazz::getSuperclass).map(this::wrapToClassData).ifPresent(type::addSuperClasses);
 
-		SafeOperations.tryGet(clazz::getInterfaces).map(Arrays::stream).map(( t ) -> t.map(this::wrapToClassData)).map(
-				( t ) -> t.toArray(ClassData[]::new)).ifPresent(type::addImplementedInterfaces);
+        SafeOperations.tryGet(clazz::getGenericInterfaces).map(Arrays::stream).map((t) -> t.map(this::wrapToClassData)).map(
+                (t) -> t.toArray(ClassData[]::new)).ifPresent(type::addImplementedInterfaces);
 
-		return type;
-	}
+        SafeOperations.tryGet(clazz::getInterfaces).map(Arrays::stream).map((t) -> t.map(this::wrapToClassData)).map(
+                (t) -> t.toArray(ClassData[]::new)).ifPresent(type::addImplementedInterfaces);
 
-	private ClassData wrapToClassData( Type type ) {
-		var result = wrap(type);
-		if (result instanceof ClassData) {
-			return (ClassData) result;
-		}
-		LOG.warn("Unable to wrap '{}' to ClassData!", type);
-		return null;
-	}
+        return type;
+    }
 
-	public void clear() {
-		CLASS_DATA.clear();
-		TYPE_VARIABLES.clear();
-	}
+    private ClassData wrapToClassData(Type type) {
+        var result = wrap(type);
+        if (result instanceof ClassData) {
+            return (ClassData) result;
+        }
+        LOG.warn("Unable to wrap '{}' to ClassData!", type);
+        throw new NullPointerException("Unable to wrap '" + type + "' to ClassData!");
+    }
 
-	public void populateTree(ClassData data) {
-		if (data == null) {
-			return;
-		}
-		if (data.populated.get()) {
-			return;
-		}
-		this.populate(data);
-		data.getSuperClasses().parallelStream().forEach(this::populateTree);
-		data.getImplementedInterfaces().parallelStream().forEach(this::populateTree);
-		this.populateTree(data.getOuterClass());
-	}
+    public void clear() {
+        CLASS_DATA.clear();
+        TYPE_VARIABLES.clear();
+    }
 
-	private ParameterData[] getParameters( Parameter[] parameters ) {
-		if (parameters == null || parameters.length == 0) {
-			return new ParameterData[ 0 ];
-		}
-		ParameterData[] array = new ParameterData[ parameters.length ];
-		for (int i = 0; i < parameters.length; i++) {
-			Type type = SafeOperations.tryGetFirst(
-					parameters[i]::getParameterizedType,
-					parameters[i]::getType
-			).orElseThrow();
-			if (type == null) {
-				throw new NullPointerException("Type cannot be null");
-			}
-			array[i] = new ParameterData(
-					parameters[i].getModifiers(),
-					SafeOperations.safeUnwrapName(parameters[i]),
-					wrap(type)
-			);
-			array[ i ].addAnnotations(this.getAnnotations(parameters[ i ]));
-		}
-		return array;
-	}
+    public void populateTree(ClassData data) {
+        if (data == null) {
+            return;
+        }
+        if (data.populated.get()) {
+            return;
+        }
+        this.populate(data);
+        data.getSuperClasses().parallelStream().forEach(this::populateTree);
+        data.getImplementedInterfaces().parallelStream().forEach(this::populateTree);
+        this.populateTree(data.getOuterClass());
+    }
 
-	private ConstructorData[] getConstructors( Constructor<?>[] data ) {
-		if (data == null || data.length == 0) {
-			return new ConstructorData[ 0 ];
-		}
-		ConstructorData[] array = new ConstructorData[ data.length ];
-		for (int i = 0; i < data.length; i++) {
-			array[ i ] = new ConstructorData(data[ i ].getModifiers());
-			array[ i ].addParameters(this.getParameters(data[ i ].getParameters()));
-			array[ i ].addAnnotations(this.getAnnotations(data[ i ]));
-		}
-		return array;
-	}
+    private ParameterData[] getParameters(Parameter[] parameters) {
+        if (parameters == null || parameters.length == 0) {
+            return new ParameterData[0];
+        }
+        ParameterData[] array = new ParameterData[parameters.length];
+        for (int i = 0; i < parameters.length; i++) {
+            Type type = SafeOperations.tryGetFirst(
+                    parameters[i]::getParameterizedType,
+                    parameters[i]::getType
+            ).orElseThrow();
+            if (type == null) {
+                throw new NullPointerException("Type cannot be null");
+            }
+            array[i] = new ParameterData(
+                    parameters[i].getModifiers(),
+                    SafeOperations.safeUnwrapName(parameters[i]),
+                    wrap(type)
+            );
+            array[i].addAnnotations(this.getAnnotations(parameters[i]));
+        }
+        return array;
+    }
 
-	private MethodData[] getMethods( Method[] declaredMethods ) {
-		if (declaredMethods == null || declaredMethods.length == 0) {
-			return new MethodData[ 0 ];
-		}
-		MethodData[] array = new MethodData[ declaredMethods.length ];
-		for (int i = 0; i < declaredMethods.length; i++) {
-			array[ i ] = new MethodData(declaredMethods[ i ].getModifiers(), SafeOperations.safeUnwrapName(declaredMethods[ i ]),
-										wrap(declaredMethods[ i ].getGenericReturnType()));
-			array[ i ].addParameters(this.getParameters(declaredMethods[ i ].getParameters()));
-			array[ i ].addAnnotations(this.getAnnotations(declaredMethods[ i ]));
-		}
-		return array;
-	}
+    private ConstructorData[] getConstructors(Constructor<?>[] data) {
+        if (data == null || data.length == 0) {
+            return new ConstructorData[0];
+        }
+        ConstructorData[] array = new ConstructorData[data.length];
+        for (int i = 0; i < data.length; i++) {
+            array[i] = new ConstructorData(data[i].getModifiers());
+            array[i].addParameters(this.getParameters(data[i].getParameters()));
+            array[i].addAnnotations(this.getAnnotations(data[i]));
+        }
+        return array;
+    }
 
-	private FieldData[] getFields( Field[] declaredFields ) {
-		if (declaredFields == null || declaredFields.length == 0) {
-			return new FieldData[ 0 ];
-		}
-		FieldData[] array = new FieldData[ declaredFields.length ];
-		for (int i = 0; i < declaredFields.length; i++) {
-			array[ i ] = new FieldData(declaredFields[ i ].getModifiers(), SafeOperations.safeUnwrapName(declaredFields[ i ]),
-									   wrap(declaredFields[ i ].getGenericType()));
-			array[ i ].addAnnotations(this.getAnnotations(declaredFields[ i ]));
-		}
-		return array;
-	}
+    private MethodData[] getMethods(Method[] declaredMethods) {
+        if (declaredMethods == null || declaredMethods.length == 0) {
+            return new MethodData[0];
+        }
+        MethodData[] array = new MethodData[declaredMethods.length];
+        for (int i = 0; i < declaredMethods.length; i++) {
+            array[i] = new MethodData(declaredMethods[i].getModifiers(), SafeOperations.safeUnwrapName(declaredMethods[i]),
+                    wrap(declaredMethods[i].getGenericReturnType()));
+            array[i].addParameters(this.getParameters(declaredMethods[i].getParameters()));
+            array[i].addAnnotations(this.getAnnotations(declaredMethods[i]));
+        }
+        return array;
+    }
 
-	public JsonArray toJsonArray() {
-		JsonArray array = new JsonArray();
-		LOG.info("Populating {} classes", CLASS_DATA.size());
-		ClassData[] classData = CLASS_DATA
-				.values()
-				.parallelStream()
-				.filter((data) -> data instanceof ClassData)
-				.map((data) -> (ClassData) data)
-				.sorted(Comparator.comparingInt(ClassData::getId))
-				.map(this::populate)
-				.toArray(ClassData[]::new);
-		for (ClassData data : classData) {
-			array.add(data.toJSON());
-		}
-		return array;
-	}
+    private FieldData[] getFields(Field[] declaredFields) {
+        if (declaredFields == null || declaredFields.length == 0) {
+            return new FieldData[0];
+        }
+        FieldData[] array = new FieldData[declaredFields.length];
+        for (int i = 0; i < declaredFields.length; i++) {
+            array[i] = new FieldData(declaredFields[i].getModifiers(), SafeOperations.safeUnwrapName(declaredFields[i]),
+                    wrap(declaredFields[i].getGenericType()));
+            array[i].addAnnotations(this.getAnnotations(declaredFields[i]));
+        }
+        return array;
+    }
 
-	public AnnotationData[] getAnnotations( AnnotatedElement element ) {
-		if (element == null) {
-			return new AnnotationData[ 0 ];
-		}
-		var data = element.getAnnotations();
-		if (data == null || data.length == 0) {
-			return new AnnotationData[ 0 ];
-		}
+    public JsonArray toJsonArray() {
+        LOG.info("Populating {} classes", CLASS_DATA.size());
+        ClassData[] classData = CLASS_DATA
+                .values()
+                .parallelStream()
+                .filter((data) -> data instanceof ClassData)
+                .map((data) -> (ClassData) data)
+                .sorted(Comparator.comparingInt(ClassData::getId))
+                .map(this::populate)
+                .toArray(ClassData[]::new);
+        JsonArray array = new JsonArray(classData.length);
+        for (ClassData data : classData) {
+            array.add(data.toJSON());
+        }
+        return array;
+    }
 
-		AnnotationData[] array = new AnnotationData[ data.length ];
-		for (int i = 0; i < data.length; i++) {
-			array[ i ] = new AnnotationData(wrapToClassData(data[ i ].annotationType()), data[ i ].toString());
-		}
-		return array;
-	}
+    public AnnotationData[] getAnnotations(AnnotatedElement element) {
+        if (element == null) {
+            return new AnnotationData[0];
+        }
+        var data = element.getAnnotations();
+        if (data == null || data.length == 0) {
+            return new AnnotationData[0];
+        }
 
-	/**
-	 * The goal of this method is to populate the data of a class.
-	 * This includes fields, methods, constructors, and annotations.
-	 *
-	 * @param data The class data to populate.
-	 * @return The populated class data.
-	 */
-	public ClassData populate(ClassData data) {
-		if (data == null) {
-			return null;
-		}
-		if (data.populated.getAndSet(true)) {
-			return data;
-		}
-		var clazz = data.getSourceClass();
+        AnnotationData[] array = new AnnotationData[data.length];
+        for (int i = 0; i < data.length; i++) {
+            array[i] = new AnnotationData(wrapToClassData(data[i].annotationType()), data[i].toString());
+        }
+        return array;
+    }
 
-		// Add Annotations
-		data.setAnnotations(this.getAnnotations(clazz));
+    /**
+     * The goal of this method is to populate the data of a class.
+     * This includes fields, methods, constructors, and annotations.
+     *
+     * @param data The class data to populate.
+     * @return The populated class data.
+     */
+    public ClassData populate(ClassData data) {
+        if (data == null) {
+            return null;
+        }
+        if (data.populated.getAndSet(true)) {
+            return data;
+        }
+        var clazz = data.getSourceClass();
 
-		// Add Fields
-		data.setFields(this.getFields(clazz.getDeclaredFields()));
+        // Add Annotations
+        data.setAnnotations(this.getAnnotations(clazz));
 
-		// Add Methods
-		data.setMethods(this.getMethods(clazz.getDeclaredMethods()));
+        // Add Fields
+        data.setFields(this.getFields(clazz.getDeclaredFields()));
 
-		// Add Constructors
-		data.setConstructors(this.getConstructors(clazz.getDeclaredConstructors()));
+        // Add Methods
+        data.setMethods(this.getMethods(clazz.getDeclaredMethods()));
 
-		return data;
-	}
+        // Add Constructors
+        data.setConstructors(this.getConstructors(clazz.getDeclaredConstructors()));
 
-	private TypeData saveData(TypeData data, String name) {
-		return CLASS_DATA.computeIfAbsent(name, (key) -> data);
-	}
+        return data;
+    }
+
+    private TypeData saveData(TypeData data, String name) {
+        return CLASS_DATA.computeIfAbsent(name, (key) -> data);
+    }
 
 }

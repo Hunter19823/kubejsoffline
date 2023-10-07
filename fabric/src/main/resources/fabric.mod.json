@@ -1,31 +1,31 @@
 {
-  "schemaVersion": 1,
-  "id": "${mod_id}",
-  "version": "${mod_version}",
-  "name": "${mod_name} (Fabric)",
-  "description": "${mod_description}",
-  "authors": [
-    "${mod_author}"
-  ],
-  "contact": {
-    "homepage": "${mod_homepage}",
-    "sources": "${mod_source}"
-  },
-  "license": "${license}",
-  "icon": "assets/${mod_id}/${mod_logo}",
-  "environment": "*",
-  "entrypoints": {
-    "main": [
-      "pie.ilikepiefoo.kubejsoffline.fabric.KubeJSOfflineFabric"
-    ]
-  },
-  "mixins": [
-    "${fabric_mixin}",
-    "${common_mixin}"
-  ],
-  "depends": {
-    "fabric": "*",
-    "minecraft": ">=${minecraft_version}",
-    "architectury": ">=${architectury_version}"
-  }
+    "schemaVersion": 1,
+    "id": "${mod_id}",
+    "version": "${mod_version}",
+    "name": "${mod_name} (Fabric)",
+    "description": "${mod_description}",
+    "authors": [
+        "${mod_author}"
+    ],
+    "contact": {
+        "homepage": "${mod_homepage}",
+        "sources": "${mod_source}"
+    },
+    "license": "${license}",
+    "icon": "assets/${mod_id}/${mod_logo}",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "pie.ilikepiefoo.kubejsoffline.fabric.KubeJSOfflineFabric"
+        ]
+    },
+    "mixins": [
+        "${fabric_mixin}",
+        "${common_mixin}"
+    ],
+    "depends": {
+        "fabric": "*",
+        "minecraft": ">=${minecraft_version}",
+        "architectury": ">=${architectury_version}"
+    }
 }

@@ -12,7 +12,7 @@ public class TypeVariableData extends TypeData {
     protected String variableName;
     protected List<TypeData> bounds;
 
-    public TypeVariableData( String name, String variableName ) {
+    public TypeVariableData(String name, String variableName) {
         super(name);
         this.variableName = variableName;
     }
@@ -21,19 +21,18 @@ public class TypeVariableData extends TypeData {
         return variableName;
     }
 
-    public List<TypeData> getBounds() {
-        if (this.bounds == null) return List.of();
-        return bounds;
-    }
-
-    public TypeVariableData addBound( TypeData bound ) {
-        if (this.bounds == null) this.bounds = new java.util.ArrayList<>();
+    public TypeVariableData addBound(TypeData bound) {
+        if (this.bounds == null) {
+            this.bounds = new java.util.ArrayList<>();
+        }
         this.bounds.add(bound);
         return this;
     }
 
-    public TypeVariableData addBounds( TypeData... bounds ) {
-        if (this.bounds == null) this.bounds = new java.util.ArrayList<>();
+    public TypeVariableData addBounds(TypeData... bounds) {
+        if (this.bounds == null) {
+            this.bounds = new java.util.ArrayList<>();
+        }
         this.bounds.addAll(Arrays.asList(bounds));
         return this;
     }
@@ -43,14 +42,21 @@ public class TypeVariableData extends TypeData {
         return true;
     }
 
-	@Override
-	public JsonObject toReference() {
-		JsonObject object = super.toReference();
-		JsonArray bounds = new JsonArray();
-		for (TypeData bound : getBounds()) {
-			bounds.add(bound.toReference());
-		}
-		object.add(JSONProperty.TYPE_VARIABLE_BOUNDS.jsName, bounds);
-		return object;
-	}
+    @Override
+    public JsonObject toReference() {
+        JsonObject object = super.toReference();
+        JsonArray bounds = new JsonArray();
+        for (TypeData bound : getBounds()) {
+            bounds.add(bound.toReference());
+        }
+        object.add(JSONProperty.TYPE_VARIABLE_BOUNDS.jsName, bounds);
+        return object;
+    }
+
+    public List<TypeData> getBounds() {
+        if (this.bounds == null) {
+            return List.of();
+        }
+        return bounds;
+    }
 }

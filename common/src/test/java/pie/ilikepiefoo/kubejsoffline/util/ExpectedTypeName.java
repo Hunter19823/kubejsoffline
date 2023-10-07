@@ -5,13 +5,13 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-@Target( {
+@Target({
         ElementType.TYPE,
         ElementType.TYPE_PARAMETER,
         ElementType.FIELD,
         ElementType.METHOD
-} )
-@Retention( java.lang.annotation.RetentionPolicy.RUNTIME )
+})
+@Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
 public @interface ExpectedTypeName {
     /**
      * The expected string representation of the return type.

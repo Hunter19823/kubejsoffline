@@ -1,5 +1,5 @@
 plugins {
-	id "com.github.johnrengelman.shadow" version "${shadowjar_version}"
+    id "com.github.johnrengelman.shadow" version "${shadowjar_version}"
 }
 
 architectury {
@@ -11,58 +11,57 @@ loom {
 }
 
 configurations {
-	shadowImplementation.extendsFrom implementation
+    shadowImplementation.extendsFrom implementation
 }
 
 dependencies {
-	implementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+    implementation 'org.junit.jupiter:junit-jupiter:5.8.1'
 
-	// We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
+    // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
     // Do NOT use other classes from fabric loader
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
     // Remove the next line if you don't want to depend on the API
     modApi "dev.architectury:architectury:${rootProject.architectury_version}"
-	modImplementation("dev.latvian.mods:kubejs:${kubejs_version}")
+    modImplementation("dev.latvian.mods:kubejs:${kubejs_version}")
 
-	shadowImplementation "org.reflections:reflections:${project.reflections_version}"
+    shadowImplementation "org.reflections:reflections:${project.reflections_version}"
 }
 
 
 shadowJar {
-	exclude "javax/"
-	exclude "org/slf4j/"
-	exclude "org/opentest4j/"
-	exclude "org/junit/"
-	exclude "org/apiguardian/"
-	configurations = [
-			project.configurations.shadowImplementation
-	]
-	classifier "dev-shadow"
+    exclude "javax/"
+    exclude "org/slf4j/"
+    exclude "org/opentest4j/"
+    exclude "org/junit/"
+    exclude "org/apiguardian/"
+    configurations = [
+            project.configurations.shadowImplementation
+    ]
+    classifier "dev-shadow"
 
-	relocate "org.reflections", "${project.group}.kubejsoffline.reflections"
-	relocate "javassist", "${project.group}.kubejsoffline.javassist"
+    relocate "org.reflections", "${project.group}.kubejsoffline.reflections"
+    relocate "javassist", "${project.group}.kubejsoffline.javassist"
 }
 
 remapJar {
-	input.set shadowJar.archiveFile
-	dependsOn shadowJar
-	classifier null
+    input.set shadowJar.archiveFile
+    dependsOn shadowJar
+    classifier null
 }
 
 sourcesJar {
-	dependsOn remapJar
-	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-	from remapJar.archiveFile.map { zipTree(it) }
+    dependsOn remapJar
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from remapJar.archiveFile.map { zipTree(it) }
 }
 
 jar {
-	classifier "dev"
+    classifier "dev"
 }
 
 
-
 tasks.withType(Test) {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
 
 publishing {

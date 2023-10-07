@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DataPopulateTest {
     public static final Logger LOG = LogManager.getLogger();
-	public static final Gson GSON = new GsonBuilder().create();
+    public static final Gson GSON = new GsonBuilder().create();
 
     @Test
     void wrapObject() {
@@ -25,7 +25,7 @@ class DataPopulateTest {
 
         var data = dataPopulate.wrap(Object.class);
         assertEquals("java.lang.Object", data.getName());
-        if (!( data instanceof ClassData classData )) {
+        if (!(data instanceof ClassData classData)) {
             fail("Data is not ClassData");
             return;
         }
@@ -39,54 +39,54 @@ class DataPopulateTest {
         assertFalse(Modifier.isProtected(classData.getModifiers()));
         assertFalse(Modifier.isStatic(classData.getModifiers()));
 
-		LOG.info(GSON.toJson(classData.toJSON()));
+        LOG.info(GSON.toJson(classData.toJSON()));
 
     }
 
-	@Test
-	void populateObject() {
-		DataPopulate dataPopulate = new DataPopulate();
-		var data = dataPopulate.wrap(Object.class);
-		dataPopulate.populate((ClassData) data);
+    @Test
+    void populateObject() {
+        DataPopulate dataPopulate = new DataPopulate();
+        var data = dataPopulate.wrap(Object.class);
+        dataPopulate.populate((ClassData) data);
 
-		assertEquals("java.lang.Object", data.getName());
-		assertEquals(11, ((ClassData) data).getMethods().size());
-		assertEquals(0, ((ClassData) data).getFields().size());
-		assertEquals(0, ((ClassData) data).getConstructors().size());
-		assertEquals(0, ((ClassData) data).getAnnotations().size());
+        assertEquals("java.lang.Object", data.getName());
+        assertEquals(11, ((ClassData) data).getMethods().size());
+        assertEquals(0, ((ClassData) data).getFields().size());
+        assertEquals(0, ((ClassData) data).getConstructors().size());
+        assertEquals(0, ((ClassData) data).getAnnotations().size());
 
-		LOG.info(GSON.toJson(dataPopulate.toJsonArray()));
-	}
+        LOG.info(GSON.toJson(dataPopulate.toJsonArray()));
+    }
 
-	@Test
-	void populateGenericExample() {
-		DataPopulate dataPopulate = new DataPopulate();
-		GenericNumberExample example = new GenericNumberExample();
-		var data = dataPopulate.wrap(example.getClass());
-		dataPopulate.populateTree((ClassData) data);
+    @Test
+    void populateGenericExample() {
+        DataPopulate dataPopulate = new DataPopulate();
+        GenericNumberExample example = new GenericNumberExample();
+        var data = dataPopulate.wrap(example.getClass());
+        dataPopulate.populateTree((ClassData) data);
 
 
-		LOG.info(dataPopulate.toJsonArray());
-	}
+        LOG.info(dataPopulate.toJsonArray());
+    }
 
-	@Test
-	void classFinderTest() throws IOException {
-		DataPopulate dataPopulate = new DataPopulate();
-		GenericNumberExample example = new GenericNumberExample();
-		ClassFinder finder = ClassFinder.INSTANCE;
-		finder.addToSearch(example.getClass());
-		finder.onSearched(dataPopulate::wrap);
-		while (!finder.isFinished()) {
-			finder.searchCurrentDepth();
-		}
+    @Test
+    void classFinderTest() throws IOException {
+        DataPopulate dataPopulate = new DataPopulate();
+        GenericNumberExample example = new GenericNumberExample();
+        ClassFinder finder = ClassFinder.INSTANCE;
+        finder.addToSearch(example.getClass());
+        finder.onSearched(dataPopulate::wrap);
+        while (!finder.isFinished()) {
+            finder.searchCurrentDepth();
+        }
 
-		JsonArray data = dataPopulate.toJsonArray();
-		LOG.info("Found {} entries.", data.size());
-		String json_string = data.toString();
-		LOG.info("The total size of the data is {} bytes.", json_string.getBytes().length);
-		try (var writer = new java.io.FileWriter("data.json")) {
-			writer.write(json_string);
-		}
-	}
+        JsonArray data = dataPopulate.toJsonArray();
+        LOG.info("Found {} entries.", data.size());
+        String json_string = data.toString();
+        LOG.info("The total size of the data is {} bytes.", json_string.getBytes().length);
+        try (var writer = new java.io.FileWriter("data.json")) {
+            writer.write(json_string);
+        }
+    }
 
 }

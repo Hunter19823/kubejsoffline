@@ -2,9 +2,9 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
 plugins {
-	id "architectury-plugin" version "${architectury_plugin_version}"
-	id "dev.architectury.loom" version "${architectury_loom_version}" apply false
-	id "me.shedaniel.unified-publishing" version "${unified_publishing_version}" apply false
+    id "architectury-plugin" version "${architectury_plugin_version}"
+    id "dev.architectury.loom" version "${architectury_loom_version}" apply false
+    id "me.shedaniel.unified-publishing" version "${unified_publishing_version}" apply false
 }
 
 architectury {
@@ -28,15 +28,15 @@ subprojects {
 
     }
 
-	tasks.withType(ProcessResources) {
-		processResources {
-			outputs.upToDateWhen { false }
+    tasks.withType(ProcessResources) {
+        processResources {
+            outputs.upToDateWhen { false }
 
-			filesMatching([rootProject.forge_config, rootProject.fabric_config, "pack.mcmeta", "assets/kubejsoffline/html/js/projectinfo.js"]) {
-				expand project.properties
-			}
-		}
-	}
+            filesMatching([rootProject.forge_config, rootProject.fabric_config, "pack.mcmeta", "assets/kubejsoffline/html/js/projectinfo.js"]) {
+                expand project.properties
+            }
+        }
+    }
 
 //	// Before runClient task clear version specific kubejs scripts
 //	tasks.register("beforeRunClient") {
@@ -62,10 +62,10 @@ subprojects {
 }
 
 allprojects {
-	ext.ENV = System.getenv()
+    ext.ENV = System.getenv()
 
 
-	apply plugin: "java"
+    apply plugin: "java"
     apply plugin: "architectury-plugin"
     apply plugin: "maven-publish"
 
@@ -98,48 +98,49 @@ allprojects {
 
     tasks.withType(JavaCompile) {
         options.encoding = "UTF-8"
-		options.release = 17
+        options.release = 17
     }
 
     java {
         withSourcesJar()
     }
 }
+
 class MoveDocumentationFiles extends DefaultTask {
-	// Store references to the forge and fabric html file directories
-	private final File forgeHtmlDir = new File("${project.projectDir}/forge/run/kubejs/documentation/index.html")
-	private final File fabricHtmlDir = new File("${project.projectDir}/fabric/run/kubejs/documentation/index.html")
+    // Store references to the forge and fabric html file directories
+    private final File forgeHtmlDir = new File("${project.projectDir}/forge/run/kubejs/documentation/index.html")
+    private final File fabricHtmlDir = new File("${project.projectDir}/fabric/run/kubejs/documentation/index.html")
 
-	// Store references to the forge and fabric output directories
-	private final File forgeOutputDir = new File("${project.projectDir}/docs/${project.minecraft_version}/forge/index.html")
-	private final File fabricOutputDir = new File("${project.projectDir}/docs/${project.minecraft_version}/fabric/index.html")
+    // Store references to the forge and fabric output directories
+    private final File forgeOutputDir = new File("${project.projectDir}/docs/${project.minecraft_version}/forge/index.html")
+    private final File fabricOutputDir = new File("${project.projectDir}/docs/${project.minecraft_version}/fabric/index.html")
 
-	@TaskAction
-	def moveFiles() {
-		// If the forge file exists, move it to the forge output directory
-		if (forgeHtmlDir.exists()) {
-			Files.move(forgeHtmlDir.toPath(), forgeOutputDir.toPath(), StandardCopyOption.REPLACE_EXISTING)
-			println "Moved Forge documentation file to ${forgeOutputDir}"
-		}else{
-			println "Forge documentation file does not exist!"
-		}
+    @TaskAction
+    def moveFiles() {
+        // If the forge file exists, move it to the forge output directory
+        if (forgeHtmlDir.exists()) {
+            Files.move(forgeHtmlDir.toPath(), forgeOutputDir.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            println "Moved Forge documentation file to ${forgeOutputDir}"
+        } else {
+            println "Forge documentation file does not exist!"
+        }
 
-		// If the fabric file exists, move it to the fabric output directory
-		if (fabricHtmlDir.exists()) {
-			Files.move(fabricHtmlDir.toPath(), fabricOutputDir.toPath(), StandardCopyOption.REPLACE_EXISTING)
-			println "Moved Fabric documentation file to ${fabricOutputDir}"
-		}else{
-			println "Fabric documentation file does not exist!"
-		}
-	}
+        // If the fabric file exists, move it to the fabric output directory
+        if (fabricHtmlDir.exists()) {
+            Files.move(fabricHtmlDir.toPath(), fabricOutputDir.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            println "Moved Fabric documentation file to ${fabricOutputDir}"
+        } else {
+            println "Fabric documentation file does not exist!"
+        }
+    }
 
-	@TaskAction
-	def greet() {
-		moveFiles()
-	}
+    @TaskAction
+    def greet() {
+        moveFiles()
+    }
 }
 
 task updateDocumentation(type: MoveDocumentationFiles) {
-	group = 'documentation'
-	description = 'Moves the documentation files to the docs directory'
+    group = 'documentation'
+    description = 'Moves the documentation files to the docs directory'
 }

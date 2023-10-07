@@ -9,47 +9,55 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 
 public class MethodJSON {
-	@Nullable
-	public static JsonObject of(@Nonnull Method method) {
-		JsonObject object = new JsonObject();
-		// Name of the method
-		var temp = SafeOperations.safeUnwrapName(method);
-		if (temp != null) {
-			object.addProperty(JSONProperty.METHOD_NAME.jsName, CompressionJSON.getInstance().compress(temp));
-		}
+    @Nonnull
+    public static JsonArray of(@Nullable Method[] methods) {
+        if (methods == null) {
+            return new JsonArray();
+        }
+        JsonArray object = new JsonArray();
+        for (var method : methods) {
+            var methodJson = of(method);
+            if (methodJson != null) {
+                object.add(methodJson);
+            }
+        }
+        return object;
+    }
 
-		// Return type of the method
-		var type = SafeOperations.safeUnwrapReturnType(method);
-		if(type == null) // Throw out any methods that don't have a return type.
-			return null;
+    @Nullable
+    public static JsonObject of(@Nonnull Method method) {
+        JsonObject object = new JsonObject();
+        // Name of the method
+        var temp = SafeOperations.safeUnwrapName(method);
+        if (temp != null) {
+            object.addProperty(JSONProperty.METHOD_NAME.jsName, CompressionJSON.getInstance().compress(temp));
+        }
 
-		var typeObject = TypeJSON.of(type);
-		if(typeObject == null) // Throw out any methods that don't have a return type.
-			return null;
+        // Return type of the method
+        var type = SafeOperations.safeUnwrapReturnType(method);
+        if (type == null) // Throw out any methods that don't have a return type.
+        {
+            return null;
+        }
 
-		TypeJSON.attachGenericAndArrayData(typeObject, method::getReturnType);
-		TypeJSON.attachGenericAndArrayData(typeObject, method::getGenericReturnType);
+        var typeObject = TypeJSON.of(type);
+        if (typeObject == null) // Throw out any methods that don't have a return type.
+        {
+            return null;
+        }
 
-		object.addProperty(JSONProperty.METHOD_RETURN_TYPE.jsName, typeObject.get(JSONProperty.TYPE_ID.jsName).getAsInt());
+        TypeJSON.attachGenericAndArrayData(typeObject, method::getReturnType);
+        TypeJSON.attachGenericAndArrayData(typeObject, method::getGenericReturnType);
 
-		// Attach Parameters, annotations, and modifiers.
-		ExecutableJSON.attach(object, method);
-		if(!object.has(JSONProperty.PARAMETERS.jsName)) // Throw out any methods that have brocken parameters.
-			return null;
+        object.addProperty(JSONProperty.METHOD_RETURN_TYPE.jsName, typeObject.get(JSONProperty.TYPE_ID.jsName).getAsInt());
 
-		return object;
-	}
+        // Attach Parameters, annotations, and modifiers.
+        ExecutableJSON.attach(object, method);
+        if (!object.has(JSONProperty.PARAMETERS.jsName)) // Throw out any methods that have brocken parameters.
+        {
+            return null;
+        }
 
-	@Nonnull
-	public static JsonArray of(@Nullable Method[] methods) {
-		if(methods == null)
-			return new JsonArray();
-		JsonArray object = new JsonArray();
-		for(var method : methods) {
-			var methodJson = of(method);
-			if(methodJson != null)
-				object.add(methodJson);
-		}
-		return object;
-	}
+        return object;
+    }
 }

@@ -10,35 +10,35 @@ import java.util.List;
 
 public class AnnotationData implements JSONLike {
 
-	private final ClassData annotationType;
-	private final Object value;
+    private final ClassData annotationType;
+    private final Object value;
 
-	public AnnotationData(ClassData annotationType, Object value) {
-		this.annotationType = annotationType;
-		this.value = value;
-	}
+    public AnnotationData(ClassData annotationType, Object value) {
+        this.annotationType = annotationType;
+        this.value = value;
+    }
 
-	public static JsonElement toJSON(List<AnnotationData> annotations) {
-		var jsonArray = new JsonArray();
-		for (AnnotationData annotation : annotations) {
-			jsonArray.add(annotation.toJSON());
-		}
-		return jsonArray;
-	}
+    public static JsonElement toJSON(List<AnnotationData> annotations) {
+        var jsonArray = new JsonArray();
+        for (AnnotationData annotation : annotations) {
+            jsonArray.add(annotation.toJSON());
+        }
+        return jsonArray;
+    }
 
-	@Override
-	public JsonElement toJSON() {
-		JsonObject object = new JsonObject();
-		object.addProperty(JSONProperty.ANNOTATION_TYPE.jsName, annotationType.getId());
-		object.addProperty(JSONProperty.ANNOTATION_STRING.jsName, getValue());
-		return object;
-	}
+    @Override
+    public JsonElement toJSON() {
+        JsonObject object = new JsonObject();
+        object.addProperty(JSONProperty.ANNOTATION_TYPE.jsName, annotationType.getId());
+        object.addProperty(JSONProperty.ANNOTATION_STRING.jsName, getValue());
+        return object;
+    }
 
-	public String getValue() {
-		return "" + value;
-	}
+    public String getValue() {
+        return "" + value;
+    }
 
-	public ClassData getAnnotationType() {
-		return annotationType;
-	}
+    public ClassData getAnnotationType() {
+        return annotationType;
+    }
 }

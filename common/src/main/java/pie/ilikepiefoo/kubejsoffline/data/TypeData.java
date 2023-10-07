@@ -7,12 +7,8 @@ import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 public abstract class TypeData implements JSONLike {
     protected String name;
 
-    protected TypeData( String name ) {
+    protected TypeData(String name) {
         this.name = name;
-    }
-
-    public String getName() {
-        return name;
     }
 
     protected boolean isWildcard() {
@@ -62,10 +58,14 @@ public abstract class TypeData implements JSONLike {
         return object;
     }
 
-	public JsonObject toReference() {
-		JsonObject object = new JsonObject();
-		object.addProperty(JSONProperty.TYPE_NAME.jsName, getName());
-		return object;
-	}
+    public JsonObject toReference() {
+        JsonObject object = new JsonObject();
+        object.addProperty(JSONProperty.TYPE_NAME.jsName, getName());
+        return object;
+    }
+
+    public String getName() {
+        return name;
+    }
 
 }
