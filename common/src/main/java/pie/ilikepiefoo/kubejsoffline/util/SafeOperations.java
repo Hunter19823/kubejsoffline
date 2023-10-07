@@ -332,7 +332,7 @@ public class SafeOperations {
 				LOG.warn("Unable to get raw type of parameterized type: {}", parameterizedType);
 				return null;
 			}
-			if (rightHalfGenerics.isEmpty()) {
+			if (rightHalfGenerics.isEmpty() && leftHalf.isEmpty()) {
 				LOG.warn("Unable to get generic arguments of parameterized type: {}", parameterizedType);
 				return null;
 			}
@@ -354,18 +354,20 @@ public class SafeOperations {
 			else {
 				joiner.add(getNestedTypeName(rightHalfNoGenerics.get(), typeVariables));
 			}
-			joiner.add("<");
-			final var commaJoiner = new StringJoiner(",");
-			for (var variable : rightHalfGenerics.get()) {
-				final var name = getNestedTypeName(variable, typeVariables);
-				if (null == name) {
-					LOG.warn("Unable to get name of generic type: {} ({})", variable, type.getTypeName());
-					return null;
+			if (rightHalfGenerics.isPresent()) {
+				joiner.add("<");
+				final var commaJoiner = new StringJoiner(",");
+				for (var variable : rightHalfGenerics.get()) {
+					final var name = getNestedTypeName(variable, typeVariables);
+					if (null == name) {
+						LOG.warn("Unable to get name of generic type: {} ({})", variable, type.getTypeName());
+						return null;
+					}
+					commaJoiner.add(name);
 				}
-				commaJoiner.add(name);
+				joiner.merge(commaJoiner);
+				joiner.add(">");
 			}
-			joiner.merge(commaJoiner);
-			joiner.add(">");
 			for (int i = 0; i < getArraySize(rightHalfNoGenerics.get()); i++) {
 				joiner.add("[]");
 			}
