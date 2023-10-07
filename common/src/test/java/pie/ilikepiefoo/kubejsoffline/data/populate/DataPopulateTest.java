@@ -2,6 +2,7 @@ package pie.ilikepiefoo.kubejsoffline.data.populate;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
@@ -9,16 +10,14 @@ import pie.ilikepiefoo.kubejsoffline.data.ClassData;
 import pie.ilikepiefoo.kubejsoffline.util.ClassFinder;
 import pie.ilikepiefoo.kubejsoffline.util.GenericNumberExample;
 
+import java.io.IOException;
 import java.lang.reflect.Modifier;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 class DataPopulateTest {
     public static final Logger LOG = LogManager.getLogger();
-	public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+	public static final Gson GSON = new GsonBuilder().create();
 
     @Test
     void wrapObject() {
@@ -71,7 +70,7 @@ class DataPopulateTest {
 	}
 
 	@Test
-	void classFinderTest() {
+	void classFinderTest() throws IOException {
 		DataPopulate dataPopulate = new DataPopulate();
 		GenericNumberExample example = new GenericNumberExample();
 		ClassFinder finder = ClassFinder.INSTANCE;
@@ -81,8 +80,13 @@ class DataPopulateTest {
 			finder.searchCurrentDepth();
 		}
 
-		LOG.info(GSON.toJson(dataPopulate.toJsonArray()));
-
+		JsonArray data = dataPopulate.toJsonArray();
+		LOG.info("Found {} entries.", data.size());
+		String json_string = data.toString();
+		LOG.info("The total size of the data is {} bytes.", json_string.getBytes().length);
+		try (var writer = new java.io.FileWriter("data.json")) {
+			writer.write(json_string);
+		}
 	}
 
 }
