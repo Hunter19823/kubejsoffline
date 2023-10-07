@@ -140,10 +140,6 @@ public class DataPopulate {
     private TypeData getParameterizedType(ParameterizedType parameterizedType) {
         ClassData rootClass = wrapToClassData(parameterizedType.getRawType());
         var subClassType = rootClass.getSourceClass();
-        if (subClassType == null) {
-            LOG.warn("Unable to get source class for '{}'", rootClass.getName());
-            throw new NullPointerException("Unable to get source class for '" + rootClass.getName() + "'");
-        }
 
         var type = new ClassData(SafeOperations.safeUniqueTypeName(parameterizedType), rootClass.getModifiers(), subClassType, classCount++);
         CLASS_DATA.put(type.getFullyQualifiedName(), type);
