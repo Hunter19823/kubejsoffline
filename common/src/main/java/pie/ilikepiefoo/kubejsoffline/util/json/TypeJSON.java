@@ -94,7 +94,7 @@ public class TypeJSON {
                             SafeOperations.tryGet(parameterizedType::getRawType).ifPresent((rawType) -> {
                                 if (rawType instanceof Class<?> subclass) {
                                     object.addProperty(
-                                            JSONProperty.BASE_CLASS_NAME.jsName,
+                                            JSONProperty.RAW_CLASS.jsName,
                                             CompressionJSON.getInstance().compress(subclass.getSimpleName())
                                     );
                                 }

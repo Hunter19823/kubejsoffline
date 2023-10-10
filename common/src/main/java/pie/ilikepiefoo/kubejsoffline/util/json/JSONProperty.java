@@ -27,7 +27,8 @@ public enum JSONProperty {
     // DATA TAG Properties
     TYPE_ID("id"),
     TYPE_IDENTIFIER("type_identifier"),
-    BASE_CLASS_NAME("base_class_name"),
+    RAW_CLASS("raw_class"),
+    OUTER_CLASS("outer_class"),
     SUPER_CLASS("super_class"),
     GENERIC_SUPER_CLASS("S"),
     INTERFACES("i"),
@@ -46,18 +47,18 @@ public enum JSONProperty {
     RAW_PARAMETERIZED_TYPE("r"),
     OWNER_TYPE("o"),
 
-    PARAMETER_NAME(BASE_CLASS_NAME.jsName),
+    PARAMETER_NAME(RAW_CLASS.jsName),
     PARAMETER_TYPE(TYPE_ID.jsName),
     PARAMETER_ANNOTATIONS(ANNOTATIONS.jsName),
 
-    CONSTRUCTOR_NAME(BASE_CLASS_NAME.jsName),
+    CONSTRUCTOR_NAME(RAW_CLASS.jsName),
     CONSTRUCTOR_ANNOTATIONS(ANNOTATIONS.jsName),
 
-    METHOD_NAME(BASE_CLASS_NAME.jsName),
+    METHOD_NAME(RAW_CLASS.jsName),
     METHOD_ANNOTATIONS(ANNOTATIONS.jsName),
     METHOD_RETURN_TYPE(TYPE_ID.jsName),
 
-    FIELD_NAME(BASE_CLASS_NAME.jsName),
+    FIELD_NAME(RAW_CLASS.jsName),
     FIELD_ANNOTATIONS(ANNOTATIONS.jsName),
     FIELD_TYPE(TYPE_ID.jsName),
     FIELD_VALUE(VALUE.jsName),

@@ -65,7 +65,8 @@ public class DataPopulate {
         if (subject == null) {
             return null;
         }
-        String uniqueName = SafeOperations.safeUniqueTypeName(subject);
+
+        String uniqueName = SafeOperations.safeUniqueTypeName(subject, true);
 
         if (CLASS_DATA.containsKey(uniqueName)) {
             return CLASS_DATA.get(uniqueName);
@@ -76,11 +77,11 @@ public class DataPopulate {
         }
 
         if (subject instanceof TypeVariable<?> parameterizedType) {
-            return getTypeVariable(parameterizedType);
+            return getTypeVariable(parameterizedType, uniqueName);
         }
 
         if (subject instanceof ParameterizedType parameterizedType) {
-            return getParameterizedType(parameterizedType);
+            return getParameterizedType(parameterizedType, uniqueName);
         }
 
         int depth = 0;
@@ -121,11 +122,11 @@ public class DataPopulate {
     }
 
     @Nonnull
-    private TypeData getTypeVariable(TypeVariable<?> parameterizedType) {
+    private TypeData getTypeVariable(TypeVariable<?> parameterizedType, String name) {
         if (TYPE_VARIABLES.containsKey(parameterizedType)) {
             return TYPE_VARIABLES.get(parameterizedType);
         }
-        var type = new TypeVariableData(SafeOperations.safeUniqueTypeName(parameterizedType), parameterizedType.getName());
+        var type = new TypeVariableData(name, parameterizedType.getName());
         TYPE_VARIABLES.put(parameterizedType, type);
 
         var result = SafeOperations.tryGet(parameterizedType::getBounds).map(Arrays::stream).map((t) -> t.map(this::wrap)).map(
@@ -137,11 +138,13 @@ public class DataPopulate {
     }
 
     @Nonnull
-    private TypeData getParameterizedType(ParameterizedType parameterizedType) {
+    private TypeData getParameterizedType(ParameterizedType parameterizedType, String name) {
         ClassData rootClass = wrapToClassData(parameterizedType.getRawType());
         var subClassType = rootClass.getSourceClass();
+        // TODO: Create a parameterized class data that takes a root class and an array
+        // of generic parameters.
 
-        var type = new ClassData(SafeOperations.safeUniqueTypeName(parameterizedType), rootClass.getModifiers(), subClassType, classCount++);
+        var type = new ClassData(name, rootClass.getModifiers(), subClassType, classCount++);
         CLASS_DATA.put(type.getFullyQualifiedName(), type);
         type.setSourceClass(subClassType);
         type.setRawClass(rootClass);
@@ -156,13 +159,17 @@ public class DataPopulate {
     }
 
     private ClassData getClassData(Class<?> clazz) {
-        String name = SafeOperations.safeUniqueTypeName(clazz);
+        String name = SafeOperations.safeUniqueTypeName(clazz, true);
         if (CLASS_DATA.containsKey(name)) {
             return (ClassData) CLASS_DATA.get(name);
         }
         var type = new ClassData(name, clazz.getModifiers(), clazz, classCount++);
         CLASS_DATA.put(name, type);
         type.setSourceClass(clazz);
+
+        if (clazz.isMemberClass()) {
+            type.setOuterClass((ClassData) wrap(clazz.getDeclaringClass()));
+        }
 
         SafeOperations.tryGetFirst(clazz::getGenericSuperclass, clazz::getSuperclass).map(this::wrapToClassData).ifPresent(type::addSuperClasses);
 
@@ -211,10 +218,7 @@ public class DataPopulate {
             Type type = SafeOperations.tryGetFirst(
                     parameters[i]::getParameterizedType,
                     parameters[i]::getType
-            ).orElseThrow();
-            if (type == null) {
-                throw new NullPointerException("Type cannot be null");
-            }
+            ).orElseThrow(() -> new NullPointerException("Type cannot be null"));
             array[i] = new ParameterData(
                     parameters[i].getModifiers(),
                     SafeOperations.safeUnwrapName(parameters[i]),
@@ -325,6 +329,9 @@ public class DataPopulate {
 
         // Add Constructors
         data.setConstructors(this.getConstructors(clazz.getDeclaredConstructors()));
+
+        // Add Type Variables
+        data.setGenericParameters(Arrays.stream(clazz.getTypeParameters()).map(this::wrap).toArray(TypeData[]::new));
 
         return data;
     }

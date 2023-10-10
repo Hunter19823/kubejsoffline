@@ -205,8 +205,12 @@ public class ClassData extends TypeData {
                 array.add(typeData.toReference());
             }
             output.add(JSONProperty.CLASS_PARAMETERIZED_ARGUMENTS.jsName, array);
-            output.addProperty(JSONProperty.BASE_CLASS_NAME.jsName, getRawClass().getId());
-            return output;
+        }
+        if (getOuterClass() != null) {
+            output.addProperty(JSONProperty.OUTER_CLASS.jsName, getOuterClass().getId());
+        }
+        if (getRawClass() != null) {
+            output.addProperty(JSONProperty.RAW_CLASS.jsName, getRawClass().getId());
         }
         if (!getSuperClasses().isEmpty()) {
             output.add(JSONProperty.SUPER_CLASS.jsName, JSONLike.toJSON(getSuperClasses().stream().map(ClassData::getId).toList()));
