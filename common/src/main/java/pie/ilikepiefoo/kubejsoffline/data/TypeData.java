@@ -11,42 +11,6 @@ public abstract class TypeData implements JSONLike {
         this.name = name;
     }
 
-    protected boolean isWildcard() {
-        return false;
-    }
-
-    protected boolean isTypeVariable() {
-        return false;
-    }
-
-    protected boolean isArray() {
-        return false;
-    }
-
-    protected boolean isParameterized() {
-        return false;
-    }
-
-    public boolean isPrimitive() {
-        return false;
-    }
-
-    protected boolean isClass() {
-        return false;
-    }
-
-    protected boolean isInterface() {
-        return false;
-    }
-
-    protected boolean isEnum() {
-        return false;
-    }
-
-    protected boolean isAnnotation() {
-        return false;
-    }
-
     @Override
     public JsonElement toJSON() {
         JsonObject object = new JsonObject();
@@ -66,6 +30,10 @@ public abstract class TypeData implements JSONLike {
 
     public String getName() {
         return name;
+    }
+
+    private void populate() {
+
     }
 
 }

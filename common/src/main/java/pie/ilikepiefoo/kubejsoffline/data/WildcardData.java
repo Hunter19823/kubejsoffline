@@ -12,11 +12,6 @@ public class WildcardData extends TypeData {
     }
 
     @Override
-    protected boolean isWildcard() {
-        return true;
-    }
-
-    @Override
     public JsonObject toReference() {
         JsonObject object = super.toReference();
         object.add(JSONProperty.WILDCARD_TYPE.jsName, getWildcardType().toReference());

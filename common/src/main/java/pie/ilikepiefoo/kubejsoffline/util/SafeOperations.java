@@ -62,9 +62,11 @@ public class SafeOperations {
         if (null == type) {
             return null;
         }
-        String name = getNestedTypeName(type, null, ignoreTypeVariables);
+        // TODO: Fix this
+        String name = getNestedTypeName(type, null, false);
         if (name.contains("Map")) {
             String new_name = getNestedTypeName(type, null, true);
+            LOG.info("Map: {} -> {}", name, new_name);
         }
         return name;
     }
@@ -271,7 +273,7 @@ public class SafeOperations {
         return Arrays.stream(bounds).filter((bound) -> bound != Object.class).toArray(Type[]::new);
     }
 
-    public static String getNestedTypeName(Type type, Set<String> typeVariables, boolean ignoreClassVariables) {
+    public static String getNestedTypeName(Type type, Set<String> typeVariables, boolean ignoreTypeVariables) {
         if (null == type) {
             return null;
         }
@@ -291,7 +293,7 @@ public class SafeOperations {
                 return spacedJoiner.toString();
             }
             spacedJoiner.add("extends");
-            spacedJoiner.add(getJoinedBound(variableType.get(), typeVariables, ignoreClassVariables));
+            spacedJoiner.add(getJoinedBound(variableType.get(), typeVariables, ignoreTypeVariables));
             return spacedJoiner.toString();
         }
         if (type instanceof WildcardType wildcardType) {
@@ -302,14 +304,14 @@ public class SafeOperations {
             boundsJoiner.add("?");
             if (lowerBounds.isPresent()) {
                 boundsJoiner.add("super");
-                boundsJoiner.add(getJoinedBound(lowerBounds.get(), typeVariables, ignoreClassVariables));
+                boundsJoiner.add(getJoinedBound(lowerBounds.get(), typeVariables, ignoreTypeVariables));
                 return boundsJoiner.toString();
             }
             if (upperBounds.isEmpty()) {
                 return boundsJoiner.toString();
             }
             boundsJoiner.add("extends");
-            boundsJoiner.add(getJoinedBound(upperBounds.get(), typeVariables, ignoreClassVariables));
+            boundsJoiner.add(getJoinedBound(upperBounds.get(), typeVariables, ignoreTypeVariables));
             return boundsJoiner.toString();
         }
         if (type instanceof GenericArrayType genericArrayType) {
@@ -324,7 +326,7 @@ public class SafeOperations {
                 nonGenericArrayType = arrayType.getGenericComponentType();
                 arraySize++;
             }
-            return getNestedTypeName(nonGenericArrayType, typeVariables, ignoreClassVariables) + "[]".repeat(arraySize);
+            return getNestedTypeName(nonGenericArrayType, typeVariables, ignoreTypeVariables) + "[]".repeat(arraySize);
         }
 
         if (type instanceof ParameterizedType parameterizedType) {
@@ -346,11 +348,20 @@ public class SafeOperations {
                 return null;
             }
             if (rightHalfGenerics.isEmpty() && leftHalf.isEmpty()) {
-                return getNestedTypeName(rightHalfNoGenerics.get(), typeVariables, ignoreClassVariables);
+                return getNestedTypeName(rightHalfNoGenerics.get(), typeVariables, false);
             }
             // If the left half is present, then we need to add it to the joiner.
             if (leftHalf.isPresent()) {
-                joiner.add(getNestedTypeName(leftHalf.get(), typeVariables, !ignoreClassVariables));
+                joiner.add(getNestedTypeName(leftHalf.get(), typeVariables, true));
+                if (leftHalf.get() instanceof ParameterizedType clazz) {
+                    var genericJoiner = new StringJoiner(",");
+                    for (var argument : clazz.getActualTypeArguments()) {
+                        genericJoiner.add(getNestedTypeName(argument, typeVariables, true));
+                    }
+                    joiner.add("<");
+                    joiner.merge(genericJoiner);
+                    joiner.add(">");
+                }
                 joiner.add("$");
                 var nonArray = getNonArrayClass(rightHalfNoGenerics.get());
                 var remappedName = getRemappedClassName(nonArray, true);
@@ -360,13 +371,13 @@ public class SafeOperations {
                 }
                 joiner.add(remappedName);
             } else {
-                joiner.add(getNestedTypeName(rightHalfNoGenerics.get(), typeVariables, ignoreClassVariables));
+                joiner.add(getNestedTypeName(rightHalfNoGenerics.get(), typeVariables, ignoreTypeVariables));
                 return joiner.toString();
             }
             if (rightHalfGenerics.isPresent()) {
                 final var commaJoiner = new StringJoiner(",");
                 for (var variable : rightHalfGenerics.get()) {
-                    final var name = getNestedTypeName(variable, typeVariables, ignoreClassVariables);
+                    final var name = getNestedTypeName(variable, typeVariables, ignoreTypeVariables);
                     if (null == name) {
                         LOG.warn("Unable to get name of generic type: {} ({})", variable, type.getTypeName());
                         return null;
@@ -391,12 +402,12 @@ public class SafeOperations {
         final int arraySize = getArraySize(clazz);
         clazz = getNonArrayClass(clazz);
         if (arraySize != 0) {
-            joiner.add(getNestedTypeName(clazz, typeVariables, ignoreClassVariables));
+            joiner.add(getNestedTypeName(clazz, typeVariables, ignoreTypeVariables));
             joiner.add("[]".repeat(arraySize));
             return joiner.toString();
         }
         if (clazz.isMemberClass()) {
-            joiner.add(getNestedTypeName(clazz.getDeclaringClass(), typeVariables, ignoreClassVariables));
+            joiner.add(getNestedTypeName(clazz.getDeclaringClass(), typeVariables, ignoreTypeVariables));
             joiner.add("$");
         }
         var name = getRemappedClassName(clazz, clazz.isMemberClass());
@@ -405,10 +416,10 @@ public class SafeOperations {
             return null;
         }
         joiner.add(name);
-        if (clazz.getTypeParameters().length != 0) {
+        if (clazz.getTypeParameters().length != 0 && ignoreTypeVariables) {
             final var commaJoiner = new StringJoiner(",");
             for (var variable : clazz.getTypeParameters()) {
-                final var name2 = getNestedTypeName(variable, typeVariables, ignoreClassVariables);
+                final var name2 = getNestedTypeName(variable, typeVariables, false);
                 if (null == name2) {
                     LOG.warn("Unable to get name of generic type: {} ({})", variable, type.getTypeName());
                     return null;

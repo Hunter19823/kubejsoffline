@@ -1,6 +1,8 @@
 package pie.ilikepiefoo.kubejsoffline.data.populate;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pie.ilikepiefoo.kubejsoffline.data.AnnotationData;
@@ -10,6 +12,7 @@ import pie.ilikepiefoo.kubejsoffline.data.ConstructorData;
 import pie.ilikepiefoo.kubejsoffline.data.FieldData;
 import pie.ilikepiefoo.kubejsoffline.data.MethodData;
 import pie.ilikepiefoo.kubejsoffline.data.ParameterData;
+import pie.ilikepiefoo.kubejsoffline.data.ParametrizedData;
 import pie.ilikepiefoo.kubejsoffline.data.TypeData;
 import pie.ilikepiefoo.kubejsoffline.data.TypeVariableData;
 import pie.ilikepiefoo.kubejsoffline.data.WildcardData;
@@ -28,21 +31,12 @@ import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
 
 public class DataPopulate {
     private static final Logger LOG = LogManager.getLogger();
     private static DataPopulate instance;
-    private final TreeMap<String, TypeData> CLASS_DATA;
-    private final Map<TypeVariable<?>, TypeVariableData> TYPE_VARIABLES;
-    private int classCount;
 
     public DataPopulate() {
-        this.classCount = 0;
-        this.CLASS_DATA = new TreeMap<>();
-        this.TYPE_VARIABLES = new HashMap<>();
     }
 
     public static DataPopulate getInstance() {
@@ -65,11 +59,8 @@ public class DataPopulate {
         if (subject == null) {
             return null;
         }
-
-        String uniqueName = SafeOperations.safeUniqueTypeName(subject, true);
-
-        if (CLASS_DATA.containsKey(uniqueName)) {
-            return CLASS_DATA.get(uniqueName);
+        if (DataMapper.getInstance().contains(subject)) {
+            return DataMapper.getInstance().get(subject);
         }
 
         if (subject instanceof WildcardType wildcardType) {
@@ -77,12 +68,14 @@ public class DataPopulate {
         }
 
         if (subject instanceof TypeVariable<?> parameterizedType) {
-            return getTypeVariable(parameterizedType, uniqueName);
+            return getTypeVariable(parameterizedType);
         }
 
         if (subject instanceof ParameterizedType parameterizedType) {
-            return getParameterizedType(parameterizedType, uniqueName);
+            return getParameterizedType(parameterizedType);
         }
+
+        String uniqueName = SafeOperations.safeUniqueTypeName(subject, true);
 
         int depth = 0;
         Type componentType = subject;
@@ -93,7 +86,7 @@ public class DataPopulate {
 
         if (!(componentType instanceof Class<?> clazz)) {
             if (depth > 0) {
-                return saveData(new ArrayTypeData(uniqueName, wrap(componentType), depth), uniqueName);
+                return DataMapper.getInstance().save(subject, new ArrayTypeData(uniqueName, wrap(componentType), depth));
             }
             LOG.warn("Component type '{}' is not a class!", componentType);
             return null;
@@ -104,7 +97,7 @@ public class DataPopulate {
         }
 
         if (depth > 0) {
-            return saveData(new ArrayTypeData(uniqueName, wrap(clazz), depth), uniqueName);
+            return DataMapper.getInstance().save(subject, new ArrayTypeData(uniqueName, wrap(clazz), depth));
         }
 
         return getClassData(clazz);
@@ -115,19 +108,21 @@ public class DataPopulate {
         var upper = SafeOperations.tryGet(wildcardType::getUpperBounds).filter((bounds) -> bounds.length > 1).map((bounds) -> bounds[0]);
         var lower = SafeOperations.tryGet(wildcardType::getLowerBounds).filter((bounds) -> bounds.length > 1).map((bounds) -> bounds[0]);
         if (lower.isEmpty() && upper.isEmpty()) {
-            return wrap(Object.class);
+            return new WildcardData("?", wrap(Object.class));
         }
         var data = new WildcardData(SafeOperations.safeUniqueTypeName(wildcardType), wrap(lower.or(() -> upper).get()));
-        return saveData(data, data.getName());
+        return DataMapper.getInstance().save(wildcardType, data);
     }
 
     @Nonnull
-    private TypeData getTypeVariable(TypeVariable<?> parameterizedType, String name) {
-        if (TYPE_VARIABLES.containsKey(parameterizedType)) {
-            return TYPE_VARIABLES.get(parameterizedType);
+    private TypeData getTypeVariable(TypeVariable<?> parameterizedType) {
+        if (DataMapper.getInstance().contains(parameterizedType)) {
+            return DataMapper.getInstance().get(parameterizedType);
         }
+
+        String name = SafeOperations.safeUniqueTypeName(parameterizedType, true);
         var type = new TypeVariableData(name, parameterizedType.getName());
-        TYPE_VARIABLES.put(parameterizedType, type);
+        DataMapper.getInstance().save(parameterizedType, type);
 
         var result = SafeOperations.tryGet(parameterizedType::getBounds).map(Arrays::stream).map((t) -> t.map(this::wrap)).map(
                 (t) -> t.toArray(TypeData[]::new));
@@ -138,34 +133,49 @@ public class DataPopulate {
     }
 
     @Nonnull
-    private TypeData getParameterizedType(ParameterizedType parameterizedType, String name) {
+    private TypeData getParameterizedType(ParameterizedType parameterizedType) {
+        if (DataMapper.getInstance().contains(parameterizedType)) {
+            return DataMapper.getInstance().get(parameterizedType);
+        }
         ClassData rootClass = wrapToClassData(parameterizedType.getRawType());
-        var subClassType = rootClass.getSourceClass();
-        // TODO: Create a parameterized class data that takes a root class and an array
-        // of generic parameters.
 
-        var type = new ClassData(name, rootClass.getModifiers(), subClassType, classCount++);
-        CLASS_DATA.put(type.getFullyQualifiedName(), type);
-        type.setSourceClass(subClassType);
-        type.setRawClass(rootClass);
-        SafeOperations.tryGet(parameterizedType::getOwnerType).ifPresent((ownerType) -> type.setOuterClass((ClassData) wrap(ownerType)));
+        String name = SafeOperations.safeUniqueTypeName(parameterizedType, true);
 
-        var result = SafeOperations.tryGet(parameterizedType::getActualTypeArguments).map(Arrays::stream).map((t) -> t.map(this::wrap)).map(
-                (t) -> t.toArray(TypeData[]::new));
+        var data = new ParametrizedData(name, parameterizedType, rootClass);
+        DataMapper.getInstance().save(parameterizedType, data);
 
-        result.ifPresent(type::addGenericParameters);
+        var inner_type_arguments = SafeOperations.tryGet(parameterizedType::getOwnerType)
+                .filter((ownerType) -> ownerType instanceof ParameterizedType)
+                .map((ownerType) -> ((ParameterizedType) ownerType).getActualTypeArguments())
+                .map(Arrays::stream)
+                .map((t) -> t.map(this::wrap))
+                .map((t) -> t.toArray(TypeData[]::new))
+                .orElse(new TypeData[0]);
 
-        return type;
+        var outer_type_arguments = SafeOperations.tryGet(parameterizedType::getActualTypeArguments)
+                .map(Arrays::stream)
+                .map((t) -> t.map(this::wrap))
+                .map((t) -> t.toArray(TypeData[]::new))
+                .orElse(new TypeData[0]);
+
+        // Add Type Arguments
+        data.addTypeArguments(
+                inner_type_arguments
+        );
+        data.addTypeArguments(
+                outer_type_arguments
+        );
+
+        return data;
     }
 
     private ClassData getClassData(Class<?> clazz) {
-        String name = SafeOperations.safeUniqueTypeName(clazz, true);
-        if (CLASS_DATA.containsKey(name)) {
-            return (ClassData) CLASS_DATA.get(name);
+        if (DataMapper.getInstance().containsClassData(clazz)) {
+            return DataMapper.getInstance().getClassData(clazz);
         }
-        var type = new ClassData(name, clazz.getModifiers(), clazz, classCount++);
-        CLASS_DATA.put(name, type);
-        type.setSourceClass(clazz);
+        String name = SafeOperations.safeUniqueTypeName(clazz, true);
+        var type = new ClassData(name, clazz.getModifiers(), clazz);
+        DataMapper.getInstance().save(clazz, type);
 
         if (clazz.isMemberClass()) {
             type.setOuterClass((ClassData) wrap(clazz.getDeclaringClass()));
@@ -187,13 +197,15 @@ public class DataPopulate {
         if (result instanceof ClassData) {
             return (ClassData) result;
         }
+        if (result instanceof ParametrizedData data) {
+            return data.getRawType();
+        }
         LOG.warn("Unable to wrap '{}' to ClassData!", type);
         throw new NullPointerException("Unable to wrap '" + type + "' to ClassData!");
     }
 
     public void clear() {
-        CLASS_DATA.clear();
-        TYPE_VARIABLES.clear();
+        DataMapper.getInstance().clear();
     }
 
     public void populateTree(ClassData data) {
@@ -204,8 +216,16 @@ public class DataPopulate {
             return;
         }
         this.populate(data);
-        data.getSuperClasses().parallelStream().forEach(this::populateTree);
-        data.getImplementedInterfaces().parallelStream().forEach(this::populateTree);
+        data.getSuperClasses()
+                .parallelStream()
+                .filter((t) -> t instanceof ClassData)
+                .map((t) -> (ClassData) t)
+                .forEach(this::populateTree);
+        data.getImplementedInterfaces()
+                .parallelStream()
+                .filter((t) -> t instanceof ClassData)
+                .map((t) -> (ClassData) t)
+                .forEach(this::populateTree);
         this.populateTree(data.getOuterClass());
     }
 
@@ -269,21 +289,42 @@ public class DataPopulate {
         return array;
     }
 
-    public JsonArray toJsonArray() {
-        LOG.info("Populating {} classes", CLASS_DATA.size());
-        ClassData[] classData = CLASS_DATA
-                .values()
+    public JsonObject toJson() {
+        JsonObject result = new JsonObject();
+        LOG.info("Populating {} classes", DataMapper.getInstance().getClassData().size());
+        ClassData[] classData = DataMapper.getInstance().getClassData()
                 .parallelStream()
-                .filter((data) -> data instanceof ClassData)
-                .map((data) -> (ClassData) data)
-                .sorted(Comparator.comparingInt(ClassData::getId))
                 .map(this::populate)
+                .sorted(Comparator.comparingInt(ClassData::getId))
                 .toArray(ClassData[]::new);
         JsonArray array = new JsonArray(classData.length);
         for (ClassData data : classData) {
             array.add(data.toJSON());
         }
-        return array;
+        result.add("classes", array);
+
+        for (DataMapper.TypeDataIdentifier identifier : DataMapper.TypeDataIdentifier.values()) {
+            if (identifier == DataMapper.TypeDataIdentifier.ALL || identifier == DataMapper.TypeDataIdentifier.CLASS) {
+                continue;
+            }
+            var map = DataMapper.getInstance().getMap(identifier);
+            LOG.info("Storing {} {} types", map.size(), identifier.name().toLowerCase());
+            array = new JsonArray(map.size());
+            var sortedArray =
+                    map.values()
+                            .parallelStream()
+                            .sorted(Comparator.comparingInt((t) -> DataMapper.getInstance().getIdentifier(t)))
+                            .map(
+                                    TypeData::toJSON
+                            )
+                            .toArray(JsonElement[]::new);
+            for (var data : sortedArray) {
+                array.add(data);
+            }
+            result.add(identifier.name().toLowerCase(), array);
+        }
+
+        return result;
     }
 
     public AnnotationData[] getAnnotations(AnnotatedElement element) {
@@ -334,10 +375,6 @@ public class DataPopulate {
         data.setGenericParameters(Arrays.stream(clazz.getTypeParameters()).map(this::wrap).toArray(TypeData[]::new));
 
         return data;
-    }
-
-    private TypeData saveData(TypeData data, String name) {
-        return CLASS_DATA.computeIfAbsent(name, (key) -> data);
     }
 
 }

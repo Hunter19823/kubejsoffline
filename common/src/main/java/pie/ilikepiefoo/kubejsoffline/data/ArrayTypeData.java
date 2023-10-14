@@ -18,11 +18,6 @@ public class ArrayTypeData extends TypeData {
     }
 
     @Override
-    protected boolean isArray() {
-        return true;
-    }
-
-    @Override
     public JsonObject toReference() {
         JsonObject object = type.toReference();
         object.addProperty(JSONProperty.ARRAY_DEPTH.jsName, getDepth());

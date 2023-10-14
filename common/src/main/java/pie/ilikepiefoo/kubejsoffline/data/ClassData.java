@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
+import pie.ilikepiefoo.kubejsoffline.data.populate.DataMapper;
 import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 import javax.annotation.Nonnull;
@@ -12,37 +13,36 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ClassData extends TypeData {
     public final AtomicBoolean populated = new AtomicBoolean(false);
-    protected final int id;
     @Nonnull
     protected final String fullyQualifiedName;
     protected final int modifiers;
     protected ClassData outerClass;
     @Nonnull
     protected Class<?> sourceClass;
-    protected ClassData rawClass;
+
     protected Set<AnnotationData> annotations;
-    protected Set<ClassData> superClasses;
-    protected Set<ClassData> implementedInterfaces;
+    protected Set<TypeData> superClasses;
+    protected Set<TypeData> implementedInterfaces;
     protected Set<ConstructorData> constructors;
     protected Set<FieldData> fields;
     protected Set<MethodData> methods;
     protected List<TypeData> genericParameters;
 
-    public ClassData(@Nonnull String fullyQualifiedName, int modifiers, @NotNull Class<?> sourceClass, int id) {
+    public ClassData(@Nonnull String fullyQualifiedName, int modifiers, @NotNull Class<?> sourceClass) {
         super(fullyQualifiedName);
         this.modifiers = modifiers;
-        this.id = id;
         this.fullyQualifiedName = fullyQualifiedName;
         this.sourceClass = sourceClass;
     }
 
     @Nonnull
-    public synchronized ClassData addSuperClasses(@Nonnull ClassData... data) {
+    public ClassData addSuperClasses(@Nonnull TypeData... data) {
         if (this.superClasses == null) {
             this.superClasses = new HashSet<>();
         }
@@ -51,19 +51,19 @@ public class ClassData extends TypeData {
     }
 
     @Nonnull
-    public Collection<ClassData> getSuperClasses() {
+    public Collection<TypeData> getSuperClasses() {
         if (superClasses == null) {
             return List.of();
         }
         return superClasses;
     }
 
-    public void setSuperClasses(@Nonnull ClassData... data) {
+    public void setSuperClasses(@Nonnull TypeData... data) {
         this.superClasses = Set.of(data);
     }
 
     @Nonnull
-    public synchronized ClassData addImplementedInterfaces(@Nonnull ClassData... data) {
+    public ClassData addImplementedInterfaces(@Nonnull TypeData... data) {
         if (this.implementedInterfaces == null) {
             this.implementedInterfaces = new HashSet<>();
         }
@@ -72,14 +72,11 @@ public class ClassData extends TypeData {
     }
 
     @Nonnull
-    public Collection<ClassData> getImplementedInterfaces() {
-        if (implementedInterfaces == null) {
-            return List.of();
-        }
-        return implementedInterfaces;
+    public Collection<TypeData> getImplementedInterfaces() {
+        return Objects.requireNonNullElseGet(implementedInterfaces, List::of);
     }
 
-    public void setImplementedInterfaces(@Nonnull ClassData... data) {
+    public void setImplementedInterfaces(@Nonnull TypeData... data) {
         this.implementedInterfaces = Set.of(data);
     }
 
@@ -93,24 +90,48 @@ public class ClassData extends TypeData {
     }
 
     @Nonnull
-    public Collection<FieldData> getFields() {
-        if (fields == null) {
-            return List.of();
+    public ClassData addMethods(@Nonnull MethodData... data) {
+        if (methods == null) {
+            this.methods = new HashSet<>();
         }
-        return fields;
+        getMethods().addAll(List.of(data));
+        return this;
     }
 
     public void setFields(@Nonnull FieldData... data) {
         this.fields = Set.of(data);
     }
 
-    @Nonnull
-    public synchronized ClassData addMethods(@Nonnull MethodData... data) {
-        if (methods == null) {
-            this.methods = new HashSet<>();
+    @Override
+    public JsonElement toJSON() {
+        var output = super.toJSON().getAsJsonObject();
+        output.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
+        output.addProperty(JSONProperty.TYPE_ID.jsName, getId());
+
+        if (!getGenericParameters().isEmpty()) {
+            JsonArray array = new JsonArray();
+            for (TypeData typeData : getGenericParameters()) {
+                array.add(typeData.toReference());
+            }
+            output.add(JSONProperty.CLASS_PARAMETERIZED_ARGUMENTS.jsName, array);
         }
-        getMethods().addAll(List.of(data));
-        return this;
+        if (getOuterClass() != null) {
+            output.addProperty(JSONProperty.OUTER_CLASS.jsName, getOuterClass().getId());
+        }
+        if (!getSuperClasses().isEmpty()) {
+            output.add(JSONProperty.SUPER_CLASS.jsName, JSONLike.toJSON(getSuperClasses().stream().map(typeData -> typeData.toReference()).toList()));
+        }
+        if (!getImplementedInterfaces().isEmpty()) {
+            output.add(JSONProperty.INTERFACES.jsName, JSONLike.toJSON(getImplementedInterfaces().stream().map(typeData -> typeData.toReference()).toList()));
+        }
+        if (!getFields().isEmpty()) {
+            output.add(JSONProperty.FIELDS.jsName, JSONLike.toJSON(getFields()));
+        }
+        if (!getMethods().isEmpty()) {
+            output.add(JSONProperty.METHODS.jsName, JSONLike.toJSON(getMethods()));
+        }
+
+        return output;
     }
 
     @Nonnull
@@ -188,66 +209,23 @@ public class ClassData extends TypeData {
         this.annotations = Set.of(data);
     }
 
-    @Override
-    public boolean isClass() {
-        return true;
-    }
-
-    @Override
-    public JsonElement toJSON() {
-        var output = super.toJSON().getAsJsonObject();
-        output.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
-        output.addProperty(JSONProperty.TYPE_ID.jsName, getId());
-
-        if (!getGenericParameters().isEmpty()) {
-            JsonArray array = new JsonArray();
-            for (TypeData typeData : getGenericParameters()) {
-                array.add(typeData.toReference());
-            }
-            output.add(JSONProperty.CLASS_PARAMETERIZED_ARGUMENTS.jsName, array);
-        }
-        if (getOuterClass() != null) {
-            output.addProperty(JSONProperty.OUTER_CLASS.jsName, getOuterClass().getId());
-        }
-        if (getRawClass() != null) {
-            output.addProperty(JSONProperty.RAW_CLASS.jsName, getRawClass().getId());
-        }
-        if (!getSuperClasses().isEmpty()) {
-            output.add(JSONProperty.SUPER_CLASS.jsName, JSONLike.toJSON(getSuperClasses().stream().map(ClassData::getId).toList()));
-        }
-        if (!getImplementedInterfaces().isEmpty()) {
-            output.add(JSONProperty.INTERFACES.jsName, JSONLike.toJSON(getImplementedInterfaces().stream().map(ClassData::getId).toList()));
-        }
-        if (!getFields().isEmpty()) {
-            output.add(JSONProperty.FIELDS.jsName, JSONLike.toJSON(getFields()));
-        }
-        if (!getMethods().isEmpty()) {
-            output.add(JSONProperty.METHODS.jsName, JSONLike.toJSON(getMethods()));
-        }
-
-        return output;
+    public int getId() {
+        return DataMapper.getInstance().getIdentifier(this);
     }
 
     public int getModifiers() {
         return modifiers;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public ClassData getRawClass() {
-        return rawClass;
-    }
-
-    public void setRawClass(@Nonnull ClassData rawClass) {
-        this.rawClass = rawClass;
+    @Nonnull
+    public Collection<FieldData> getFields() {
+        return Objects.requireNonNullElseGet(fields, List::of);
     }
 
     @Override
     public JsonObject toReference() {
         JsonObject object = new JsonObject();
-        object.addProperty(JSONProperty.CLASS_REFERENCE.jsName, getId());
+        object.addProperty(JSONProperty.CLASS_REFERENCE.jsName, this.getId());
         return object;
     }
 

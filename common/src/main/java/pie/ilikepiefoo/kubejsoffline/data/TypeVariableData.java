@@ -21,25 +21,12 @@ public class TypeVariableData extends TypeData {
         return variableName;
     }
 
-    public TypeVariableData addBound(TypeData bound) {
-        if (this.bounds == null) {
-            this.bounds = new java.util.ArrayList<>();
-        }
-        this.bounds.add(bound);
-        return this;
-    }
-
     public TypeVariableData addBounds(TypeData... bounds) {
         if (this.bounds == null) {
             this.bounds = new java.util.ArrayList<>();
         }
         this.bounds.addAll(Arrays.asList(bounds));
         return this;
-    }
-
-    @Override
-    protected boolean isTypeVariable() {
-        return true;
     }
 
     @Override

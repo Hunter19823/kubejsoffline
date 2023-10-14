@@ -2,7 +2,7 @@ package pie.ilikepiefoo.kubejsoffline.data.populate;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
@@ -55,7 +55,7 @@ class DataPopulateTest {
         assertEquals(0, ((ClassData) data).getConstructors().size());
         assertEquals(0, ((ClassData) data).getAnnotations().size());
 
-        LOG.info(GSON.toJson(dataPopulate.toJsonArray()));
+        LOG.info(GSON.toJson(dataPopulate.toJson()));
     }
 
     @Test
@@ -66,7 +66,7 @@ class DataPopulateTest {
         dataPopulate.populateTree((ClassData) data);
 
 
-        LOG.info(dataPopulate.toJsonArray());
+        LOG.info(dataPopulate.toJson());
     }
 
     @Test
@@ -80,7 +80,7 @@ class DataPopulateTest {
             finder.searchCurrentDepth();
         }
 
-        JsonArray data = dataPopulate.toJsonArray();
+        JsonObject data = dataPopulate.toJson();
         LOG.info("Found {} entries.", data.size());
         String json_string = data.toString();
         LOG.info("The total size of the data is {} bytes.", json_string.getBytes().length);
