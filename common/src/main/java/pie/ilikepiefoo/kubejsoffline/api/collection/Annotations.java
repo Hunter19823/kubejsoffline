@@ -1,11 +1,13 @@
 package pie.ilikepiefoo.kubejsoffline.api.collection;
 
-import java.util.NavigableSet;
+import pie.ilikepiefoo.kubejsoffline.api.identifier.AnnotationID;
+
+import java.util.NavigableMap;
 
 public interface Annotations {
-    NavigableSet<String> getAllAnnotations();
+    NavigableMap<AnnotationID, String> getAllAnnotations();
 
     boolean contains( String annotation );
 
-    boolean addAnnotation( String annotation );
+    AnnotationID addAnnotation(String annotation);
 }

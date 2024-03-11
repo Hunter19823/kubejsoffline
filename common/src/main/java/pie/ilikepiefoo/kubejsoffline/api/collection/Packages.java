@@ -1,18 +1,17 @@
 package pie.ilikepiefoo.kubejsoffline.api.collection;
 
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.PackagePart;
+import pie.ilikepiefoo.kubejsoffline.api.identifier.PackageID;
 
-import java.util.NavigableSet;
+import java.util.NavigableMap;
 
 public interface Packages {
 
-    NavigableSet<PackagePart> getAllPackages();
+    NavigableMap<PackageID, PackagePart> getAllPackages();
 
-    PackagePart addPackage( String packageName );
+    PackageID addPackage(String packageName);
 
     boolean contains( String packageName );
-
-    boolean contains( PackagePart packageName );
 
 
 }

@@ -1,13 +1,14 @@
 package pie.ilikepiefoo.kubejsoffline.api.collection;
 
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.TypeData;
+import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 
-import java.util.NavigableSet;
+import java.util.NavigableMap;
 
 public interface Types {
-    NavigableSet<TypeData> getAllTypes();
+    NavigableMap<TypeID, TypeData> getAllTypes();
 
-    void addType( TypeData data );
+    TypeID addType(TypeData data);
 
     boolean contains( TypeData data );
 }
