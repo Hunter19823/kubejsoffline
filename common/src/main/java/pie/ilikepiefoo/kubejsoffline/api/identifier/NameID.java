@@ -1,5 +1,5 @@
 package pie.ilikepiefoo.kubejsoffline.api.identifier;
 
-public interface NameID {
-    int getArrayIndex();
+public interface NameID extends Index {
+
 }
