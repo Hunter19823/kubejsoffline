@@ -6,11 +6,9 @@ import pie.ilikepiefoo.kubejsoffline.api.identifier.PackageID;
 import pie.ilikepiefoo.kubejsoffline.impl.datastructure.PackagePartWrapper;
 import pie.ilikepiefoo.kubejsoffline.impl.identifier.IdentifierBase;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.StringJoiner;
 import java.util.TreeMap;
 
 public class PackagesWrapper implements Packages {
@@ -35,7 +33,7 @@ public class PackagesWrapper implements Packages {
         var lastPeriod = packageName.lastIndexOf(".");
         if (lastPeriod == -1) {
             PackageID id = new PackageIdentifier(packages.size());
-            PackagePart part = new PackagePartWrapper(packageName);
+            PackagePart part = new PackagePartWrapper(packageName, id);
             packages.put(id, part);
             parts.put(packageName, id);
             return id;
@@ -51,7 +49,7 @@ public class PackagesWrapper implements Packages {
         }
         PackageID prefixID = addPackage(prefix);
         PackageID id = new PackageIdentifier(packages.size());
-        PackagePart part = new PackagePartWrapper(prefixID, name);
+        PackagePart part = new PackagePartWrapper(prefixID, name, id);
         packages.put(id, part);
         parts.put(packageName, id);
         return id;
@@ -69,30 +67,17 @@ public class PackagesWrapper implements Packages {
 
     @Override
     public PackageID getID(PackagePart part) {
-        // Get all prefixes, then join them together.
-        // Ensure that the prefix goes first.
-        // Cannot use a StringJoiner because it cannot be reversed.
-        ArrayList<String> parts = new ArrayList<>();
-        PackagePart current = part;
-        while (current != null) {
-            parts.add(current.getName());
-            current = getPackage(current.getPrefix());
-        }
-        StringJoiner joiner = new StringJoiner(".");
-        for (int i = parts.size() - 1; i >= 0; i--) {
-            joiner.add(parts.get(i));
-        }
-        return getID(joiner.toString());
+        return part.getIndex();
     }
 
     @Override
     public PackagePart getPackage(PackageID id) {
-        return null;
+        return packages.get(id);
     }
 
     @Override
     public PackagePart getPackage(String packageName) {
-        return null;
+        return getPackage(getID(packageName));
     }
 
     public static class PackageIdentifier extends IdentifierBase implements PackageID {

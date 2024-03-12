@@ -5,26 +5,33 @@ import pie.ilikepiefoo.kubejsoffline.api.datastructure.PackagePart;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.PackageID;
 
 public class PackagePartWrapper implements PackagePart {
+    protected PackageID index;
     protected String name;
     @Nullable
     protected PackageID prefix;
 
-    public PackagePartWrapper(String name) {
-        this(null, name);
+    public PackagePartWrapper(String name, PackageID index) {
+        this(null, name, index);
     }
 
-    public PackagePartWrapper(@Nullable PackageID prefix, String name) {
+    public PackagePartWrapper(@Nullable PackageID prefix, String name, PackageID index) {
+        this.index = index;
         this.name = name;
         this.prefix = prefix;
     }
 
     @Override
     public String getName() {
-        return null;
+        return this.name;
     }
 
     @Override
     public @Nullable PackageID getPrefix() {
-        return null;
+        return this.prefix;
+    }
+
+    @Override
+    public PackageID getIndex() {
+        return this.index;
     }
 }
