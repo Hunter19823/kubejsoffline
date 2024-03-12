@@ -3,6 +3,7 @@ package pie.ilikepiefoo.kubejsoffline.api.collection;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.ParameterizedTypeData;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.RawClassData;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.TypeData;
+import pie.ilikepiefoo.kubejsoffline.api.datastructure.TypeVariableData;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.WildcardTypeData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 
@@ -30,4 +31,6 @@ public interface Types {
     TypeID getID(ParameterizedTypeData type);
 
     TypeID getID(WildcardTypeData type);
+
+    TypeID getID(TypeVariableData type);
 }
