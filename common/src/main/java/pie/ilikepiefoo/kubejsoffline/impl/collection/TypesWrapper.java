@@ -105,6 +105,11 @@ public class TypesWrapper implements Types {
         return this.data.get(type);
     }
 
+    @Override
+    public TypeData getType(TypeID id) {
+        return this.data.get(id);
+    }
+
     public static class TypeIdentifier extends ArrayIdentifier implements TypeID {
 
         public TypeIdentifier(int arrayIndex) {
