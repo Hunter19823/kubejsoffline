@@ -5,11 +5,9 @@ import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeVariableID;
 
 import java.util.List;
 
-public interface TypeVariableData extends NamedData, IndexedData<TypeVariableID>, TypeData {
+public interface TypeVariableData extends NamedData, TypeData {
 
-    List<TypeOrTypeVariableID> getExtends();
-
-    List<TypeOrTypeVariableID> getSupers();
+    List<TypeOrTypeVariableID> getBounds();
 
     @Override
     default boolean isTypeVariable() {
@@ -20,4 +18,7 @@ public interface TypeVariableData extends NamedData, IndexedData<TypeVariableID>
     default TypeVariableData asTypeVariable() {
         return this;
     }
+
+    @Override
+    TypeVariableID getIndex();
 }

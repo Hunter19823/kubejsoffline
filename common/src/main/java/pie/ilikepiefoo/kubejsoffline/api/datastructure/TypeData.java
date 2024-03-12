@@ -1,8 +1,8 @@
 package pie.ilikepiefoo.kubejsoffline.api.datastructure;
 
-import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
+import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 
-public interface TypeData extends IndexedData<TypeID> {
+public interface TypeData extends IndexedData<TypeOrTypeVariableID> {
     default boolean isRawType() {
         return false;
     }

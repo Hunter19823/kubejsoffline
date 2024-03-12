@@ -1,12 +1,13 @@
 package pie.ilikepiefoo.kubejsoffline.api.datastructure;
 
-import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 
-public interface WildcardTypeData extends IndexedData<TypeID>, TypeData {
-    TypeOrTypeVariableID getExtends();
+import java.util.List;
 
-    TypeOrTypeVariableID getSuper();
+public interface WildcardTypeData extends TypeData {
+    List<TypeOrTypeVariableID> getExtends();
+
+    List<TypeOrTypeVariableID> getSuper();
 
     @Override
     default boolean isWildcardType() {
