@@ -1,19 +1,35 @@
 package pie.ilikepiefoo.kubejsoffline.api.datastructure;
 
 public interface TypeData {
-    boolean isRawType();
+    default boolean isRawType() {
+        return false;
+    }
 
-    boolean isParameterizedType();
+    default boolean isParameterizedType() {
+        return false;
+    }
 
-    boolean isWildcardType();
+    default boolean isWildcardType() {
+        return false;
+    }
 
-    boolean isTypeVariable();
+    default boolean isTypeVariable() {
+        return false;
+    }
 
-    RawClassData asRawType();
+    default RawClassData asRawType() {
+        throw new UnsupportedOperationException("Cannot cast to RawClassData.");
+    }
 
-    ParameterizedTypeData asParameterizedType();
+    default ParameterizedTypeData asParameterizedType() {
+        throw new UnsupportedOperationException("Cannot cast to ParameterizedTypeData.");
+    }
 
-    WildcardTypeData asWildcardType();
+    default WildcardTypeData asWildcardType() {
+        throw new UnsupportedOperationException("Cannot cast to WildcardTypeData.");
+    }
 
-    TypeVariableData asTypeVariable();
+    default TypeVariableData asTypeVariable() {
+        throw new UnsupportedOperationException("Cannot cast to TypeVariableData.");
+    }
 }

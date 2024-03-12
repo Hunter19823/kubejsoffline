@@ -7,7 +7,7 @@ import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeVariableID;
 import java.util.List;
 
 
-public interface RawClassData extends AnnotatedData, NamedData, ModifierData, IndexedData<TypeID> {
+public interface RawClassData extends AnnotatedData, NamedData, ModifierData, IndexedData<TypeID>, TypeData {
     List<TypeVariableID> getTypeParameters();
 
     PackageID getPackage();
@@ -27,5 +27,16 @@ public interface RawClassData extends AnnotatedData, NamedData, ModifierData, In
     List<ConstructorData> getConstructors();
 
     List<MethodData> getMethods();
+
+
+    @Override
+    default boolean isRawType() {
+        return true;
+    }
+
+    @Override
+    default RawClassData asRawType() {
+        return this;
+    }
 
 }
