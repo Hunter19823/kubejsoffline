@@ -4,39 +4,22 @@ import pie.ilikepiefoo.kubejsoffline.api.collection.Names;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.NameID;
 import pie.ilikepiefoo.kubejsoffline.impl.identifier.IdentifierBase;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.NavigableMap;
-import java.util.TreeMap;
 
-public class NamesWrapper implements Names {
-    protected NavigableMap<NameID, String> names;
-    protected Map<String, NameID> identifiers;
-
-    public NamesWrapper() {
-        this.names = new TreeMap<>();
-        this.identifiers = new HashMap<>();
+public class NamesWrapper extends WrapperBase<NameID, String> implements Names {
+    protected NamesWrapper() {
+        super(NameIdentifier::new);
     }
 
     @Override
     public NavigableMap<NameID, String> getAllNames() {
-        return names;
+        return this.indexToValueMap;
     }
 
-    @Override
-    public boolean contains(String name) {
-        return identifiers.containsKey(name);
-    }
 
     @Override
     public synchronized NameID addName(String name) {
-        if (identifiers.containsKey(name)) {
-            return identifiers.get(name);
-        }
-        NameID id = new NameIdentifier(names.size());
-        names.put(id, name);
-        identifiers.put(name, id);
-        return id;
+        return this.addValue(name);
     }
 
     public static class NameIdentifier extends IdentifierBase implements NameID {

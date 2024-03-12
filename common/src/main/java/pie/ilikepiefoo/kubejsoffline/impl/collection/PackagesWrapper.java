@@ -9,20 +9,18 @@ import pie.ilikepiefoo.kubejsoffline.impl.identifier.IdentifierBase;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.TreeMap;
 
-public class PackagesWrapper implements Packages {
-    protected NavigableMap<PackageID, PackagePart> packages;
+public class PackagesWrapper extends WrapperBase<PackageID, PackagePart> implements Packages {
     protected Map<String, PackageID> parts;
 
     public PackagesWrapper() {
-        this.packages = new TreeMap<>();
+        super(PackageIdentifier::new);
         this.parts = new HashMap<>();
     }
 
     @Override
     public NavigableMap<PackageID, PackagePart> getAllPackages() {
-        return packages;
+        return this.indexToValueMap;
     }
 
     @Override
@@ -32,9 +30,9 @@ public class PackagesWrapper implements Packages {
         }
         var lastPeriod = packageName.lastIndexOf(".");
         if (lastPeriod == -1) {
-            PackageID id = new PackageIdentifier(packages.size());
+            PackageID id = this.indexFactory.createIndex(this.indexToValueMap.size());
             PackagePart part = new PackagePartWrapper(packageName, id);
-            packages.put(id, part);
+            this.indexToValueMap.put(id, part);
             parts.put(packageName, id);
             return id;
         }
@@ -48,9 +46,9 @@ public class PackagesWrapper implements Packages {
             throw new IllegalArgumentException("Package names cannot end with a period.");
         }
         PackageID prefixID = addPackage(prefix);
-        PackageID id = new PackageIdentifier(packages.size());
+        PackageID id = this.indexFactory.createIndex(this.indexToValueMap.size());
         PackagePart part = new PackagePartWrapper(prefixID, name, id);
-        packages.put(id, part);
+        this.indexToValueMap.put(id, part);
         parts.put(packageName, id);
         return id;
     }
@@ -72,7 +70,7 @@ public class PackagesWrapper implements Packages {
 
     @Override
     public PackagePart getPackage(PackageID id) {
-        return packages.get(id);
+        return this.indexToValueMap.get(id);
     }
 
     @Override
