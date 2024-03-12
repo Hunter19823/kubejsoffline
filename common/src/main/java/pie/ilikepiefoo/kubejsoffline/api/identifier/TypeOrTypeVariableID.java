@@ -1,4 +1,7 @@
 package pie.ilikepiefoo.kubejsoffline.api.identifier;
 
-public interface TypeOrTypeVariableID {
+public interface TypeOrTypeVariableID extends ArrayBasedIndex {
+    boolean isTypeVariable();
+
+    boolean isType();
 }

@@ -1,4 +1,4 @@
 package pie.ilikepiefoo.kubejsoffline.api.identifier;
 
-public interface PackageID {
+public interface PackageID extends Index {
 }

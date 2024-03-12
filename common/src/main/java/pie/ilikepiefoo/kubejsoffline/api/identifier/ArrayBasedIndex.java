@@ -1,5 +1,5 @@
 package pie.ilikepiefoo.kubejsoffline.api.identifier;
 
-public interface TypeID extends ArrayBasedIndex {
+public interface ArrayBasedIndex extends Index {
     int getArrayDepth();
 }
