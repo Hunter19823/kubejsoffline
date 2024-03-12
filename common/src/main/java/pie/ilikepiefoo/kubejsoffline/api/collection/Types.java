@@ -33,4 +33,6 @@ public interface Types {
     TypeID getID(WildcardTypeData type);
 
     TypeID getID(TypeVariableData type);
+
+    TypeData getType(TypeID id);
 }
