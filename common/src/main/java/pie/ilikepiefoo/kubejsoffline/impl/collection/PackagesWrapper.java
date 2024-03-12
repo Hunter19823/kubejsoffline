@@ -10,17 +10,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NavigableMap;
 
-public class PackagesWrapper extends WrapperBase<PackageID, PackagePart> implements Packages {
-    protected Map<String, PackageID> parts;
-
-    public PackagesWrapper() {
-        super(PackageIdentifier::new);
-        this.parts = new HashMap<>();
-    }
+public class PackagesWrapper implements Packages {
+    protected final TwoWayMap<PackageID, PackagePart> data = new TwoWayMap<>(PackageIdentifier::new);
+    protected Map<String, PackageID> parts = new HashMap<>();
 
     @Override
     public NavigableMap<PackageID, PackagePart> getAllPackages() {
-        return this.indexToValueMap;
+        return this.data.getIndexToValueMap();
     }
 
     @Override
@@ -30,9 +26,9 @@ public class PackagesWrapper extends WrapperBase<PackageID, PackagePart> impleme
         }
         var lastPeriod = packageName.lastIndexOf(".");
         if (lastPeriod == -1) {
-            PackageID id = this.indexFactory.createIndex(this.indexToValueMap.size());
+            PackageID id = this.data.getIndexFactory().createIndex(this.data.size());
             PackagePart part = new PackagePartWrapper(packageName, id);
-            this.indexToValueMap.put(id, part);
+            this.data.put(id, part);
             parts.put(packageName, id);
             return id;
         }
@@ -46,9 +42,9 @@ public class PackagesWrapper extends WrapperBase<PackageID, PackagePart> impleme
             throw new IllegalArgumentException("Package names cannot end with a period.");
         }
         PackageID prefixID = addPackage(prefix);
-        PackageID id = this.indexFactory.createIndex(this.indexToValueMap.size());
+        PackageID id = this.data.getIndexFactory().createIndex(this.data.size());
         PackagePart part = new PackagePartWrapper(prefixID, name, id);
-        this.indexToValueMap.put(id, part);
+        this.data.put(id, part);
         parts.put(packageName, id);
         return id;
     }
@@ -70,7 +66,7 @@ public class PackagesWrapper extends WrapperBase<PackageID, PackagePart> impleme
 
     @Override
     public PackagePart getPackage(PackageID id) {
-        return this.indexToValueMap.get(id);
+        return this.data.get(id);
     }
 
     @Override

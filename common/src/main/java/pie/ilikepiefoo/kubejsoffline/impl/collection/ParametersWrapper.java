@@ -7,30 +7,32 @@ import pie.ilikepiefoo.kubejsoffline.impl.identifier.IdentifierBase;
 
 import java.util.NavigableMap;
 
-public class ParametersWrapper extends WrapperBase<ParameterID, ParameterData> implements Parameters {
-
-    public ParametersWrapper() {
-        super(ParameterIdentifier::new);
-    }
+public class ParametersWrapper implements Parameters {
+    protected final TwoWayMap<ParameterID, ParameterData> data = new TwoWayMap<>(ParameterIdentifier::new);
 
     @Override
     public NavigableMap<ParameterID, ParameterData> getAllParameters() {
-        return this.indexToValueMap;
+        return this.data.getIndexToValueMap();
     }
 
     @Override
     public synchronized ParameterID addParameter(ParameterData data) {
-        return this.addValue(data);
+        return this.data.add(data);
+    }
+
+    @Override
+    public boolean contains(ParameterData data) {
+        return this.data.contains(data);
     }
 
     @Override
     public ParameterID getID(ParameterData data) {
-        return this.valueToIndexMap.get(data);
+        return this.data.get(data);
     }
 
     @Override
     public ParameterData getParameter(ParameterID id) {
-        return this.indexToValueMap.get(id);
+        return this.data.get(id);
     }
 
     public static class ParameterIdentifier extends IdentifierBase implements ParameterID {

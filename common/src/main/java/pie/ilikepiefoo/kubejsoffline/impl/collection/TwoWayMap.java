@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
-public abstract class WrapperBase<INDEX extends Index, VALUE> {
+public class TwoWayMap<INDEX extends Index, VALUE> {
     protected final NavigableMap<INDEX, VALUE> indexToValueMap = new TreeMap<>();
     protected final Map<VALUE, INDEX> valueToIndexMap = new HashMap<>();
     protected IndexFactory<INDEX> indexFactory;
 
-    protected WrapperBase(IndexFactory<INDEX> indexFactory) {
+    protected TwoWayMap(IndexFactory<INDEX> indexFactory) {
         this.indexFactory = indexFactory;
     }
 
@@ -21,7 +21,23 @@ public abstract class WrapperBase<INDEX extends Index, VALUE> {
         return indexToValueMap.values();
     }
 
-    protected synchronized INDEX addValue(VALUE value) {
+    public Collection<INDEX> getIndexes() {
+        return indexToValueMap.keySet();
+    }
+
+    public Map<VALUE, INDEX> getValueToIndexMap() {
+        return valueToIndexMap;
+    }
+
+    public NavigableMap<INDEX, VALUE> getIndexToValueMap() {
+        return indexToValueMap;
+    }
+
+    public IndexFactory<INDEX> getIndexFactory() {
+        return indexFactory;
+    }
+
+    public synchronized INDEX add(VALUE value) {
         if (valueToIndexMap.containsKey(value)) {
             return valueToIndexMap.get(value);
         }
@@ -31,23 +47,32 @@ public abstract class WrapperBase<INDEX extends Index, VALUE> {
         return index;
     }
 
+    public synchronized void put(INDEX index, VALUE value) {
+        indexToValueMap.put(index, value);
+        valueToIndexMap.put(value, index);
+    }
+
     public boolean contains(VALUE value) {
         return valueToIndexMap.containsKey(value);
+    }
+
+    public boolean contains(INDEX index) {
+        return indexToValueMap.containsKey(index);
     }
 
     public int size() {
         return indexToValueMap.size();
     }
 
-    public INDEX getIndex(VALUE value) {
+    public INDEX get(VALUE value) {
         return valueToIndexMap.get(value);
     }
 
-    public VALUE getValue(INDEX index) {
+    public VALUE get(INDEX index) {
         return indexToValueMap.get(index);
     }
 
-    protected interface IndexFactory<INDEX extends Index> {
+    public interface IndexFactory<INDEX extends Index> {
         INDEX createIndex(int arrayIndex);
     }
 }
