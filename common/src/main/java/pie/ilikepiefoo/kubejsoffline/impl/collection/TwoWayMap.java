@@ -72,6 +72,11 @@ public class TwoWayMap<INDEX extends Index, VALUE> {
         return indexToValueMap.get(index);
     }
 
+    public void clear() {
+        indexToValueMap.clear();
+        valueToIndexMap.clear();
+    }
+
     public interface IndexFactory<INDEX extends Index> {
         INDEX createIndex(int arrayIndex);
     }
