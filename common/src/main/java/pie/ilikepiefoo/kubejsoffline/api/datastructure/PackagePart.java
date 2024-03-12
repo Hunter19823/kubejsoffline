@@ -5,7 +5,6 @@ import pie.ilikepiefoo.kubejsoffline.api.collection.Packages;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.PackageID;
 
 public interface PackagePart {
-
     String getName();
 
     @Nullable PackageID getPrefix();

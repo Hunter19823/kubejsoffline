@@ -1,6 +1,5 @@
 package pie.ilikepiefoo.kubejsoffline.api.datastructure;
 
-import pie.ilikepiefoo.kubejsoffline.api.identifier.NameID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.PackageID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeVariableID;
@@ -8,11 +7,7 @@ import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeVariableID;
 import java.util.List;
 
 
-public interface RawClassData {
-    NameID getName();
-
-    int getModifiers();
-
+public interface RawClassData extends AnnotatedData, NamedData, ModifierData {
     List<TypeVariableID> getTypeParameters();
 
     PackageID getPackage();
@@ -20,8 +15,6 @@ public interface RawClassData {
     TypeID getSuperClass();
 
     List<TypeID> getInterfaces();
-
-    List<TypeID> getAnnotations();
 
     List<TypeID> getInnerClasses();
 
