@@ -1,7 +1,19 @@
 package pie.ilikepiefoo.kubejsoffline.api.identifier;
 
 public interface TypeOrTypeVariableID extends ArrayBasedIndex {
-    boolean isTypeVariable();
+    default boolean isTypeVariable() {
+        return false;
+    }
 
-    boolean isType();
+    default boolean isType() {
+        return false;
+    }
+
+    default TypeVariableID asTypeVariable() {
+        throw new UnsupportedOperationException("Cannot cast to TypeVariableID.");
+    }
+
+    default TypeID asType() {
+        throw new UnsupportedOperationException("Cannot cast to TypeID.");
+    }
 }
