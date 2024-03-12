@@ -13,5 +13,11 @@ public interface Packages {
 
     boolean contains( String packageName );
 
+    PackageID getID(String packageName);
 
+    PackageID getID(PackagePart part);
+
+    PackagePart getPackage(PackageID id);
+
+    PackagePart getPackage(String packageName);
 }
