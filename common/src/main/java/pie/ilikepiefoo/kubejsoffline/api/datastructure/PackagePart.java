@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import pie.ilikepiefoo.kubejsoffline.api.collection.Packages;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.PackageID;
 
-public interface PackagePart {
+public interface PackagePart extends IndexedData<PackageID> {
     String getName();
 
     @Nullable PackageID getPrefix();

@@ -5,7 +5,7 @@ import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 
 import java.util.List;
 
-public interface ParameterizedTypeData {
+public interface ParameterizedTypeData extends IndexedData<TypeID> {
     TypeID getRawType();
 
     List<TypeOrTypeVariableID> getActualTypeArguments();
