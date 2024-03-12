@@ -10,6 +10,8 @@ public interface ParameterizedTypeData extends IndexedData<TypeID>, TypeData {
 
     List<TypeOrTypeVariableID> getActualTypeArguments();
 
+    TypeID getOwnerType();
+
 
     @Override
     default boolean isParameterizedType() {
