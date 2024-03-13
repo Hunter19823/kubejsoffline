@@ -10,4 +10,7 @@ public interface Names {
     boolean contains( String name );
 
     NameID addName(String name);
+
+    void clear();
+
 }

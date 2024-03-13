@@ -35,6 +35,11 @@ public class ParametersWrapper implements Parameters {
         return this.data.get(id);
     }
 
+    @Override
+    public void clear() {
+        this.data.clear();
+    }
+
     public static class ParameterIdentifier extends IdentifierBase implements ParameterID {
         public ParameterIdentifier(int arrayIndex) {
             super(arrayIndex);

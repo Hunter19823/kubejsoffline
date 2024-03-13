@@ -25,6 +25,11 @@ public class NamesWrapper implements Names {
         return this.data.add(name);
     }
 
+    @Override
+    public void clear() {
+        this.data.clear();
+    }
+
     public static class NameIdentifier extends IdentifierBase implements NameID {
         public NameIdentifier(int arrayIndex) {
             super(arrayIndex);

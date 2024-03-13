@@ -20,4 +20,7 @@ public interface Packages {
     PackagePart getPackage(PackageID id);
 
     PackagePart getPackage(String packageName);
+
+    void clear();
+
 }

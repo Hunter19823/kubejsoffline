@@ -35,4 +35,6 @@ public interface Types {
     TypeID getID(TypeVariableData type);
 
     TypeData getType(TypeID id);
+
+    void clear();
 }

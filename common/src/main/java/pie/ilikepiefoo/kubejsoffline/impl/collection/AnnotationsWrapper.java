@@ -1,8 +1,8 @@
 package pie.ilikepiefoo.kubejsoffline.impl.collection;
 
 import pie.ilikepiefoo.kubejsoffline.api.collection.Annotations;
+import pie.ilikepiefoo.kubejsoffline.api.datastructure.AnnotationData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.AnnotationID;
-import pie.ilikepiefoo.kubejsoffline.data.AnnotationData;
 import pie.ilikepiefoo.kubejsoffline.impl.identifier.IdentifierBase;
 
 import java.util.NavigableMap;
@@ -23,6 +23,11 @@ public class AnnotationsWrapper implements Annotations {
     @Override
     public synchronized AnnotationID addAnnotation(AnnotationData annotation) {
         return this.data.add(annotation);
+    }
+
+    @Override
+    public void clear() {
+        this.data.clear();
     }
 
     public static class AnnotationIdentifier extends IdentifierBase implements AnnotationID {

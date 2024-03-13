@@ -74,6 +74,12 @@ public class PackagesWrapper implements Packages {
         return getPackage(getID(packageName));
     }
 
+    @Override
+    public void clear() {
+        this.data.clear();
+        this.parts.clear();
+    }
+
     public static class PackageIdentifier extends IdentifierBase implements PackageID {
         public PackageIdentifier(int arrayIndex) {
             super(arrayIndex);

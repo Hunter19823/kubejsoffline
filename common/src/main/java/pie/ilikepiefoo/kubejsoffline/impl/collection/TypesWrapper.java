@@ -110,6 +110,15 @@ public class TypesWrapper implements Types {
         return this.data.get(id);
     }
 
+    @Override
+    public void clear() {
+        this.data.clear();
+        this.rawTypes.clear();
+        this.parameterizedTypes.clear();
+        this.wildcardTypes.clear();
+        this.typeVariables.clear();
+    }
+
     public static class TypeIdentifier extends ArrayIdentifier implements TypeID {
 
         public TypeIdentifier(int arrayIndex) {

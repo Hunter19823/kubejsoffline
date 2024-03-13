@@ -15,4 +15,7 @@ public interface Parameters {
     ParameterID getID(ParameterData data);
 
     ParameterData getParameter(ParameterID id);
+
+    void clear();
+
 }
