@@ -2,7 +2,6 @@ package pie.ilikepiefoo.kubejsoffline.impl.datastructure;
 
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.ConstructorData;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.FieldData;
-import pie.ilikepiefoo.kubejsoffline.api.datastructure.IndexedData;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.MethodData;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.RawClassData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.AnnotationID;
@@ -40,7 +39,10 @@ public class RawClassWrapper implements RawClassData {
 
     @Override
     public List<AnnotationID> getAnnotations() {
-        return null;
+        if (annotations != null) {
+            return annotations;
+        }
+        return this.annotations = collectionGroup.of(clazz.getAnnotations());
     }
 
     @Override
@@ -50,66 +52,100 @@ public class RawClassWrapper implements RawClassData {
 
     @Override
     public NameID getName() {
-        return null;
+        if (name != null) {
+            return name;
+        }
+        return this.name = collectionGroup.names().addName(clazz.getName());
     }
 
     @Override
     public List<TypeVariableID> getTypeParameters() {
-        return null;
+        if (typeParameters != null) {
+            return typeParameters;
+        }
+        return this.typeParameters = collectionGroup.of(clazz.getTypeParameters());
     }
 
     @Override
     public PackageID getPackage() {
-        return null;
+        if (packageID != null) {
+            return packageID;
+        }
+        return this.packageID = collectionGroup.packageOf(clazz.getPackage());
     }
 
     @Override
     public TypeID getSuperClass() {
-        return null;
+        if (superClass != null) {
+            return superClass;
+        }
+        return this.superClass = collectionGroup.of(clazz.getGenericSuperclass()).asType();
     }
 
     @Override
     public List<TypeID> getInterfaces() {
-        return null;
+        if (interfaces != null) {
+            return interfaces;
+        }
+        return this.interfaces = collectionGroup.ofTypes(clazz.getGenericInterfaces());
     }
 
     @Override
     public List<TypeID> getInnerClasses() {
-        return null;
+        if (innerClasses != null) {
+            return innerClasses;
+        }
+        return this.innerClasses = collectionGroup.ofTypes(clazz.getClasses());
     }
 
     @Override
     public TypeID getEnclosingClass() {
-        return null;
+        if (enclosingClass != null) {
+            return enclosingClass;
+        }
+        return this.enclosingClass = collectionGroup.of(clazz.getEnclosingClass()).asType();
     }
 
     @Override
     public TypeID getDeclaringClass() {
-        return null;
+        if (declaringClass != null) {
+            return declaringClass;
+        }
+        return this.declaringClass = collectionGroup.of(clazz.getDeclaringClass()).asType();
     }
 
     @Override
     public List<FieldData> getFields() {
-        return null;
+        if (fields != null) {
+            return fields;
+        }
+        return this.fields = collectionGroup.of(clazz.getFields());
     }
 
     @Override
     public List<ConstructorData> getConstructors() {
-        return null;
+        if (constructors != null) {
+            return constructors;
+        }
+        return this.constructors = collectionGroup.of(clazz.getConstructors());
     }
 
     @Override
     public List<MethodData> getMethods() {
-        return null;
+        if (methods != null) {
+            return methods;
+        }
+        return this.methods = collectionGroup.of(clazz.getMethods());
     }
 
     @Override
     public TypeID getIndex() {
-        return null;
+        return index;
     }
 
     @Override
-    public IndexedData<TypeOrTypeVariableID> setIndex(TypeOrTypeVariableID index) {
-        return null;
+    public RawClassData setIndex(TypeOrTypeVariableID index) {
+        this.index = index.asType();
+        return this;
     }
 }

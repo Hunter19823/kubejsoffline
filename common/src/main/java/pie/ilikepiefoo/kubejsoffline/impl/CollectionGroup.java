@@ -6,8 +6,12 @@ import pie.ilikepiefoo.kubejsoffline.api.collection.Names;
 import pie.ilikepiefoo.kubejsoffline.api.collection.Packages;
 import pie.ilikepiefoo.kubejsoffline.api.collection.Parameters;
 import pie.ilikepiefoo.kubejsoffline.api.collection.Types;
+import pie.ilikepiefoo.kubejsoffline.api.datastructure.ConstructorData;
+import pie.ilikepiefoo.kubejsoffline.api.datastructure.FieldData;
+import pie.ilikepiefoo.kubejsoffline.api.datastructure.MethodData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.AnnotationID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.NameID;
+import pie.ilikepiefoo.kubejsoffline.api.identifier.PackageID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.ParameterID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
@@ -18,9 +22,15 @@ import pie.ilikepiefoo.kubejsoffline.impl.collection.PackagesWrapper;
 import pie.ilikepiefoo.kubejsoffline.impl.collection.ParametersWrapper;
 import pie.ilikepiefoo.kubejsoffline.impl.collection.TypesWrapper;
 import pie.ilikepiefoo.kubejsoffline.impl.datastructure.AnnotationWrapper;
+import pie.ilikepiefoo.kubejsoffline.impl.datastructure.ConstructorWrapper;
+import pie.ilikepiefoo.kubejsoffline.impl.datastructure.FieldWrapper;
+import pie.ilikepiefoo.kubejsoffline.impl.datastructure.MethodWrapper;
 import pie.ilikepiefoo.kubejsoffline.impl.datastructure.ParameterWrapper;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -79,6 +89,14 @@ public record CollectionGroup(
         return typeList;
     }
 
+    public List<TypeID> ofTypes(Type[] types) {
+        LinkedList<TypeID> typeList = new LinkedList<>();
+        for (Type type : types) {
+            typeList.add(of(type).asType());
+        }
+        return typeList;
+    }
+
     public List<TypeID> of(Class<?>[] types) {
         LinkedList<TypeID> typeList = new LinkedList<>();
         for (Class<?> type : types) {
@@ -98,6 +116,35 @@ public record CollectionGroup(
     public NameID nameOf(String name) {
         return names().addName(name);
     }
+
+    public PackageID packageOf(Package pack) {
+        return packages().addPackage(pack.getName());
+    }
+
+    public List<FieldData> of(Field[] fields) {
+        LinkedList<FieldData> fieldList = new LinkedList<>();
+        for (Field field : fields) {
+            fieldList.add(new FieldWrapper(this, field));
+        }
+        return fieldList;
+    }
+
+    public List<MethodData> of(Method[] methods) {
+        LinkedList<MethodData> methodList = new LinkedList<>();
+        for (Method method : methods) {
+            methodList.add(new MethodWrapper(this, method));
+        }
+        return methodList;
+    }
+
+    public List<ConstructorData> of(Constructor<?>[] constructors) {
+        LinkedList<ConstructorData> constructorList = new LinkedList<>();
+        for (Constructor<?> constructor : constructors) {
+            constructorList.add(new ConstructorWrapper(this, constructor));
+        }
+        return constructorList;
+    }
+
 
     public void clear() {
         types().clear();
