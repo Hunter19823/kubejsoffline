@@ -1,6 +1,6 @@
 package pie.ilikepiefoo.kubejsoffline.impl;
 
-import pie.ilikepiefoo.kubejsoffline.api.datastructure.TypeData;
+import pie.ilikepiefoo.kubejsoffline.api.datastructure.property.TypeData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.impl.datastructure.ParameterizedTypeWrapper;
@@ -66,7 +66,7 @@ public class TypeManager {
         throw new IllegalArgumentException("Type " + type + " is not supported");
     }
 
-    private TypeID cache(Type type, TypeData data) {
+    private TypeOrTypeVariableID cache(Type type, TypeData data) {
         var id = collectionGroup.types().addType(data);
         cache.put(type, id);
         data.setIndex(id);
