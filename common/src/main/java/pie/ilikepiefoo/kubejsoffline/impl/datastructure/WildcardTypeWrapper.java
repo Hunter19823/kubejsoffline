@@ -12,6 +12,7 @@ import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 import java.util.List;
+import java.util.Objects;
 
 public class WildcardTypeWrapper implements WildcardTypeData {
     protected final CollectionGroup collectionGroup;
@@ -66,5 +67,24 @@ public class WildcardTypeWrapper implements WildcardTypeData {
             json.add(JSONProperty.WILDCARD_UPPER_BOUNDS.jsName, JSONSerializable.of(getExtends()));
         }
         return json;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                getExtends(),
+                getSuper()
+        );
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        return this.hashCode() == obj.hashCode();
     }
 }

@@ -14,6 +14,7 @@ import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Objects;
 
 public class ParameterWrapper implements ParameterData {
     protected CollectionGroup collectionGroup;
@@ -82,5 +83,26 @@ public class ParameterWrapper implements ParameterData {
         }
 
         return json;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                getName(),
+                getModifiers(),
+                getAnnotations(),
+                getType()
+        );
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        return this.hashCode() == obj.hashCode();
     }
 }

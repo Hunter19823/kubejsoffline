@@ -11,6 +11,7 @@ import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
+import java.util.Objects;
 
 public class ParameterizedTypeWrapper implements ParameterizedTypeData {
     protected final CollectionGroup collectionGroup;
@@ -73,5 +74,25 @@ public class ParameterizedTypeWrapper implements ParameterizedTypeData {
         }
         json.add(JSONProperty.TYPE_VARIABLES.jsName, JSONSerializable.of(getActualTypeArguments()));
         return json;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                getRawType(),
+                getOwnerType(),
+                getActualTypeArguments()
+        );
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        return this.hashCode() == obj.hashCode();
     }
 }

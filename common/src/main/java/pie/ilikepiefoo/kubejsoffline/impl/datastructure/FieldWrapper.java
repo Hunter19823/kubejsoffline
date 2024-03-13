@@ -66,4 +66,20 @@ public class FieldWrapper implements FieldData {
         }
         return json;
     }
+
+    @Override
+    public int hashCode() {
+        return this.field.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        return this.hashCode() == obj.hashCode();
+    }
 }

@@ -59,7 +59,14 @@ public class RawClassWrapper implements RawClassData {
         if (name != null) {
             return name;
         }
-        return this.name = collectionGroup.names().addName(clazz.getName());
+        String name = clazz.getSimpleName();
+        if (name.contains("$")) {
+            name = name.substring(name.lastIndexOf("$") + 1);
+        }
+        if (name.contains(".")) {
+            name = name.substring(name.lastIndexOf(".") + 1);
+        }
+        return this.name = collectionGroup.names().addName(name);
     }
 
     @Override
@@ -75,6 +82,9 @@ public class RawClassWrapper implements RawClassData {
         if (packageID != null) {
             return packageID;
         }
+        if (clazz.getPackage() == null) {
+            return null;
+        }
         return this.packageID = collectionGroup.packageOf(clazz.getPackage());
     }
 
@@ -82,6 +92,9 @@ public class RawClassWrapper implements RawClassData {
     public TypeID getSuperClass() {
         if (superClass != null) {
             return superClass;
+        }
+        if (clazz.getGenericSuperclass() == null) {
+            return null;
         }
         return this.superClass = collectionGroup.of(clazz.getGenericSuperclass()).asType();
     }
@@ -99,13 +112,16 @@ public class RawClassWrapper implements RawClassData {
         if (innerClasses != null) {
             return innerClasses;
         }
-        return this.innerClasses = collectionGroup.ofTypes(clazz.getClasses());
+        return this.innerClasses = collectionGroup.ofTypes(clazz.getDeclaredClasses());
     }
 
     @Override
     public TypeID getEnclosingClass() {
         if (enclosingClass != null) {
             return enclosingClass;
+        }
+        if (clazz.getEnclosingClass() == null) {
+            return null;
         }
         return this.enclosingClass = collectionGroup.of(clazz.getEnclosingClass()).asType();
     }
@@ -115,6 +131,9 @@ public class RawClassWrapper implements RawClassData {
         if (declaringClass != null) {
             return declaringClass;
         }
+        if (clazz.getDeclaringClass() == null) {
+            return null;
+        }
         return this.declaringClass = collectionGroup.of(clazz.getDeclaringClass()).asType();
     }
 
@@ -123,7 +142,7 @@ public class RawClassWrapper implements RawClassData {
         if (fields != null) {
             return fields;
         }
-        return this.fields = collectionGroup.of(clazz.getFields());
+        return this.fields = collectionGroup.of(clazz.getDeclaredFields());
     }
 
     @Override
@@ -131,7 +150,7 @@ public class RawClassWrapper implements RawClassData {
         if (constructors != null) {
             return constructors;
         }
-        return this.constructors = collectionGroup.of(clazz.getConstructors());
+        return this.constructors = collectionGroup.of(clazz.getDeclaredConstructors());
     }
 
     @Override
@@ -139,7 +158,7 @@ public class RawClassWrapper implements RawClassData {
         if (methods != null) {
             return methods;
         }
-        return this.methods = collectionGroup.of(clazz.getMethods());
+        return this.methods = collectionGroup.of(clazz.getDeclaredMethods());
     }
 
     @Override
@@ -192,5 +211,21 @@ public class RawClassWrapper implements RawClassData {
             json.add(JSONProperty.METHODS.jsName, JSONSerializable.of(getMethods()));
         }
         return json;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.clazz.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        return this.hashCode() == obj.hashCode();
     }
 }

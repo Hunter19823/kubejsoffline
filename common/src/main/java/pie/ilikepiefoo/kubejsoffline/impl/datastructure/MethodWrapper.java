@@ -2,7 +2,6 @@ package pie.ilikepiefoo.kubejsoffline.impl.datastructure;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import pie.ilikepiefoo.kubejsoffline.api.JSONSerializable;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.MethodData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.AnnotationID;
@@ -83,10 +82,15 @@ public class MethodWrapper implements MethodData {
     }
 
     @Override
+    public int getModifiers() {
+        return method.getModifiers();
+    }
+
+    @Override
     public JsonElement toJSON() {
         var json = new JsonObject();
         json.add(JSONProperty.METHOD_NAME.jsName, getName().toJSON());
-        json.add(JSONProperty.MODIFIERS.jsName, new JsonPrimitive(method.getModifiers()));
+        json.addProperty(JSONProperty.MODIFIERS.jsName, method.getModifiers());
         json.add(JSONProperty.METHOD_RETURN_TYPE.jsName, getType().toJSON());
         if (!getAnnotations().isEmpty()) {
             json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
@@ -101,5 +105,21 @@ public class MethodWrapper implements MethodData {
             json.add(JSONProperty.EXCEPTIONS.jsName, JSONSerializable.of(getExceptions()));
         }
         return json;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.method.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        return this.hashCode() == obj.hashCode();
     }
 }

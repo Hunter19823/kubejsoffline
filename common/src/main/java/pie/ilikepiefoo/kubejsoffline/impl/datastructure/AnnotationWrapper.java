@@ -9,6 +9,7 @@ import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
 import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 import java.lang.annotation.Annotation;
+import java.util.Objects;
 
 public class AnnotationWrapper implements AnnotationData {
 
@@ -52,5 +53,24 @@ public class AnnotationWrapper implements AnnotationData {
         json.add(JSONProperty.ANNOTATION_TYPE.jsName, getAnnotationType().toJSON());
         json.addProperty(JSONProperty.ANNOTATION_STRING.jsName, getAnnotationValue());
         return json;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                getAnnotationType(),
+                getAnnotationValue()
+        );
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        return this.hashCode() == obj.hashCode();
     }
 }

@@ -7,6 +7,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.PackagePart;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.PackageID;
 
+import java.util.Objects;
+
 public class PackagePartWrapper implements PackagePart {
     protected PackageID index;
     protected String name;
@@ -52,5 +54,25 @@ public class PackagePartWrapper implements PackagePart {
             json.add(getPrefix().toJSON());
         }
         return json;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                getName(),
+                getPrefix()
+        );
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        return this.hashCode() == obj.hashCode();
     }
 }
