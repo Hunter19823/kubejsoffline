@@ -12,6 +12,8 @@ import pie.ilikepiefoo.kubejsoffline.impl.identifier.ArrayIdentifier;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,7 +45,7 @@ public class TypeManager {
             currentType = genericArrayType.getGenericComponentType();
         }
         if (arrayDepth > 0) {
-            return cache(type, new TypeIdentifier(getID(currentType), arrayDepth));
+            return new TypeIdentifier(getID(currentType), arrayDepth);
         }
         // Raw Type
         if (type instanceof Class<?> clazz) {
@@ -54,11 +56,11 @@ public class TypeManager {
             return cache(parameterizedType, new ParameterizedTypeWrapper(collectionGroup, parameterizedType));
         }
         // WildcardType
-        if (type instanceof java.lang.reflect.WildcardType wildcardType) {
+        if (type instanceof WildcardType wildcardType) {
             return cache(wildcardType, new WildcardTypeWrapper(collectionGroup, wildcardType));
         }
         // TypeVariable
-        if (type instanceof java.lang.reflect.TypeVariable<?> typeVariable) {
+        if (type instanceof TypeVariable<?> typeVariable) {
             return cache(typeVariable, new TypeVariableWrapper(collectionGroup, typeVariable));
         }
         throw new IllegalArgumentException("Type " + type + " is not supported");
@@ -76,7 +78,7 @@ public class TypeManager {
         return id;
     }
 
-    public static class TypeIdentifier extends ArrayIdentifier implements TypeID {
+    public static class TypeIdentifier extends ArrayIdentifier implements TypeOrTypeVariableID {
 
         public TypeIdentifier(int arrayIndex) {
             super(arrayIndex);
@@ -86,7 +88,7 @@ public class TypeManager {
             super(arrayIndex, arrayDepth);
         }
 
-        public TypeIdentifier(TypeID typeID, int arrayDepth) {
+        public TypeIdentifier(TypeOrTypeVariableID typeID, int arrayDepth) {
             super(typeID, arrayDepth);
         }
     }
