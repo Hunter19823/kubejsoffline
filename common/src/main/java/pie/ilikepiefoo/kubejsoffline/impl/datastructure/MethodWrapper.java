@@ -1,5 +1,9 @@
 package pie.ilikepiefoo.kubejsoffline.impl.datastructure;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import pie.ilikepiefoo.kubejsoffline.api.JSONSerializable;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.MethodData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.AnnotationID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.NameID;
@@ -8,6 +12,7 @@ import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
+import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -75,5 +80,26 @@ public class MethodWrapper implements MethodData {
             return name;
         }
         return this.name = collectionGroup.names().addName(method.getName());
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        var json = new JsonObject();
+        json.add(JSONProperty.METHOD_NAME.jsName, getName().toJSON());
+        json.add(JSONProperty.MODIFIERS.jsName, new JsonPrimitive(method.getModifiers()));
+        json.add(JSONProperty.METHOD_RETURN_TYPE.jsName, getType().toJSON());
+        if (!getAnnotations().isEmpty()) {
+            json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
+        }
+        if (!getParameters().isEmpty()) {
+            json.add(JSONProperty.PARAMETERS.jsName, JSONSerializable.of(getParameters()));
+        }
+        if (!getTypeParameters().isEmpty()) {
+            json.add(JSONProperty.TYPE_VARIABLES.jsName, JSONSerializable.of(getTypeParameters()));
+        }
+        if (!getExceptions().isEmpty()) {
+            json.add(JSONProperty.EXCEPTIONS.jsName, JSONSerializable.of(getExceptions()));
+        }
+        return json;
     }
 }
