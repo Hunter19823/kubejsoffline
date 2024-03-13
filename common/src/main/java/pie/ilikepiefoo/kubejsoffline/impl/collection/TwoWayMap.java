@@ -38,6 +38,10 @@ public class TwoWayMap<INDEX extends Index, VALUE> {
     }
 
     public synchronized INDEX add(VALUE value) {
+        return add(value, indexFactory);
+    }
+
+    public synchronized INDEX add(VALUE value, IndexFactory<INDEX> indexFactory) {
         if (valueToIndexMap.containsKey(value)) {
             return valueToIndexMap.get(value);
         }
