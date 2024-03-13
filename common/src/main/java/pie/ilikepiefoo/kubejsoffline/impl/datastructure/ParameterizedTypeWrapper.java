@@ -1,9 +1,13 @@
 package pie.ilikepiefoo.kubejsoffline.impl.datastructure;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import pie.ilikepiefoo.kubejsoffline.api.JSONSerializable;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.ParameterizedTypeData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
+import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
@@ -55,5 +59,19 @@ public class ParameterizedTypeWrapper implements ParameterizedTypeData {
             return null;
 
         return this.ownerType = collectionGroup.of(parameterizedType.getOwnerType()).asType();
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        var json = new JsonObject();
+        json.add(JSONProperty.RAW_PARAMETERIZED_TYPE.jsName, getRawType().toJSON());
+        if (getOwnerType() != null) {
+            json.add(JSONProperty.OWNER_TYPE.jsName, getOwnerType().toJSON());
+        }
+        if (getActualTypeArguments().isEmpty()) {
+            return json;
+        }
+        json.add(JSONProperty.TYPE_VARIABLES.jsName, JSONSerializable.of(getActualTypeArguments()));
+        return json;
     }
 }
