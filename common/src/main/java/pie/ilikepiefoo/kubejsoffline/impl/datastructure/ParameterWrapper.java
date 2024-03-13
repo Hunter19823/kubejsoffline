@@ -1,11 +1,15 @@
 package pie.ilikepiefoo.kubejsoffline.impl.datastructure;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import pie.ilikepiefoo.kubejsoffline.api.JSONSerializable;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.ParameterData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.AnnotationID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.NameID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.ParameterID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
+import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
@@ -65,5 +69,15 @@ public class ParameterWrapper implements ParameterData {
             return type;
         }
         return type = collectionGroup.of(genericType);
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        var json = new JsonObject();
+        json.add(JSONProperty.PARAMETER_NAME.jsName, getName().toJSON());
+        json.add(JSONProperty.PARAMETER_TYPE.jsName, getType().toJSON());
+        json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
+        json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
+        return json;
     }
 }
