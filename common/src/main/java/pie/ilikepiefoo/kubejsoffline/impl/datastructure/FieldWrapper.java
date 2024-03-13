@@ -1,10 +1,14 @@
 package pie.ilikepiefoo.kubejsoffline.impl.datastructure;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import pie.ilikepiefoo.kubejsoffline.api.JSONSerializable;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.FieldData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.AnnotationID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.NameID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
+import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -49,5 +53,15 @@ public class FieldWrapper implements FieldData {
             return name;
         }
         return this.name = collectionGroup.names().addName(field.getName());
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        JsonObject json = new JsonObject();
+        json.add(JSONProperty.FIELD_NAME.jsName, getName().toJSON());
+        json.add(JSONProperty.FIELD_TYPE.jsName, getType().toJSON());
+        json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
+        json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
+        return json;
     }
 }
