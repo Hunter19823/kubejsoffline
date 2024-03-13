@@ -82,6 +82,10 @@ public class TypeVariableWrapper implements TypeVariableData {
         if (this == obj) {
             return true;
         }
-        return this.hashCode() == obj.hashCode();
+        if (obj instanceof TypeVariableWrapper other) {
+            return (this.typeVariable.equals(other.typeVariable)) || (this.hashCode() == other.hashCode());
+        }
+
+        return false;
     }
 }
