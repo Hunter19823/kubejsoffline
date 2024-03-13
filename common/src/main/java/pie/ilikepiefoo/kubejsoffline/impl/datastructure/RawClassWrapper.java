@@ -9,6 +9,7 @@ import pie.ilikepiefoo.kubejsoffline.api.identifier.AnnotationID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.NameID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.PackageID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
+import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
 
@@ -108,7 +109,7 @@ public class RawClassWrapper implements RawClassData {
     }
 
     @Override
-    public IndexedData<TypeID> setIndex(TypeID index) {
+    public IndexedData<TypeOrTypeVariableID> setIndex(TypeOrTypeVariableID index) {
         return null;
     }
 }

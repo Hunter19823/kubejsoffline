@@ -4,11 +4,8 @@ import pie.ilikepiefoo.kubejsoffline.api.datastructure.ParameterizedTypeData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
-import pie.ilikepiefoo.kubejsoffline.impl.TypeManager;
 
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.LinkedList;
 import java.util.List;
 
 public class ParameterizedTypeWrapper implements ParameterizedTypeData {
@@ -30,52 +27,33 @@ public class ParameterizedTypeWrapper implements ParameterizedTypeData {
     }
 
     @Override
-    public ParameterizedTypeData setIndex(TypeID index) {
-        this.index = index;
+    public ParameterizedTypeData setIndex(TypeOrTypeVariableID index) {
+        this.index = index.asType();
         return this;
     }
 
     @Override
     public synchronized TypeID getRawType() {
-        if (rawType != null) {
+        if (rawType != null)
             return rawType;
-        }
-        var rawType = TypeManager.INSTANCE.getID(parameterizedType.getRawType());
-        if (!rawType.isType()) {
-            throw new IllegalStateException("Raw Type is not a Type");
-        }
-        this.rawType = rawType.asType();
-
-        return this.rawType;
+        return this.rawType = collectionGroup.of(parameterizedType.getRawType()).asType();
     }
 
     @Override
     public synchronized List<TypeOrTypeVariableID> getActualTypeArguments() {
-        if (actualTypeArguments != null) {
+        if (actualTypeArguments != null)
             return actualTypeArguments;
-        }
-        var typeArguments = parameterizedType.getActualTypeArguments();
-        List<TypeOrTypeVariableID> actualTypeArguments = new LinkedList<>();
-        for (Type typeArgument : typeArguments) {
-            actualTypeArguments.add(TypeManager.INSTANCE.getID(typeArgument));
-        }
-        this.actualTypeArguments = actualTypeArguments;
-        return this.actualTypeArguments;
+        return this.actualTypeArguments = collectionGroup.of(parameterizedType.getActualTypeArguments());
     }
 
     @Override
     public synchronized TypeID getOwnerType() {
-        if (ownerType != null) {
+        if (ownerType != null)
             return ownerType;
-        }
-        if (parameterizedType.getOwnerType() == null) {
+
+        if (parameterizedType.getOwnerType() == null)
             return null;
-        }
-        var ownerType = TypeManager.INSTANCE.getID(parameterizedType.getOwnerType());
-        if (!ownerType.isType()) {
-            throw new IllegalStateException("Owner Type is not a Type");
-        }
-        this.ownerType = ownerType.asType();
-        return this.ownerType;
+
+        return this.ownerType = collectionGroup.of(parameterizedType.getOwnerType()).asType();
     }
 }

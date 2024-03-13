@@ -5,7 +5,6 @@ import pie.ilikepiefoo.kubejsoffline.api.identifier.NameID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
-import pie.ilikepiefoo.kubejsoffline.impl.TypeManager;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -24,16 +23,7 @@ public class TypeVariableWrapper implements TypeVariableData {
     }
 
     @Override
-    public TypeVariableData setIndex(TypeOrTypeVariableID index) {
-        if (!index.isTypeVariable()) {
-            throw new IllegalArgumentException("TypeVariableData can only be indexed by TypeVariableID");
-        }
-        this.index = index.asTypeVariable();
-        return this;
-    }
-
-    @Override
-    public NameID getName() {
+    public synchronized NameID getName() {
         if (name != null) {
             return name;
         }
@@ -41,22 +31,21 @@ public class TypeVariableWrapper implements TypeVariableData {
     }
 
     @Override
-    public List<TypeOrTypeVariableID> getBounds() {
+    public synchronized List<TypeOrTypeVariableID> getBounds() {
         if (bounds != null) {
             return bounds;
         }
-        List<TypeOrTypeVariableID> bounds = new java.util.LinkedList<>();
-        for (Type type : typeVariable.getBounds()) {
-            if (type == Object.class) {
-                continue;
-            }
-            bounds.add(TypeManager.INSTANCE.getID(type));
-        }
-        return this.bounds = bounds;
+        return this.bounds = collectionGroup.of(typeVariable.getBounds(), (Type type) -> type == Object.class);
     }
 
     @Override
     public TypeVariableID getIndex() {
         return index;
+    }
+
+    @Override
+    public TypeVariableData setIndex(TypeOrTypeVariableID index) {
+        this.index = index.asTypeVariable();
+        return this;
     }
 }

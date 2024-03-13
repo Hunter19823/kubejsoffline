@@ -1,7 +1,6 @@
 package pie.ilikepiefoo.kubejsoffline.impl.datastructure;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
-import pie.ilikepiefoo.kubejsoffline.api.datastructure.IndexedData;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.PackagePart;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.PackageID;
 
@@ -37,7 +36,7 @@ public class PackagePartWrapper implements PackagePart {
     }
 
     @Override
-    public IndexedData<PackageID> setIndex(PackageID index) {
+    public PackagePart setIndex(PackageID index) {
         this.index = index;
         return this;
     }

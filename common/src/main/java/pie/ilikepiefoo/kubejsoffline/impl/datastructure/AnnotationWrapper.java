@@ -4,19 +4,19 @@ import pie.ilikepiefoo.kubejsoffline.api.datastructure.AnnotationData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.AnnotationID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
-import pie.ilikepiefoo.kubejsoffline.impl.TypeManager;
 
 import java.lang.annotation.Annotation;
 
-public class AnnotationDataWrapper implements AnnotationData {
+public class AnnotationWrapper implements AnnotationData {
 
     protected Annotation annotation;
     protected TypeID annotationType;
     protected CollectionGroup collectionGroup;
     protected AnnotationID index;
 
-    public AnnotationDataWrapper(CollectionGroup collectionGroup, Annotation annotation) {
+    public AnnotationWrapper(CollectionGroup collectionGroup, Annotation annotation) {
         this.annotation = annotation;
+        this.collectionGroup = collectionGroup;
     }
 
     @Override
@@ -24,7 +24,7 @@ public class AnnotationDataWrapper implements AnnotationData {
         if (annotationType != null) {
             return annotationType;
         }
-        return annotationType = TypeManager.INSTANCE.getID(annotation.annotationType()).asType();
+        return annotationType = collectionGroup.of(annotation.annotationType()).asType();
     }
 
     @Override
