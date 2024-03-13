@@ -24,7 +24,9 @@ public class AnnotationsWrapper implements Annotations {
 
     @Override
     public synchronized AnnotationID addAnnotation(AnnotationData annotation) {
-        return this.data.add(annotation);
+        var index = this.data.add(annotation);
+        annotation.setIndex(index);
+        return index;
     }
 
     @Override

@@ -42,10 +42,10 @@ public class TwoWayMap<INDEX extends Index, VALUE> {
     }
 
     public synchronized INDEX add(VALUE value, IndexFactory<INDEX> indexFactory) {
+        INDEX index = indexFactory.createIndex(indexToValueMap.size());
         if (valueToIndexMap.containsKey(value)) {
             return valueToIndexMap.get(value);
         }
-        INDEX index = indexFactory.createIndex(indexToValueMap.size());
         indexToValueMap.put(index, value);
         valueToIndexMap.put(value, index);
         return index;

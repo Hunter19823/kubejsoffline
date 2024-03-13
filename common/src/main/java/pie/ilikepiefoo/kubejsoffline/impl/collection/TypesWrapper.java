@@ -55,14 +55,14 @@ public class TypesWrapper implements Types {
 
     @Override
     public synchronized TypeOrTypeVariableID addType(TypeData data) {
-        if (this.data.contains(data)) {
-            return this.data.get(data);
-        }
         var index = this.data.add(data,
                 (data.isTypeVariable()) ?
                         TypeVariableIdentifier::new :
                         TypeIdentifier::new
         );
+        if (this.data.contains(index)) {
+            return index;
+        }
         if (data.isRawType()) {
             this.rawTypes.put(index.asType(), data.asRawType());
         } else if (data.isParameterizedType()) {

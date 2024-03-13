@@ -19,7 +19,9 @@ public class ParametersWrapper implements Parameters {
 
     @Override
     public synchronized ParameterID addParameter(ParameterData data) {
-        return this.data.add(data);
+        var index = this.data.add(data);
+        data.setIndex(index);
+        return index;
     }
 
     @Override
