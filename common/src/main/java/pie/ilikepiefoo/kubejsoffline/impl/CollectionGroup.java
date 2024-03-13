@@ -9,7 +9,9 @@ import pie.ilikepiefoo.kubejsoffline.api.collection.Types;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.AnnotationID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.NameID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.ParameterID;
+import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
+import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.impl.collection.AnnotationsWrapper;
 import pie.ilikepiefoo.kubejsoffline.impl.collection.NamesWrapper;
 import pie.ilikepiefoo.kubejsoffline.impl.collection.PackagesWrapper;
@@ -21,6 +23,7 @@ import pie.ilikepiefoo.kubejsoffline.impl.datastructure.ParameterWrapper;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -74,6 +77,22 @@ public record CollectionGroup(
             typeList.add(of(type));
         }
         return typeList;
+    }
+
+    public List<TypeID> of(Class<?>[] types) {
+        LinkedList<TypeID> typeList = new LinkedList<>();
+        for (Class<?> type : types) {
+            typeList.add(of(type).asType());
+        }
+        return typeList;
+    }
+
+    public List<TypeVariableID> of(TypeVariable<?>[] typeVariables) {
+        LinkedList<TypeVariableID> typeVariableList = new LinkedList<>();
+        for (TypeVariable<?> typeVariable : typeVariables) {
+            typeVariableList.add(of(typeVariable).asTypeVariable());
+        }
+        return typeVariableList;
     }
 
     public NameID nameOf(String name) {
