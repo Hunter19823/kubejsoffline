@@ -61,7 +61,9 @@ public class FieldWrapper implements FieldData {
         json.add(JSONProperty.FIELD_NAME.jsName, getName().toJSON());
         json.add(JSONProperty.FIELD_TYPE.jsName, getType().toJSON());
         json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
-        json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
+        if (!getAnnotations().isEmpty()) {
+            json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
+        }
         return json;
     }
 }
