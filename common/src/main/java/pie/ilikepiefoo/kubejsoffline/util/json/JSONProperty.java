@@ -81,7 +81,11 @@ public enum JSONProperty {
     BINDING_STRING("s"),
     BINDING_FUNCTION("f"),
     BINDING_OBJECT("o"),
-    EXCEPTIONS("exceptions");
+    EXCEPTIONS("exceptions"),
+    INNER_CLASSES("inner_classes"),
+    ENCLOSING_CLASS("enclosing_class"),
+
+    DECLARING_CLASS("declaring_class");
 
     public final String jsName;
 
