@@ -1,5 +1,7 @@
 package pie.ilikepiefoo.kubejsoffline.impl.collection;
 
+import com.google.gson.JsonElement;
+import pie.ilikepiefoo.kubejsoffline.api.JSONSerializable;
 import pie.ilikepiefoo.kubejsoffline.api.collection.Types;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.ParameterizedTypeData;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.RawClassData;
@@ -117,6 +119,11 @@ public class TypesWrapper implements Types {
         this.parameterizedTypes.clear();
         this.wildcardTypes.clear();
         this.typeVariables.clear();
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        return JSONSerializable.of(this.data.getValues());
     }
 
     public static class TypeIdentifier extends ArrayIdentifier implements TypeID {

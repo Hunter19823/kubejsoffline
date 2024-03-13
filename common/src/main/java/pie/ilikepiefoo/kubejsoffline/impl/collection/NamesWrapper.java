@@ -1,5 +1,7 @@
 package pie.ilikepiefoo.kubejsoffline.impl.collection;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import pie.ilikepiefoo.kubejsoffline.api.collection.Names;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.NameID;
 import pie.ilikepiefoo.kubejsoffline.impl.identifier.IdentifierBase;
@@ -28,6 +30,15 @@ public class NamesWrapper implements Names {
     @Override
     public void clear() {
         this.data.clear();
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        var json = new JsonArray();
+        for (var value : this.data.getValues()) {
+            json.add(value);
+        }
+        return json;
     }
 
     public static class NameIdentifier extends IdentifierBase implements NameID {

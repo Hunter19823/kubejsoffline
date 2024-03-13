@@ -1,5 +1,7 @@
 package pie.ilikepiefoo.kubejsoffline.impl.collection;
 
+import com.google.gson.JsonElement;
+import pie.ilikepiefoo.kubejsoffline.api.JSONSerializable;
 import pie.ilikepiefoo.kubejsoffline.api.collection.Parameters;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.ParameterData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.ParameterID;
@@ -38,6 +40,11 @@ public class ParametersWrapper implements Parameters {
     @Override
     public void clear() {
         this.data.clear();
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        return JSONSerializable.of(this.data.getValues());
     }
 
     public static class ParameterIdentifier extends IdentifierBase implements ParameterID {

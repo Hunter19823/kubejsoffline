@@ -1,5 +1,7 @@
 package pie.ilikepiefoo.kubejsoffline.impl.collection;
 
+import com.google.gson.JsonElement;
+import pie.ilikepiefoo.kubejsoffline.api.JSONSerializable;
 import pie.ilikepiefoo.kubejsoffline.api.collection.Packages;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.PackagePart;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.PackageID;
@@ -78,6 +80,11 @@ public class PackagesWrapper implements Packages {
     public void clear() {
         this.data.clear();
         this.parts.clear();
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        return JSONSerializable.of(this.data.getValues());
     }
 
     public static class PackageIdentifier extends IdentifierBase implements PackageID {

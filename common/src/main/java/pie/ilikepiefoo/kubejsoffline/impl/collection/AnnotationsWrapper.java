@@ -1,5 +1,7 @@
 package pie.ilikepiefoo.kubejsoffline.impl.collection;
 
+import com.google.gson.JsonElement;
+import pie.ilikepiefoo.kubejsoffline.api.JSONSerializable;
 import pie.ilikepiefoo.kubejsoffline.api.collection.Annotations;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.AnnotationData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.AnnotationID;
@@ -28,6 +30,12 @@ public class AnnotationsWrapper implements Annotations {
     @Override
     public void clear() {
         this.data.clear();
+    }
+
+
+    @Override
+    public JsonElement toJSON() {
+        return JSONSerializable.of(this.data.getValues());
     }
 
     public static class AnnotationIdentifier extends IdentifierBase implements AnnotationID {
