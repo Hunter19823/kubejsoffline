@@ -31,6 +31,9 @@ public class ArrayIdentifier extends IdentifierBase implements ArrayBasedIndex {
 
     @Override
     public JsonElement toJSON() {
+        if (this.arrayDepth == 0) {
+            return super.toJSON();
+        }
         var jsonArray = new JsonArray();
         jsonArray.add(this.arrayIndex);
         jsonArray.add(this.arrayDepth);
