@@ -1,10 +1,14 @@
 package pie.ilikepiefoo.kubejsoffline.impl.datastructure;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import pie.ilikepiefoo.kubejsoffline.api.JSONSerializable;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.TypeVariableData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.NameID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
+import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -47,5 +51,16 @@ public class TypeVariableWrapper implements TypeVariableData {
     public TypeVariableData setIndex(TypeOrTypeVariableID index) {
         this.index = index.asTypeVariable();
         return this;
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        var json = new JsonObject();
+        json.add(JSONProperty.TYPE_VARIABLE_NAME.jsName, getName().toJSON());
+        if (getBounds().isEmpty()) {
+            return json;
+        }
+        json.add(JSONProperty.TYPE_VARIABLE_BOUNDS.jsName, JSONSerializable.of(getBounds()));
+        return json;
     }
 }
