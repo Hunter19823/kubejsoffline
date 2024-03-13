@@ -1,11 +1,12 @@
 package pie.ilikepiefoo.kubejsoffline.api.collection;
 
+import pie.ilikepiefoo.kubejsoffline.api.JSONSerializable;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.PackagePart;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.PackageID;
 
 import java.util.NavigableMap;
 
-public interface Packages {
+public interface Packages extends JSONSerializable {
 
     NavigableMap<PackageID, PackagePart> getAllPackages();
 

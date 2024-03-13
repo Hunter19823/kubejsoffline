@@ -1,5 +1,6 @@
 package pie.ilikepiefoo.kubejsoffline.api.collection;
 
+import pie.ilikepiefoo.kubejsoffline.api.JSONSerializable;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.ParameterizedTypeData;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.RawClassData;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.TypeData;
@@ -9,7 +10,7 @@ import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 
 import java.util.NavigableMap;
 
-public interface Types {
+public interface Types extends JSONSerializable {
     NavigableMap<TypeID, TypeData> getAllTypes();
 
     NavigableMap<TypeID, RawClassData> getAllRawTypes();

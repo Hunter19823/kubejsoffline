@@ -1,5 +1,7 @@
 package pie.ilikepiefoo.kubejsoffline.api.datastructure.property;
 
-public interface ModifierData {
+import pie.ilikepiefoo.kubejsoffline.api.JSONSerializable;
+
+public interface ModifierData extends JSONSerializable {
     int getModifiers();
 }
