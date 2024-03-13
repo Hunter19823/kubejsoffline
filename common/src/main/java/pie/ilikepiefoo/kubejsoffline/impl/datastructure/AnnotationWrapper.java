@@ -1,9 +1,12 @@
 package pie.ilikepiefoo.kubejsoffline.impl.datastructure;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.AnnotationData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.AnnotationID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
+import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 import java.lang.annotation.Annotation;
 
@@ -41,5 +44,13 @@ public class AnnotationWrapper implements AnnotationData {
     public AnnotationData setIndex(AnnotationID index) {
         this.index = index;
         return this;
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        var json = new JsonObject();
+        json.add(JSONProperty.ANNOTATION_TYPE.jsName, getAnnotationType().toJSON());
+        json.addProperty(JSONProperty.ANNOTATION_STRING.jsName, getAnnotationValue());
+        return json;
     }
 }
