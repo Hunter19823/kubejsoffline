@@ -80,7 +80,8 @@ public enum JSONProperty {
     BINDING_TYPE_PRIMITIVE("primitive"),
     BINDING_STRING("s"),
     BINDING_FUNCTION("f"),
-    BINDING_OBJECT("o");
+    BINDING_OBJECT("o"),
+    EXCEPTIONS("exceptions");
 
     public final String jsName;
 
