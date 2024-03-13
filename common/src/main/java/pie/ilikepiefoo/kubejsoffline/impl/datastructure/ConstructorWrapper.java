@@ -1,11 +1,15 @@
 package pie.ilikepiefoo.kubejsoffline.impl.datastructure;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import pie.ilikepiefoo.kubejsoffline.api.JSONSerializable;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.ConstructorData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.AnnotationID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.ParameterID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
+import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
@@ -58,5 +62,24 @@ public class ConstructorWrapper implements ConstructorData {
     @Override
     public int getModifiers() {
         return constructor.getModifiers();
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        var json = new JsonObject();
+        json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
+        if (!getAnnotations().isEmpty()) {
+            json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
+        }
+        if (!getTypeParameters().isEmpty()) {
+            json.add(JSONProperty.TYPE_VARIABLES.jsName, JSONSerializable.of(getTypeParameters()));
+        }
+        if (!getParameters().isEmpty()) {
+            json.add(JSONProperty.PARAMETERS.jsName, JSONSerializable.of(getParameters()));
+        }
+        if (!getExceptions().isEmpty()) {
+            json.add(JSONProperty.EXCEPTIONS.jsName, JSONSerializable.of(getExceptions()));
+        }
+        return json;
     }
 }
