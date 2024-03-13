@@ -1,9 +1,13 @@
 package pie.ilikepiefoo.kubejsoffline.impl.datastructure;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import pie.ilikepiefoo.kubejsoffline.api.JSONSerializable;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.WildcardTypeData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
+import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
@@ -47,5 +51,20 @@ public class WildcardTypeWrapper implements WildcardTypeData {
             return superBounds;
         }
         return this.superBounds = collectionGroup.of(wildcardType.getLowerBounds(), (Type type) -> type == Object.class);
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        var json = new JsonObject();
+        if (getSuper().isEmpty() && getExtends().isEmpty()) {
+            return json;
+        }
+        if (!getSuper().isEmpty()) {
+            json.add(JSONProperty.WILDCARD_LOWER_BOUNDS.jsName, JSONSerializable.of(getSuper()));
+        }
+        if (!getExtends().isEmpty()) {
+            json.add(JSONProperty.WILDCARD_UPPER_BOUNDS.jsName, JSONSerializable.of(getExtends()));
+        }
+        return json;
     }
 }
