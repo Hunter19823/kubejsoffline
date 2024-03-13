@@ -1,4 +1,4 @@
-package pie.ilikepiefoo.kubejsoffline.api.datastructure;
+package pie.ilikepiefoo.kubejsoffline.api.datastructure.property;
 
 import pie.ilikepiefoo.kubejsoffline.api.identifier.AnnotationID;
 
