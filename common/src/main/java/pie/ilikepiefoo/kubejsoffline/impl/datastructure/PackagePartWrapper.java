@@ -1,5 +1,8 @@
 package pie.ilikepiefoo.kubejsoffline.impl.datastructure;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.PackagePart;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.PackageID;
@@ -39,5 +42,15 @@ public class PackagePartWrapper implements PackagePart {
     public PackagePart setIndex(PackageID index) {
         this.index = index;
         return this;
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        var json = new JsonArray();
+        json.add(new JsonPrimitive(getName()));
+        if (getPrefix() != null) {
+            json.add(getPrefix().toJSON());
+        }
+        return json;
     }
 }
