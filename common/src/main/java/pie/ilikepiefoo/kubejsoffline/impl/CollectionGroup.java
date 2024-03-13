@@ -1,6 +1,11 @@
 package pie.ilikepiefoo.kubejsoffline.impl;
 
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import pie.ilikepiefoo.kubejsoffline.api.JSONSerializable;
 import pie.ilikepiefoo.kubejsoffline.api.collection.Annotations;
 import pie.ilikepiefoo.kubejsoffline.api.collection.Names;
 import pie.ilikepiefoo.kubejsoffline.api.collection.Packages;
@@ -43,7 +48,8 @@ public record CollectionGroup(
         Parameters parameters,
         Packages packages,
         Names names,
-        Annotations annotations) {
+        Annotations annotations) implements JSONSerializable {
+    public static final Logger LOG = LogManager.getLogger();
     public static final CollectionGroup INSTANCE = new CollectionGroup();
 
     public CollectionGroup() {
@@ -152,5 +158,16 @@ public record CollectionGroup(
         packages().clear();
         names().clear();
         annotations().clear();
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        var json = new JsonObject();
+        json.add("types", types().toJSON());
+        json.add("parameters", parameters().toJSON());
+        json.add("packages", packages().toJSON());
+        json.add("names", names().toJSON());
+        json.add("annotations", annotations().toJSON());
+        return json;
     }
 }
