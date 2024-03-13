@@ -3,15 +3,17 @@ package pie.ilikepiefoo.kubejsoffline.api.collection;
 import pie.ilikepiefoo.kubejsoffline.api.JSONSerializable;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.ParameterizedTypeData;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.RawClassData;
-import pie.ilikepiefoo.kubejsoffline.api.datastructure.TypeData;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.TypeVariableData;
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.WildcardTypeData;
+import pie.ilikepiefoo.kubejsoffline.api.datastructure.property.TypeData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
+import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
+import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeVariableID;
 
 import java.util.NavigableMap;
 
 public interface Types extends JSONSerializable {
-    NavigableMap<TypeID, TypeData> getAllTypes();
+    NavigableMap<TypeOrTypeVariableID, TypeData> getAllTypes();
 
     NavigableMap<TypeID, RawClassData> getAllRawTypes();
 
@@ -19,13 +21,13 @@ public interface Types extends JSONSerializable {
 
     NavigableMap<TypeID, WildcardTypeData> getAllWildcardTypes();
 
-    NavigableMap<TypeID, TypeData> getAllTypeVariables();
+    NavigableMap<TypeVariableID, TypeData> getAllTypeVariables();
 
-    TypeID addType(TypeData data);
+    TypeOrTypeVariableID addType(TypeData data);
 
     boolean contains(TypeData data);
 
-    TypeID getID(TypeData type);
+    TypeOrTypeVariableID getID(TypeData type);
 
     TypeID getID(RawClassData type);
 
@@ -33,7 +35,7 @@ public interface Types extends JSONSerializable {
 
     TypeID getID(WildcardTypeData type);
 
-    TypeID getID(TypeVariableData type);
+    TypeVariableID getID(TypeVariableData type);
 
     TypeData getType(TypeID id);
 
