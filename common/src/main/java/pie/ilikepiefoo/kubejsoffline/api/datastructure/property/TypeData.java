@@ -1,6 +1,9 @@
-package pie.ilikepiefoo.kubejsoffline.api.datastructure;
+package pie.ilikepiefoo.kubejsoffline.api.datastructure.property;
 
-import pie.ilikepiefoo.kubejsoffline.api.datastructure.property.IndexedData;
+import pie.ilikepiefoo.kubejsoffline.api.datastructure.ParameterizedTypeData;
+import pie.ilikepiefoo.kubejsoffline.api.datastructure.RawClassData;
+import pie.ilikepiefoo.kubejsoffline.api.datastructure.TypeVariableData;
+import pie.ilikepiefoo.kubejsoffline.api.datastructure.WildcardTypeData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 
 public interface TypeData extends IndexedData<TypeOrTypeVariableID> {

@@ -1,6 +1,7 @@
 package pie.ilikepiefoo.kubejsoffline.api.datastructure;
 
 import pie.ilikepiefoo.kubejsoffline.api.datastructure.property.NamedData;
+import pie.ilikepiefoo.kubejsoffline.api.datastructure.property.TypeData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeVariableID;
 

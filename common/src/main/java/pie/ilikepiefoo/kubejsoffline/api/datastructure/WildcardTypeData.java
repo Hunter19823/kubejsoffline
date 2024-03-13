@@ -1,5 +1,6 @@
 package pie.ilikepiefoo.kubejsoffline.api.datastructure;
 
+import pie.ilikepiefoo.kubejsoffline.api.datastructure.property.TypeData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 
 import java.util.List;
