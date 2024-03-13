@@ -59,6 +59,10 @@ public record CollectionGroup(
     public List<AnnotationID> of(Annotation[] annotations) {
         LinkedList<AnnotationID> annotationList = new LinkedList<>();
         for (Annotation annotation : annotations) {
+            if (annotation == null) {
+                LOG.warn("Array of annotations contained null.");
+                continue;
+            }
             annotationList.add(annotations().addAnnotation(new AnnotationWrapper(this, annotation)));
         }
         return annotationList;
@@ -66,7 +70,17 @@ public record CollectionGroup(
 
     public List<ParameterID> of(Parameter[] parameters, Type[] genericTypes) {
         LinkedList<ParameterID> parameterList = new LinkedList<>();
+        if (parameters.length != genericTypes.length) {
+            genericTypes = new Type[parameters.length];
+            for (int i = 0; i < parameters.length; i++) {
+                genericTypes[i] = parameters[i].getParameterizedType();
+            }
+        }
         for (int i = 0; i < parameters.length; i++) {
+            if (parameters[i] == null || genericTypes[i] == null) {
+                LOG.warn("Array of parameters contained null.");
+                continue;
+            }
             parameterList.add(parameters().addParameter(new ParameterWrapper(this, parameters[i], genericTypes[i])));
         }
         return parameterList;
@@ -75,6 +89,10 @@ public record CollectionGroup(
     public List<TypeOrTypeVariableID> of(Type[] types, Predicate<Type> ignoreType) {
         LinkedList<TypeOrTypeVariableID> typeList = new LinkedList<>();
         for (Type type : types) {
+            if (type == null) {
+                LOG.warn("Array of type or type variables contained null.");
+                continue;
+            }
             if (ignoreType.test(type)) {
                 continue;
             }
@@ -90,6 +108,10 @@ public record CollectionGroup(
     public List<TypeOrTypeVariableID> of(Type[] types) {
         LinkedList<TypeOrTypeVariableID> typeList = new LinkedList<>();
         for (Type type : types) {
+            if (type == null) {
+                LOG.warn("Array of type or type variables contained null.");
+                continue;
+            }
             typeList.add(of(type));
         }
         return typeList;
@@ -98,6 +120,10 @@ public record CollectionGroup(
     public List<TypeID> ofTypes(Type[] types) {
         LinkedList<TypeID> typeList = new LinkedList<>();
         for (Type type : types) {
+            if (type == null) {
+                LOG.warn("Array of types contained null.");
+                continue;
+            }
             typeList.add(of(type).asType());
         }
         return typeList;
@@ -106,6 +132,10 @@ public record CollectionGroup(
     public List<TypeID> of(Class<?>[] types) {
         LinkedList<TypeID> typeList = new LinkedList<>();
         for (Class<?> type : types) {
+            if (type == null) {
+                LOG.warn("Array of classes contained null.");
+                continue;
+            }
             typeList.add(of(type).asType());
         }
         return typeList;
@@ -114,22 +144,36 @@ public record CollectionGroup(
     public List<TypeVariableID> of(TypeVariable<?>[] typeVariables) {
         LinkedList<TypeVariableID> typeVariableList = new LinkedList<>();
         for (TypeVariable<?> typeVariable : typeVariables) {
+            if (typeVariable == null) {
+                LOG.warn("Array of type variables contained null.");
+                continue;
+            }
             typeVariableList.add(of(typeVariable).asTypeVariable());
         }
         return typeVariableList;
     }
 
     public NameID nameOf(String name) {
+        if (name == null) {
+            throw new NullPointerException("Name cannot be null");
+        }
         return names().addName(name);
     }
 
     public PackageID packageOf(Package pack) {
+        if (pack == null) {
+            throw new NullPointerException("Package cannot be null");
+        }
         return packages().addPackage(pack.getName());
     }
 
     public List<FieldData> of(Field[] fields) {
         LinkedList<FieldData> fieldList = new LinkedList<>();
         for (Field field : fields) {
+            if (field == null) {
+                LOG.warn("Array of fields contained null.");
+                continue;
+            }
             fieldList.add(new FieldWrapper(this, field));
         }
         return fieldList;
@@ -138,6 +182,10 @@ public record CollectionGroup(
     public List<MethodData> of(Method[] methods) {
         LinkedList<MethodData> methodList = new LinkedList<>();
         for (Method method : methods) {
+            if (method == null) {
+                LOG.warn("Array of methods contained null.");
+                continue;
+            }
             methodList.add(new MethodWrapper(this, method));
         }
         return methodList;
@@ -146,6 +194,10 @@ public record CollectionGroup(
     public List<ConstructorData> of(Constructor<?>[] constructors) {
         LinkedList<ConstructorData> constructorList = new LinkedList<>();
         for (Constructor<?> constructor : constructors) {
+            if (constructor == null) {
+                LOG.warn("Array of constructors contained null.");
+                continue;
+            }
             constructorList.add(new ConstructorWrapper(this, constructor));
         }
         return constructorList;
