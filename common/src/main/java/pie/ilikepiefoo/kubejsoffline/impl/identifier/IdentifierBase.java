@@ -1,5 +1,7 @@
 package pie.ilikepiefoo.kubejsoffline.impl.identifier;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.Index;
 
 public class IdentifierBase implements Index {
@@ -30,5 +32,10 @@ public class IdentifierBase implements Index {
             return ((Index) obj).getArrayIndex() == arrayIndex;
         }
         return false;
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        return new JsonPrimitive(arrayIndex);
     }
 }

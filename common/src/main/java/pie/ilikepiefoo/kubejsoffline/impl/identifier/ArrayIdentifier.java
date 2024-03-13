@@ -1,5 +1,7 @@
 package pie.ilikepiefoo.kubejsoffline.impl.identifier;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.ArrayBasedIndex;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.Index;
 
@@ -25,5 +27,13 @@ public class ArrayIdentifier extends IdentifierBase implements ArrayBasedIndex {
     @Override
     public int getArrayDepth() {
         return arrayDepth;
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        var jsonArray = new JsonArray();
+        jsonArray.add(this.arrayIndex);
+        jsonArray.add(this.arrayDepth);
+        return jsonArray;
     }
 }
