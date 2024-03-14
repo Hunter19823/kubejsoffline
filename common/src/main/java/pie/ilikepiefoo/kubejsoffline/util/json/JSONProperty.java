@@ -10,24 +10,24 @@ public enum JSONProperty {
     // NEW DATA TAG Properties
     @Deprecated
     TYPE_NAME("type_name"),
-    TYPE_VARIABLES("type_variables"),
-    TYPE_VARIABLE_NAME("type_variable_name"),
-    TYPE_VARIABLE_BOUNDS("type_bounds"),
+    TYPE_VARIABLES("t"),
+    TYPE_VARIABLE_NAME("n"),
+    TYPE_VARIABLE_BOUNDS("b"),
 
     @Deprecated
     ARRAY_TYPE("array_type"),
     @Deprecated
     ARRAY_NAME("array_name"),
 
-    WILDCARD_TYPE("wildcard_type"),
-    WILDCARD_UPPER_BOUNDS("wildcard_type"),
-    WILDCARD_LOWER_BOUNDS("wildcard_lower_bounds"),
+    WILDCARD_TYPE("w"),
+    WILDCARD_UPPER_BOUNDS("u"),
+    WILDCARD_LOWER_BOUNDS("l"),
 
     @Deprecated
     CLASS_REFERENCE("class_reference"),
     @Deprecated
     CLASS_PARAMETERIZED_ARGUMENTS("class_parameterized_arguments"),
-    CLASS_NAME("class_name"),
+    CLASS_NAME("n"),
 
 
     // DATA TAG Properties
@@ -35,22 +35,22 @@ public enum JSONProperty {
     TYPE_ID("type_id"),
     @Deprecated
     TYPE_IDENTIFIER("type_identifier"),
-    RAW_CLASS("raw_class"),
+    RAW_CLASS("r"),
     @Deprecated
     OUTER_CLASS("outer_class"),
-    SUPER_CLASS("super_class"),
+    SUPER_CLASS("s"),
     @Deprecated
     GENERIC_SUPER_CLASS("S"),
-    INTERFACES("interfaces"),
+    INTERFACES("i"),
     @Deprecated
     GENERIC_INTERFACES("I"),
-    PACKAGE_NAME("package_name"),
-    ANNOTATIONS("annotations"),
-    MODIFIERS("modifiers"),
-    CONSTRUCTORS("constructors"),
-    FIELDS("fields"),
-    METHODS("methods"),
-    PARAMETERS("parameters"),
+    PACKAGE_NAME("P"),
+    ANNOTATIONS("a"),
+    MODIFIERS("m"),
+    CONSTRUCTORS("c"),
+    FIELDS("f"),
+    METHODS("m"),
+    PARAMETERS("p"),
     @Deprecated
     VALUE("raw_value"),
 
@@ -58,26 +58,26 @@ public enum JSONProperty {
     ARRAY_DEPTH("depth"),
     @Deprecated
     PARAMETERIZED_ARGUMENTS(PARAMETERS.jsName),
-    RAW_PARAMETERIZED_TYPE("raw_parameterized_type"),
-    OWNER_TYPE("owner_type"),
+    RAW_PARAMETERIZED_TYPE("r"),
+    OWNER_TYPE("o"),
 
-    PARAMETER_NAME("parameter_name"),
-    PARAMETER_TYPE("parameter_type"),
+    PARAMETER_NAME("n"),
+    PARAMETER_TYPE("t"),
     @Deprecated
     PARAMETER_ANNOTATIONS("parameter_annotations"),
 
     @Deprecated
     CONSTRUCTOR_ANNOTATIONS(ANNOTATIONS.jsName),
 
-    METHOD_NAME("method_name"),
+    METHOD_NAME("n"),
     @Deprecated
     METHOD_ANNOTATIONS(ANNOTATIONS.jsName),
-    METHOD_RETURN_TYPE("method_return_type"),
+    METHOD_RETURN_TYPE("t"),
 
-    FIELD_NAME("field_name"),
+    FIELD_NAME("n"),
     @Deprecated
     FIELD_ANNOTATIONS(ANNOTATIONS.jsName),
-    FIELD_TYPE("field_type"),
+    FIELD_TYPE("t"),
     @Deprecated
     FIELD_VALUE(VALUE.jsName),
 
@@ -91,8 +91,8 @@ public enum JSONProperty {
     @Deprecated
     EXECUTABLE_TYPE(TYPE_ID.jsName),
 
-    ANNOTATION_TYPE("annotation_type"),
-    ANNOTATION_STRING("annotation_string"),
+    ANNOTATION_TYPE("t"),
+    ANNOTATION_STRING("s"),
 
     BINDING_TYPE("btype"),
 
@@ -103,11 +103,11 @@ public enum JSONProperty {
     BINDING_STRING("s"),
     BINDING_FUNCTION("f"),
     BINDING_OBJECT("o"),
-    EXCEPTIONS("exceptions"),
-    INNER_CLASSES("inner_classes"),
-    ENCLOSING_CLASS("enclosing_class"),
+    EXCEPTIONS("e"),
+    INNER_CLASSES("I"),
+    ENCLOSING_CLASS("E"),
 
-    DECLARING_CLASS("declaring_class");
+    DECLARING_CLASS("D");
 
     public final String jsName;
 
