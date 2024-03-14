@@ -70,11 +70,16 @@ public record CollectionGroup(
 
     public List<ParameterID> of(Parameter[] parameters, Type[] genericTypes) {
         LinkedList<ParameterID> parameterList = new LinkedList<>();
-        if (parameters.length != genericTypes.length) {
-            genericTypes = new Type[parameters.length];
-            for (int i = 0; i < parameters.length; i++) {
-                genericTypes[i] = parameters[i].getParameterizedType();
+        if (genericTypes.length < parameters.length) {
+            Type[] newGenericTypes = new Type[parameters.length];
+            int i;
+            for (i = 0; i < genericTypes.length; i++) {
+                newGenericTypes[i] = genericTypes[i];
             }
+            for (; i < parameters.length; i++) {
+                newGenericTypes[i] = parameters[i].getType();
+            }
+            genericTypes = newGenericTypes;
         }
         for (int i = 0; i < parameters.length; i++) {
             if (parameters[i] == null || genericTypes[i] == null) {

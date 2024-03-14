@@ -14,6 +14,7 @@ import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
+import pie.ilikepiefoo.kubejsoffline.util.SafeOperations;
 import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 import java.util.List;
@@ -38,6 +39,7 @@ public class RawClassWrapper implements RawClassData {
     public RawClassWrapper(CollectionGroup group, Class<?> clazz) {
         this.collectionGroup = group;
         this.clazz = clazz;
+        this.getName();
     }
 
 
@@ -74,7 +76,7 @@ public class RawClassWrapper implements RawClassData {
         if (typeParameters != null) {
             return typeParameters;
         }
-        return this.typeParameters = collectionGroup.of(clazz.getTypeParameters());
+        return this.typeParameters = SafeOperations.tryGet(() -> collectionGroup.of(clazz.getTypeParameters())).orElse(List.of());
     }
 
     @Override
@@ -85,7 +87,7 @@ public class RawClassWrapper implements RawClassData {
         if (clazz.getPackage() == null) {
             return null;
         }
-        return this.packageID = collectionGroup.packageOf(clazz.getPackage());
+        return this.packageID = SafeOperations.tryGet(() -> collectionGroup.packageOf(clazz.getPackage())).orElse(null);
     }
 
     @Override
@@ -93,10 +95,7 @@ public class RawClassWrapper implements RawClassData {
         if (superClass != null) {
             return superClass;
         }
-        if (clazz.getGenericSuperclass() == null) {
-            return null;
-        }
-        return this.superClass = collectionGroup.of(clazz.getGenericSuperclass()).asType();
+        return this.superClass = SafeOperations.tryGet(() -> collectionGroup.of(clazz.getGenericSuperclass()).asType()).orElse(null);
     }
 
     @Override
@@ -104,7 +103,7 @@ public class RawClassWrapper implements RawClassData {
         if (interfaces != null) {
             return interfaces;
         }
-        return this.interfaces = collectionGroup.ofTypes(clazz.getGenericInterfaces());
+        return this.interfaces = SafeOperations.tryGet(() -> collectionGroup.ofTypes(clazz.getGenericInterfaces())).orElse(List.of());
     }
 
     @Override
@@ -112,7 +111,7 @@ public class RawClassWrapper implements RawClassData {
         if (innerClasses != null) {
             return innerClasses;
         }
-        return this.innerClasses = collectionGroup.ofTypes(clazz.getDeclaredClasses());
+        return this.innerClasses = SafeOperations.tryGet(() -> collectionGroup.ofTypes(clazz.getDeclaredClasses())).orElse(List.of());
     }
 
     @Override
@@ -123,7 +122,7 @@ public class RawClassWrapper implements RawClassData {
         if (clazz.getEnclosingClass() == null) {
             return null;
         }
-        return this.enclosingClass = collectionGroup.of(clazz.getEnclosingClass()).asType();
+        return this.enclosingClass = SafeOperations.tryGet(() -> collectionGroup.of(clazz.getEnclosingClass()).asType()).orElse(null);
     }
 
     @Override
@@ -134,7 +133,7 @@ public class RawClassWrapper implements RawClassData {
         if (clazz.getDeclaringClass() == null) {
             return null;
         }
-        return this.declaringClass = collectionGroup.of(clazz.getDeclaringClass()).asType();
+        return this.declaringClass = SafeOperations.tryGet(() -> collectionGroup.of(clazz.getDeclaringClass()).asType()).orElse(null);
     }
 
     @Override
@@ -142,7 +141,7 @@ public class RawClassWrapper implements RawClassData {
         if (fields != null) {
             return fields;
         }
-        return this.fields = collectionGroup.of(clazz.getDeclaredFields());
+        return this.fields = SafeOperations.tryGet(() -> collectionGroup.of(clazz.getDeclaredFields())).orElse(List.of());
     }
 
     @Override
@@ -150,7 +149,7 @@ public class RawClassWrapper implements RawClassData {
         if (constructors != null) {
             return constructors;
         }
-        return this.constructors = collectionGroup.of(clazz.getDeclaredConstructors());
+        return this.constructors = SafeOperations.tryGet(() -> collectionGroup.of(clazz.getDeclaredConstructors())).orElse(List.of());
     }
 
     @Override
@@ -158,7 +157,7 @@ public class RawClassWrapper implements RawClassData {
         if (methods != null) {
             return methods;
         }
-        return this.methods = collectionGroup.of(clazz.getDeclaredMethods());
+        return this.methods = SafeOperations.tryGet(() -> collectionGroup.of(clazz.getDeclaredMethods())).orElse(List.of());
     }
 
     @Override

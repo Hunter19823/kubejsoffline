@@ -11,12 +11,9 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import pie.ilikepiefoo.kubejsoffline.html.page.IndexPage;
 import pie.ilikepiefoo.kubejsoffline.html.tag.Tag;
-import pie.ilikepiefoo.kubejsoffline.util.ClassFinder;
-import pie.ilikepiefoo.kubejsoffline.util.json.ClassJSON;
-import pie.ilikepiefoo.kubejsoffline.util.json.ClassJSONManager;
-import pie.ilikepiefoo.kubejsoffline.util.json.CompressionJSON;
-import pie.ilikepiefoo.kubejsoffline.util.json.PackageJSONManager;
-import pie.ilikepiefoo.kubejsoffline.util.json.RelationsJSON;
+import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
+import pie.ilikepiefoo.kubejsoffline.impl.TypeManager;
+import pie.ilikepiefoo.kubejsoffline.util.SafeOperations;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -24,6 +21,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 public class DocumentationThread extends Thread {
     public static final Logger LOG = LogManager.getLogger();
@@ -85,44 +83,31 @@ public class DocumentationThread extends Thread {
                 LOG.error(e);
             }
         }
+        CollectionGroup.INSTANCE.clear();
         // Log the bindings.
         int step = 0;
-        final int totalSteps = 10;
-        sendMessage(String.format("[KJS Offline] [Step %d/%d] Initializing ClassFinder and Reflections Library...", ++step, totalSteps));
+        final int totalSteps = 6;
+        sendMessage(String.format("[KJS Offline] [Step %d/%d] Initializing Reflections Library...", ++step, totalSteps));
         final long start = System.currentTimeMillis();
         long timeMillis = System.currentTimeMillis();
-        // Setup the ClassFinder
-        ClassFinder.INSTANCE.addToSearch(KubeJSOffline.HELPER.getClasses());
+
+        // Initialize the Reflections Library
+        var classes = KubeJSOffline.HELPER.getClasses();
 
         timeMillis = System.currentTimeMillis() - timeMillis;
-        sendMessage(String.format("[KJS Offline] [Step %d/%d] ClassFinder setup in %,dms", ++step, totalSteps, timeMillis));
+        sendMessage(String.format("[KJS Offline] [Step %d/%d] Reflections Library setup in %,dms", ++step, totalSteps, timeMillis));
 
         // Start the ClassFinder
-        sendMessage(String.format("[KJS Offline] [Step %d/%d] Starting ClassFinder...", ++step, totalSteps));
+        sendMessage(String.format("[KJS Offline] [Step %d/%d] Now adding classes to indexer...", ++step, totalSteps));
         timeMillis = System.currentTimeMillis();
-        while (!ClassFinder.INSTANCE.isFinished()) {
-            ClassFinder.INSTANCE.searchCurrentDepth();
-        }
-        timeMillis = System.currentTimeMillis() - timeMillis;
-        sendMessage(String.format("[KJS Offline] [Step %d/%d] ClassFinder finished in %,dms", step, totalSteps, timeMillis));
 
-        // Dump connections.
-        sendMessage(String.format("[KJS Offline] [Step %d/%d] Generating JSON with class dependencies...", ++step, totalSteps));
-        timeMillis = System.currentTimeMillis();
-        this.jsonifyConnections();
-        timeMillis = System.currentTimeMillis() - timeMillis;
-        sendMessage(String.format("[KJS Offline] [Step %d/%d] JSON with class dependencies generated in %,dms", step, totalSteps, timeMillis));
+        Arrays.stream(classes).parallel().forEach((clazz) -> SafeOperations.tryGet(() -> TypeManager.INSTANCE.getID(clazz)));
 
-
-        // Dump ClassTree to JSON
-        sendMessage(String.format("[KJS Offline] [Step %d/%d] Generating JSON with full list of class data..", ++step, totalSteps));
-        timeMillis = System.currentTimeMillis();
-        this.jsonifyClasses();
         timeMillis = System.currentTimeMillis() - timeMillis;
-        sendMessage(String.format("[KJS Offline] [Step %d/%d] JSON with full list of class data generated in %,dms", step, totalSteps, timeMillis));
+        sendMessage(String.format("[KJS Offline] [Step %d/%d] Finished adding %s classes to indexer in %,dms", step, totalSteps, classes.length, timeMillis));
 
         // Create index.html
-        sendMessage(String.format("[KJS Offline] [Step %d/%d] Generating index.html...", ++step, totalSteps));
+        sendMessage(String.format("[KJS Offline] [Step %d/%d] Generating index.html and transforming all dependants... (this may take a while)", ++step, totalSteps));
         timeMillis = System.currentTimeMillis();
         final var output = this.createIndexPage();
         timeMillis = System.currentTimeMillis() - timeMillis;
@@ -132,43 +117,41 @@ public class DocumentationThread extends Thread {
             sendMessage(String.format("[KJS Offline] [Step %d/%d] index.html failed to generate after %,dms!", step, totalSteps, timeMillis));
         }
 
+        final int totalTypesSize = CollectionGroup.INSTANCE.types().getAllTypes().size();
+        final int totalRawClassSize = CollectionGroup.INSTANCE.types().getAllRawTypes().size();
+        final int totalWildcardSize = CollectionGroup.INSTANCE.types().getAllWildcardTypes().size();
+        final int totalParameterizedTypeSize = CollectionGroup.INSTANCE.types().getAllParameterizedTypes().size();
+        final int totalTypeVariableSize = CollectionGroup.INSTANCE.types().getAllTypeVariables().size();
+        final int totalParameterSize = CollectionGroup.INSTANCE.parameters().getAllParameters().size();
+        final int totalNameSize = CollectionGroup.INSTANCE.names().getAllNames().size();
+        final int totalAnnotationSize = CollectionGroup.INSTANCE.annotations().getAllAnnotations().size();
+        final int totalPackageSize = CollectionGroup.INSTANCE.packages().getAllPackages().size();
 
-        final int totalClassSize = ClassFinder.INSTANCE.CLASS_SEARCH.size();
-        final int totalRelationSize = ClassFinder.INSTANCE.RELATIONSHIPS.size();
+
         // Clear and de-reference any data that is no longer needed.
         sendMessage(String.format("[KJS Offline] [Step %d/%d] Clearing and de-referencing data...", ++step, totalSteps));
         timeMillis = System.currentTimeMillis();
-        ClassFinder.INSTANCE.clear();
-        ClassJSONManager.getInstance().clear();
-        DocumentationConfig.clearInstance();
-        CompressionJSON.getInstance().clear();
-        PackageJSONManager.getInstance().clear();
+        CollectionGroup.INSTANCE.clear();
         timeMillis = System.currentTimeMillis() - timeMillis;
-        sendMessage(String.format("[KJS Offline] [Step %d/%d] Data cleared and dereferenced in %,dms", step, totalSteps, timeMillis));
+        sendMessage(String.format("[KJS Offline] [Step %d/%d] Data cleared and de-referenced in %,dms", step, totalSteps, timeMillis));
         final long end = System.currentTimeMillis();
         sendMessage(String.format("[KJS Offline] [Step %d/%d] Documentation Thread finished in %,dms", ++step, totalSteps, end - start));
-        sendMessage(String.format("[KJS Offline] [Step %d/%d] %,d classes found, %,d relationships found", ++step, totalSteps, totalClassSize, totalRelationSize));
+        sendMessage(String.format("[KJS Offline] [Step %d/%d] Data Collection Summary: %d", step, totalSteps, totalTypesSize));
+        sendMessage(String.format("[KJS Offline] [Step %d/%d] Total Types: %d", step, totalSteps, totalTypesSize));
+        sendMessage(String.format("[KJS Offline] [Step %d/%d] Total Raw Types: %d", step, totalSteps, totalRawClassSize));
+        sendMessage(String.format("[KJS Offline] [Step %d/%d] Total Wildcard Types: %d", step, totalSteps, totalWildcardSize));
+        sendMessage(String.format("[KJS Offline] [Step %d/%d] Total Parameterized Types: %d", step, totalSteps, totalParameterizedTypeSize));
+        sendMessage(String.format("[KJS Offline] [Step %d/%d] Total Type Variables: %d", step, totalSteps, totalTypeVariableSize));
+        sendMessage(String.format("[KJS Offline] [Step %d/%d] Total Parameters: %d", step, totalSteps, totalParameterSize));
+        sendMessage(String.format("[KJS Offline] [Step %d/%d] Total Names: %d", step, totalSteps, totalNameSize));
+        sendMessage(String.format("[KJS Offline] [Step %d/%d] Total Packages: %d", step, totalSteps, totalPackageSize));
+        sendMessage(String.format("[KJS Offline] [Step %d/%d] Total Annotations: %d", step, totalSteps, totalAnnotationSize));
         if (null != output) {
             sendLink(String.format("[KJS Offline] [Step %d/%d] The Documentation page can be found at kubejs/documentation/index.html or by clicking ", step, totalSteps), "here", "kubejs/documentation/index.html");
             sendMessage(String.format("[KJS Offline] [Step %d/%d] Total File Size: ~%,.3fMb", ++step, totalSteps, (double) getFile().length() / 1024.0 / 1024.0));
         } else {
             sendMessage(String.format("[KJS Offline] [Step %d/%d] Documentation page failed to generate!", step, totalSteps - 1));
         }
-    }
-
-    private void jsonifyConnections() {
-        RelationsJSON.of(ClassFinder.INSTANCE.getRelationships());
-    }
-
-    private void jsonifyClasses() {
-        ClassFinder.INSTANCE.CLASS_SEARCH.entrySet().parallelStream().forEach((entry) -> {
-            try {
-                if (ClassFinder.SearchState.SEARCHED == entry.getValue()) {
-                    ClassJSON.of(entry.getKey());
-                }
-            } catch (final Throwable ignored) {
-            }
-        });
     }
 
     @Nullable

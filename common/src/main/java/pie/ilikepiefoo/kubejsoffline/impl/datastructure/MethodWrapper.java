@@ -11,9 +11,11 @@ import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
+import pie.ilikepiefoo.kubejsoffline.util.SafeOperations;
 import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.List;
 
 public class MethodWrapper implements MethodData {
@@ -62,7 +64,7 @@ public class MethodWrapper implements MethodData {
         if (parameters != null) {
             return parameters;
         }
-        return this.parameters = collectionGroup.of(method.getParameters(), method.getGenericParameterTypes());
+        return this.parameters = collectionGroup.of(method.getParameters(), SafeOperations.tryGet(method::getGenericParameterTypes).orElse(new Type[0]));
     }
 
     @Override

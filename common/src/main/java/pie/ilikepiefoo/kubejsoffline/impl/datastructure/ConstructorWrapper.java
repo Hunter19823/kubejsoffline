@@ -9,9 +9,11 @@ import pie.ilikepiefoo.kubejsoffline.api.identifier.ParameterID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
+import pie.ilikepiefoo.kubejsoffline.util.SafeOperations;
 import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Type;
 import java.util.List;
 
 public class ConstructorWrapper implements ConstructorData {
@@ -56,7 +58,7 @@ public class ConstructorWrapper implements ConstructorData {
         if (parameters != null) {
             return parameters;
         }
-        return this.parameters = collectionGroup.of(constructor.getParameters(), constructor.getGenericParameterTypes());
+        return this.parameters = collectionGroup.of(constructor.getParameters(), SafeOperations.tryGet(constructor::getGenericParameterTypes).orElse(new Type[0]));
     }
 
     @Override

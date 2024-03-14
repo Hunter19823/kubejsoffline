@@ -31,8 +31,12 @@ public class TypeManager {
         if (type == null) {
             throw new NullPointerException("Type cannot be null");
         }
-        if (cache.containsKey(type)) {
-            return cache.get(type);
+        try {
+            if (cache.containsKey(type)) {
+                return cache.get(type);
+            }
+        } catch (TypeNotPresentException e) {
+            return null;
         }
         int arrayDepth = 0;
         var currentType = type;
@@ -76,6 +80,10 @@ public class TypeManager {
     private TypeID cache(Type type, TypeID id) {
         cache.put(type, id);
         return id;
+    }
+
+    public void clear() {
+        cache.clear();
     }
 
     public static class TypeIdentifier extends ArrayIdentifier implements TypeOrTypeVariableID {

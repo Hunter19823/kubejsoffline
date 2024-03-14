@@ -11,6 +11,7 @@ import pie.ilikepiefoo.kubejsoffline.api.datastructure.property.TypeData;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeVariableID;
+import pie.ilikepiefoo.kubejsoffline.impl.TypeManager;
 import pie.ilikepiefoo.kubejsoffline.impl.identifier.ArrayIdentifier;
 
 import java.util.NavigableMap;
@@ -126,6 +127,7 @@ public class TypesWrapper implements Types {
         this.parameterizedTypes.clear();
         this.wildcardTypes.clear();
         this.typeVariables.clear();
+        TypeManager.INSTANCE.clear();
     }
 
     @Override

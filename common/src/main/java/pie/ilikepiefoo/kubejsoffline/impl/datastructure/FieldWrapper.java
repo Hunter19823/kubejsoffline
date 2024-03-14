@@ -8,6 +8,7 @@ import pie.ilikepiefoo.kubejsoffline.api.identifier.AnnotationID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.NameID;
 import pie.ilikepiefoo.kubejsoffline.api.identifier.TypeOrTypeVariableID;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
+import pie.ilikepiefoo.kubejsoffline.util.SafeOperations;
 import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 import java.lang.reflect.Field;
@@ -39,7 +40,7 @@ public class FieldWrapper implements FieldData {
         if (type != null) {
             return type;
         }
-        return this.type = collectionGroup.of(field.getGenericType());
+        return this.type = collectionGroup.of(SafeOperations.tryGetFirst(field::getGenericType, field::getType).orElseThrow(NullPointerException::new));
     }
 
     @Override
