@@ -58,7 +58,9 @@ public class AnnotationWrapper implements AnnotationData {
     public JsonElement toJSON() {
         var json = new JsonObject();
         json.add(JSONProperty.ANNOTATION_TYPE.jsName, getAnnotationType().toJSON());
-        json.addProperty(JSONProperty.ANNOTATION_STRING.jsName, getAnnotationValue());
+        if (!getAnnotationValue().isBlank()) {
+            json.addProperty(JSONProperty.ANNOTATION_STRING.jsName, getAnnotationValue());
+        }
         return json;
     }
 
