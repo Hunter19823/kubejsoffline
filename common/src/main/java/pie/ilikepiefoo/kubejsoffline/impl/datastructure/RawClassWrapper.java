@@ -178,7 +178,10 @@ public class RawClassWrapper implements RawClassData {
         if (!getAnnotations().isEmpty()) {
             json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
         }
-        json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
+
+        if (getModifiers() != 0) {
+            json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
+        }
         if (!getTypeParameters().isEmpty()) {
             json.add(JSONProperty.TYPE_VARIABLES.jsName, JSONSerializable.of(getTypeParameters()));
         }

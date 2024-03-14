@@ -92,7 +92,10 @@ public class MethodWrapper implements MethodData {
     public JsonElement toJSON() {
         var json = new JsonObject();
         json.add(JSONProperty.METHOD_NAME.jsName, getName().toJSON());
-        json.addProperty(JSONProperty.MODIFIERS.jsName, method.getModifiers());
+
+        if (getModifiers() != 0) {
+            json.addProperty(JSONProperty.MODIFIERS.jsName, method.getModifiers());
+        }
         json.add(JSONProperty.METHOD_RETURN_TYPE.jsName, getType().toJSON());
         if (!getAnnotations().isEmpty()) {
             json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));

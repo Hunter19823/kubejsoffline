@@ -69,7 +69,9 @@ public class ConstructorWrapper implements ConstructorData {
     @Override
     public JsonElement toJSON() {
         var json = new JsonObject();
-        json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
+        if (getModifiers() != 0) {
+            json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
+        }
         if (!getAnnotations().isEmpty()) {
             json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
         }

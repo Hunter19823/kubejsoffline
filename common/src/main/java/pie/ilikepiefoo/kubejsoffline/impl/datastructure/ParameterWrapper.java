@@ -77,7 +77,10 @@ public class ParameterWrapper implements ParameterData {
         var json = new JsonObject();
         json.add(JSONProperty.PARAMETER_NAME.jsName, getName().toJSON());
         json.add(JSONProperty.PARAMETER_TYPE.jsName, getType().toJSON());
-        json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
+
+        if (getModifiers() != 0) {
+            json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
+        }
         if (!getAnnotations().isEmpty()) {
             json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
         }
