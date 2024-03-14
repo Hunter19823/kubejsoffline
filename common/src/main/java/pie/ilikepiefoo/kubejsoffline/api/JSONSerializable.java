@@ -15,7 +15,7 @@ public interface JSONSerializable {
             try {
                 jsonArray.add(jsonSerializable.toJSON());
             } catch (final Throwable e) {
-                LOG.error("Failed to convert JSONSerializable to JSONElement", e);
+                LOG.warn("Failed to convert JSONSerializable to JSONElement", e);
             }
         }
         return jsonArray;
