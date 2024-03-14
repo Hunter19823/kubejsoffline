@@ -10,7 +10,7 @@ public enum JSONProperty {
     // NEW DATA TAG Properties
     @Deprecated
     TYPE_NAME("type_name"),
-    TYPE_VARIABLES("t"),
+    TYPE_VARIABLES("v"),
     TYPE_VARIABLE_NAME("n"),
     TYPE_VARIABLE_BOUNDS("b"),
 
@@ -46,7 +46,7 @@ public enum JSONProperty {
     GENERIC_INTERFACES("I"),
     PACKAGE_NAME("P"),
     ANNOTATIONS("a"),
-    MODIFIERS("m"),
+    MODIFIERS("M"),
     CONSTRUCTORS("c"),
     FIELDS("f"),
     METHODS("m"),
