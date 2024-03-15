@@ -39,7 +39,6 @@ public class RawClassWrapper implements RawClassData {
     public RawClassWrapper(CollectionGroup group, Class<?> clazz) {
         this.collectionGroup = group;
         this.clazz = clazz;
-        this.getName();
     }
 
 

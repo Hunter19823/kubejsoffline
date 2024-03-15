@@ -8,6 +8,7 @@ import pie.ilikepiefoo.kubejsoffline.impl.datastructure.RawClassWrapper;
 import pie.ilikepiefoo.kubejsoffline.impl.datastructure.TypeVariableWrapper;
 import pie.ilikepiefoo.kubejsoffline.impl.datastructure.WildcardTypeWrapper;
 import pie.ilikepiefoo.kubejsoffline.impl.identifier.ArrayIdentifier;
+import pie.ilikepiefoo.kubejsoffline.util.SafeOperations;
 
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
@@ -31,12 +32,11 @@ public class TypeManager {
         if (type == null) {
             throw new NullPointerException("Type cannot be null");
         }
-        try {
-            if (cache.containsKey(type)) {
-                return cache.get(type);
-            }
-        } catch (TypeNotPresentException e) {
-            return null;
+        if (!SafeOperations.isTypePresent(type)) {
+            throw new UnsupportedOperationException("Type " + type + " is not fully loaded");
+        }
+        if (cache.containsKey(type)) {
+            return cache.get(type);
         }
         int arrayDepth = 0;
         var currentType = type;

@@ -31,6 +31,7 @@ import pie.ilikepiefoo.kubejsoffline.impl.datastructure.ConstructorWrapper;
 import pie.ilikepiefoo.kubejsoffline.impl.datastructure.FieldWrapper;
 import pie.ilikepiefoo.kubejsoffline.impl.datastructure.MethodWrapper;
 import pie.ilikepiefoo.kubejsoffline.impl.datastructure.ParameterWrapper;
+import pie.ilikepiefoo.kubejsoffline.util.SafeOperations;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -98,6 +99,10 @@ public record CollectionGroup(
                 LOG.warn("Array of type or type variables contained null.");
                 continue;
             }
+            if (!SafeOperations.isTypePresent(type)) {
+                LOG.warn("Array of type or type variables contained a type that is not fully loaded or not present.");
+                continue;
+            }
             if (ignoreType.test(type)) {
                 continue;
             }
@@ -117,6 +122,10 @@ public record CollectionGroup(
                 LOG.warn("Array of type or type variables contained null.");
                 continue;
             }
+            if (!SafeOperations.isTypePresent(type)) {
+                LOG.warn("Array of type or type variables contained a type that is not fully loaded or not present.");
+                continue;
+            }
             typeList.add(of(type));
         }
         return typeList;
@@ -129,6 +138,10 @@ public record CollectionGroup(
                 LOG.warn("Array of types contained null.");
                 continue;
             }
+            if (!SafeOperations.isTypePresent(type)) {
+                LOG.warn("Array of types contained a type that is not fully loaded or not present.");
+                continue;
+            }
             typeList.add(of(type).asType());
         }
         return typeList;
@@ -138,7 +151,11 @@ public record CollectionGroup(
         LinkedList<TypeID> typeList = new LinkedList<>();
         for (Class<?> type : types) {
             if (type == null) {
-                LOG.warn("Array of classes contained null.");
+                LOG.warn("Array of types contained null.");
+                continue;
+            }
+            if (!SafeOperations.isClassPresent(type)) {
+                LOG.warn("Array of types contained a class that is not fully loaded or not present.");
                 continue;
             }
             typeList.add(of(type).asType());
@@ -151,6 +168,10 @@ public record CollectionGroup(
         for (TypeVariable<?> typeVariable : typeVariables) {
             if (typeVariable == null) {
                 LOG.warn("Array of type variables contained null.");
+                continue;
+            }
+            if (!SafeOperations.isTypeVariablePresent(typeVariable)) {
+                LOG.warn("Array of type variables contained a type variable that is not fully loaded or not present.");
                 continue;
             }
             typeVariableList.add(of(typeVariable).asTypeVariable());
@@ -179,6 +200,10 @@ public record CollectionGroup(
                 LOG.warn("Array of fields contained null.");
                 continue;
             }
+            if (!SafeOperations.isFieldPresent(field)) {
+                LOG.warn("Array of fields contained a field that is not fully loaded or not present.");
+                continue;
+            }
             fieldList.add(new FieldWrapper(this, field));
         }
         return fieldList;
@@ -191,6 +216,10 @@ public record CollectionGroup(
                 LOG.warn("Array of methods contained null.");
                 continue;
             }
+            if (!SafeOperations.isMethodPresent(method)) {
+                LOG.warn("Array of methods contained a method that is not fully loaded or not present.");
+                continue;
+            }
             methodList.add(new MethodWrapper(this, method));
         }
         return methodList;
@@ -201,6 +230,10 @@ public record CollectionGroup(
         for (Constructor<?> constructor : constructors) {
             if (constructor == null) {
                 LOG.warn("Array of constructors contained null.");
+                continue;
+            }
+            if (!SafeOperations.isConstructorPresent(constructor)) {
+                LOG.warn("Array of constructors contained a constructor that is not fully loaded or not present.");
                 continue;
             }
             constructorList.add(new ConstructorWrapper(this, constructor));
