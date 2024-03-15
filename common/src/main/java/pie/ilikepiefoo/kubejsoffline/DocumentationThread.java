@@ -86,7 +86,7 @@ public class DocumentationThread extends Thread {
         CollectionGroup.INSTANCE.clear();
         // Log the bindings.
         int step = 0;
-        final int totalSteps = 6;
+        final int totalSteps = 7;
         sendMessage(String.format("[KJS Offline] [Step %d/%d] Initializing Reflections Library...", ++step, totalSteps));
         final long start = System.currentTimeMillis();
         long timeMillis = System.currentTimeMillis();
