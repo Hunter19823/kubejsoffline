@@ -13,8 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 class CollectionGroupTest {
     public static final Logger LOG = LogManager.getLogger();
@@ -87,6 +86,23 @@ class CollectionGroupTest {
         if (DUPLICATES.values().stream().anyMatch(map -> map.values().stream().anyMatch(list -> list.size() > 1))) {
             fail("Duplicates found in CollectionGroup JSON");
         }
+    }
+
+    @Test
+    void typeVariablesNoCircularReferences() {
+        var objectID = TypeManager.INSTANCE.getID(Object.class);
+
+        var json = CollectionGroup.INSTANCE.toJSON();
+
+        TypeManager.INSTANCE.collectionGroup.types().getAllTypes().forEach(((typeOrTypeVariableID, typeData) -> {
+            if (!typeData.isParameterizedType()) {
+                return;
+            }
+            var parameterizedType = typeData.asParameterizedType();
+            assertNotEquals(typeOrTypeVariableID, parameterizedType.getRawType());
+            assertNotEquals(typeOrTypeVariableID, parameterizedType.getOwnerType());
+        }));
+
     }
 
 }
