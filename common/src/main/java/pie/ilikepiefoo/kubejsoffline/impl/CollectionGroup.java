@@ -61,7 +61,6 @@ public record CollectionGroup(
         LinkedList<AnnotationID> annotationList = new LinkedList<>();
         for (Annotation annotation : annotations) {
             if (annotation == null) {
-                LOG.warn("Array of annotations contained null.");
                 continue;
             }
             annotationList.add(annotations().addAnnotation(new AnnotationWrapper(this, annotation)));
@@ -84,7 +83,6 @@ public record CollectionGroup(
         }
         for (int i = 0; i < parameters.length; i++) {
             if (parameters[i] == null || genericTypes[i] == null) {
-                LOG.warn("Array of parameters contained null.");
                 continue;
             }
             parameterList.add(parameters().addParameter(new ParameterWrapper(this, parameters[i], genericTypes[i])));
@@ -96,11 +94,9 @@ public record CollectionGroup(
         LinkedList<TypeOrTypeVariableID> typeList = new LinkedList<>();
         for (Type type : types) {
             if (type == null) {
-                LOG.warn("Array of type or type variables contained null.");
                 continue;
             }
             if (!SafeOperations.isTypePresent(type)) {
-                LOG.warn("Array of type or type variables contained a type that is not fully loaded or not present.");
                 continue;
             }
             if (ignoreType.test(type)) {
@@ -119,11 +115,9 @@ public record CollectionGroup(
         LinkedList<TypeOrTypeVariableID> typeList = new LinkedList<>();
         for (Type type : types) {
             if (type == null) {
-                LOG.warn("Array of type or type variables contained null.");
                 continue;
             }
             if (!SafeOperations.isTypePresent(type)) {
-                LOG.warn("Array of type or type variables contained a type that is not fully loaded or not present.");
                 continue;
             }
             typeList.add(of(type));
@@ -135,11 +129,9 @@ public record CollectionGroup(
         LinkedList<TypeID> typeList = new LinkedList<>();
         for (Type type : types) {
             if (type == null) {
-                LOG.warn("Array of types contained null.");
                 continue;
             }
             if (!SafeOperations.isTypePresent(type)) {
-                LOG.warn("Array of types contained a type that is not fully loaded or not present.");
                 continue;
             }
             typeList.add(of(type).asType());
@@ -151,11 +143,9 @@ public record CollectionGroup(
         LinkedList<TypeID> typeList = new LinkedList<>();
         for (Class<?> type : types) {
             if (type == null) {
-                LOG.warn("Array of types contained null.");
                 continue;
             }
             if (!SafeOperations.isClassPresent(type)) {
-                LOG.warn("Array of types contained a class that is not fully loaded or not present.");
                 continue;
             }
             typeList.add(of(type).asType());
@@ -167,12 +157,10 @@ public record CollectionGroup(
         LinkedList<TypeVariableID> typeVariableList = new LinkedList<>();
         for (TypeVariable<?> typeVariable : typeVariables) {
             if (typeVariable == null) {
-                LOG.warn("Array of type variables contained null.");
-                continue;
+                throw new NullPointerException("TypeVariable cannot be null");
             }
             if (!SafeOperations.isTypeVariablePresent(typeVariable)) {
-                LOG.warn("Array of type variables contained a type variable that is not fully loaded or not present.");
-                continue;
+                throw new IllegalStateException("TypeVariable " + typeVariable + " is not fully loaded");
             }
             typeVariableList.add(of(typeVariable).asTypeVariable());
         }
@@ -197,11 +185,9 @@ public record CollectionGroup(
         LinkedList<FieldData> fieldList = new LinkedList<>();
         for (Field field : fields) {
             if (field == null) {
-                LOG.warn("Array of fields contained null.");
                 continue;
             }
             if (!SafeOperations.isFieldPresent(field)) {
-                LOG.warn("Array of fields contained a field that is not fully loaded or not present.");
                 continue;
             }
             fieldList.add(new FieldWrapper(this, field));
@@ -213,11 +199,9 @@ public record CollectionGroup(
         LinkedList<MethodData> methodList = new LinkedList<>();
         for (Method method : methods) {
             if (method == null) {
-                LOG.warn("Array of methods contained null.");
                 continue;
             }
             if (!SafeOperations.isMethodPresent(method)) {
-                LOG.warn("Array of methods contained a method that is not fully loaded or not present.");
                 continue;
             }
             methodList.add(new MethodWrapper(this, method));
@@ -229,11 +213,9 @@ public record CollectionGroup(
         LinkedList<ConstructorData> constructorList = new LinkedList<>();
         for (Constructor<?> constructor : constructors) {
             if (constructor == null) {
-                LOG.warn("Array of constructors contained null.");
                 continue;
             }
             if (!SafeOperations.isConstructorPresent(constructor)) {
-                LOG.warn("Array of constructors contained a constructor that is not fully loaded or not present.");
                 continue;
             }
             constructorList.add(new ConstructorWrapper(this, constructor));
