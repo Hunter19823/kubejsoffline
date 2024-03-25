@@ -11,7 +11,7 @@ public enum JSONProperty {
     @Deprecated
     TYPE_NAME("type_name"),
     TYPE_VARIABLES("v"),
-    TYPE_VARIABLE_NAME("n"),
+    TYPE_VARIABLE_NAME("V"),
     TYPE_VARIABLE_BOUNDS("b"),
 
     @Deprecated
