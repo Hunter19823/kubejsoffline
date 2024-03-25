@@ -61,6 +61,9 @@ public class SafeOperations {
         }
         try {
             type.getTypeName();
+            if (type.getTypeName().isBlank()) {
+                return false;
+            }
             if (type instanceof Class<?> clazz) {
                 return isClassPresent(clazz);
             }
