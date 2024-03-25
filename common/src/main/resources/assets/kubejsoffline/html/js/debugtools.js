@@ -2,48 +2,87 @@
 // ide Type hinting and debugging.
 
 function Props() {
-    this.TYPE_ID = "id";
-    this.TYPE_IDENTIFIER = "temp";
-    this.BASE_CLASS_NAME = "temp";
-    this.SUPER_CLASS = "temp";
-    this.GENERIC_SUPER_CLASS = "temp";
-    this.INTERFACES = "temp";
-    this.GENERIC_INTERFACES = "temp";
-    this.PACKAGE_NAME = "temp";
-    this.ANNOTATIONS = "temp";
-    this.MODIFIERS = "temp";
-    this.CONSTRUCTORS = "temp";
-    this.FIELDS = "temp";
-    this.METHODS = "temp";
-    this.PARAMETERS = "temp";
+    // Compression Tag Properties
+    this.VERSION = "v";
 
-    this.ARRAY_DEPTH = "temp";
-    this.PARAMETERIZED_ARGUMENTS = "temp";
-    this.RAW_PARAMETERIZED_TYPE = "temp";
-    this.OWNER_TYPE = "temp";
+    // NEW DATA TAG Properties
+    this.TYPE_NAME = "type_name";
+    this.TYPE_VARIABLES = "v";
+    this.TYPE_VARIABLE_NAME = "n";
+    this.TYPE_VARIABLE_BOUNDS = "b";
 
-    this.PARAMETER_NAME = "temp";
-    this.PARAMETER_TYPE = "temp";
-    this.PARAMETER_ANNOTATIONS = "temp";
+    this.ARRAY_TYPE = "array_type";
+    this.ARRAY_NAME = "array_name";
 
-    this.CONSTRUCTOR_NAME = "temp";
-    this.CONSTRUCTOR_ANNOTATIONS = "temp";
+    this.WILDCARD_TYPE = "w";
+    this.WILDCARD_UPPER_BOUNDS = "u";
+    this.WILDCARD_LOWER_BOUNDS = "l";
 
-    this.METHOD_NAME = "temp";
-    this.METHOD_ANNOTATIONS = "temp";
-    this.METHOD_RETURN_TYPE = "temp";
+    this.CLASS_REFERENCE = "class_reference";
+    this.CLASS_PARAMETERIZED_ARGUMENTS = "class_parameterized_arguments";
+    this.CLASS_NAME = "n";
 
-    this.FIELD_NAME = "temp";
-    this.FIELD_ANNOTATIONS = "temp";
-    this.FIELD_TYPE = "temp";
+    // DATA TAG Properties
+    this.TYPE_ID = "type_id";
+    this.TYPE_IDENTIFIER = "type_identifier";
+    this.RAW_CLASS = "r";
+    this.OUTER_CLASS = "outer_class";
+    this.SUPER_CLASS = "s";
+    this.GENERIC_SUPER_CLASS = "S";
+    this.INTERFACES = "i";
+    this.GENERIC_INTERFACES = "I";
+    this.PACKAGE_NAME = "P";
+    this.ANNOTATIONS = "a";
+    this.MODIFIERS = "M";
+    this.CONSTRUCTORS = "c";
+    this.FIELDS = "f";
+    this.METHODS = "m";
+    this.PARAMETERS = "p";
+    this.VALUE = "raw_value";
 
-    this.ANNOTATION_TYPE = "temp";
-    this.ANNOTATION_STRING = "temp";
+    this.ARRAY_DEPTH = "depth";
+    this.PARAMETERIZED_ARGUMENTS = PARAMETERS.jsName;
+    this.RAW_PARAMETERIZED_TYPE = "r";
+    this.OWNER_TYPE = "o";
+
+    this.PARAMETER_NAME = "n";
+    this.PARAMETER_TYPE = "t";
+    this.PARAMETER_ANNOTATIONS = "parameter_annotations";
+
+    this.CONSTRUCTOR_ANNOTATIONS = ANNOTATIONS.jsName;
+
+    this.METHOD_NAME = "n";
+    this.METHOD_RETURN_TYPE = "t";
+
+    this.FIELD_NAME = "n";
+    this.FIELD_TYPE = "t";
+
+    this.ANNOTATION_TYPE = "t";
+    this.ANNOTATION_STRING = "s";
+
+    this.BINDING_TYPE = "btype";
+    this.BINDING_TYPE_CLASS = "class";
+    this.BINDING_TYPE_ENUM = "enum";
+    this.BINDING_TYPE_MAP = "map";
+    this.BINDING_TYPE_PRIMITIVE = "primitive";
+    this.BINDING_STRING = "s";
+    this.BINDING_FUNCTION = "f";
+    this.BINDING_OBJECT = "o";
+    this.EXCEPTIONS = "e";
+    this.INNER_CLASSES = "I";
+    this.ENCLOSING_CLASS = "E";
+    this.DECLARING_CLASS = "D";
 }
 
-const PROPERTY = Props();
+const PROPERTY = new Props();
 
-const DATA = []
+const DATA = {
+    types: {},
+    parameters: {},
+    packages: {},
+    names: {},
+    annotations: {}
+}
 
 const STRING_COMPRESSION_DATA = []
 
