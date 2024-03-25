@@ -97,6 +97,7 @@ function clearAllCaches() {
         delete DATA.types[i]._id;
     }
 }
+
 function getClass(id) {
     let output = {};
     if (!exists(id)) {
@@ -122,6 +123,12 @@ function getClass(id) {
             } else if (exists(id[PROPERTY.TYPE_ID])) {
                 output.data = getTypeData(id[PROPERTY.TYPE_ID]);
                 output.data._id = id[PROPERTY.TYPE_ID];
+            } else if (Array.isArray(id) && id.length === 2) {
+                // If it's an array, then assume it's an array of a class.
+                // the first index is the array type, the depth is the second index,
+                output.data = getTypeData(id[0]);
+                output.data._id = id[0];
+                output._array_depth = id[1];
             }
             break;
         case "string":
@@ -142,7 +149,7 @@ function getClass(id) {
             }
             // See if the string is a class type
             for (let i = LOOK_UP_CACHE.size; i < DATA.types.length; i++) {
-                let lower = getClass(i).type().toLowerCase();
+                let lower = getClass(i).fullyQualifiedName().toLowerCase();
                 LOOK_UP_CACHE.set(lower, i);
                 if (lowerID === lower) {
                     return getClass(i);
@@ -194,7 +201,7 @@ function getClass(id) {
 
     output.name = function (parameterized_map = new Map()) {
         if (this.data._name_cache) {
-            return this.data._name_cache;
+            return this.data._name_cache + "[]".repeat(this.arrayDepth());
         }
         if (this.isWildcard()) {
             this.data._name_cache = "?";
@@ -218,14 +225,14 @@ function getClass(id) {
             }
             if (!exists(this.data[PROPERTY.TYPE_VARIABLES])) {
                 this.data._name_cahce = getClass(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]).name(parameterized_map);
-                return this.data._name_cache;
+                return this.data._name_cache + "[]".repeat(this.arrayDepth());
             }
             getClass(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]).getTypeVariables();
             let actualTypes = _getAsArray(this.data[PROPERTY.TYPE_VARIABLES]);
             let typeVariables = getClass(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]).getTypeVariables();
             if (actualTypes.length !== typeVariables.length) {
                 console.error("Type variable length mismatch for class " + this.name() + " (" + this.id() + ").");
-                return this.name();
+                return this.name() + "[]".repeat(this.arrayDepth());
             }
             for (let i = 0; i < actualTypes.length; i++) {
                 parameterized_map.set(typeVariables[i], actualTypes[i]);
@@ -236,7 +243,7 @@ function getClass(id) {
         if (this.isTypeVariable()) {
             let name = uncompressString(this.data[PROPERTY.TYPE_VARIABLE_NAME]);
             if (parameterized_map.has(this.id())) {
-                return getClass(parameterized_map.get(name)).name(parameterized_map);
+                return getClass(parameterized_map.get(name)).name(parameterized_map) + "[]".repeat(this.arrayDepth());
             }
             this.data._name_cache = name;
 
@@ -248,7 +255,7 @@ function getClass(id) {
                 }
             }
 
-            return this.data._name_cache;
+            return this.data._name_cache + "[]".repeat(this.arrayDepth());
         }
         if (this.isRawClass()) {
             this.data._name_cache = uncompressString(this.data[PROPERTY.CLASS_NAME]);
@@ -257,7 +264,7 @@ function getClass(id) {
                 this.data._name_cache = getClass(this.data[PROPERTY.ENCLOSING_CLASS]).name(parameterized_map) + "." + this.data._name_cache;
             }
 
-            return this.data._name_cache;
+            return this.data._name_cache + "[]".repeat(this.arrayDepth());
         }
         console.error("Unable to determine name for class " + this.id() + ". Data: ", this.data);
     }
@@ -278,7 +285,7 @@ function getClass(id) {
     }
 
 
-    output.type = function (seen = new Set()) {
+    output.fullyQualifiedName = function (seen = new Set()) {
         if (!this.data._type_cache) {
             this._loadType(seen);
         }
@@ -349,7 +356,7 @@ function getClass(id) {
     }
 
     output.simplename = function () {
-        let fullName = this.type();
+        let fullName = this.fullyQualifiedName();
         if (this.data._cachedSimpleName) {
             return this.data._cachedSimpleName;
         }
@@ -416,7 +423,7 @@ function getClass(id) {
     }
 
     output.arrayDepth = function () {
-        let depth = this.data[PROPERTY.ARRAY_DEPTH];
+        let depth = this._array_depth;
         if (!exists(depth)) {
             return 0;
         }
@@ -574,11 +581,11 @@ function getClass(id) {
     }
 
     output.toKubeJSLoad_1_18 = function () {
-        return `// KJSODocs: ${output.hrefLink()}\nconst $${output.simplename().toUpperCase()} = Java("${output.type()}");`
+        return `// KJSODocs: ${output.hrefLink()}\nconst $${output.simplename().toUpperCase()} = Java("${output.fullyQualifiedName()}");`
     }
 
     output.toKubeJSLoad_1_19 = function () {
-        return `// KJSODocs: ${output.hrefLink()}\nconst $${output.simplename().toUpperCase()} = Java.loadClass("${output.type()}");`
+        return `// KJSODocs: ${output.hrefLink()}\nconst $${output.simplename().toUpperCase()} = Java.loadClass("${output.fullyQualifiedName()}");`
     }
 
     output.toKubeJSLoad = function () {
@@ -592,7 +599,7 @@ function getClass(id) {
 
     output.hrefLink = function () {
         let url = DecodeURL();
-        url.params.set("focus", this.type());
+        url.params.set("focus", this.fullyQualifiedName());
         return url.href();
     }
 
@@ -695,7 +702,7 @@ function getMethod(methodData) {
 
     output.id = function () {
         // Generate a unique HTML ID for this method
-        return getClass(this.declaredIn()).type() + "." + this.name() + "(" + this.parameters().map((param) => {
+        return getClass(this.declaredIn()).fullyQualifiedName() + "." + this.name() + "(" + this.parameters().map((param) => {
             return getParameter(param).id();
         }).join(",") + ")";
     }
@@ -810,7 +817,7 @@ function getConstructor(constructorData) {
 
     output.id = function () {
         // Generate a unique HTML ID for this constructor
-        return getClass(this.declaredIn()).type() + ".__init__(" + this.parameters().map((param) => {
+        return getClass(this.declaredIn()).fullyQualifiedName() + ".__init__(" + this.parameters().map((param) => {
             return getParameter(param).id();
         }).join(",") + ")";
     }

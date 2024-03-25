@@ -214,7 +214,7 @@ const SORT_FUNCTIONS = {
         return getClass(type).simplename();
     }),
     'type': sortByModifiedAttribute('type', (type) => {
-        return getClass(type).type();
+        return getClass(type).fullyQualifiedName();
     }),
     'declared': sortByModifiedAttribute('declared-in', (type) => {
         return getClass(type).name();

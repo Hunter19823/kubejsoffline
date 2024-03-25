@@ -14,7 +14,7 @@ function createLink(element, id, rawId = null, focus = null) {
     if (rawId) {
         redirect = rawId;
     }
-    redirect = getClass(redirect).type();
+    redirect = getClass(redirect).fullyQualifiedName();
 
     if (!redirect.match(/([a-z][a-z_0-9]*\.)+[A-Z_]($[A-Z_]|[\w_])*/)) {
         if (rawId) {
@@ -206,7 +206,7 @@ function createAnnotationSignature(annotation_data) {
     let out = document.createElement('span');
     let type = getClass(annotation.type());
     let simple_name = span(type.simplename());
-    let annotation_string = `@${type.type()}(${annotation.string()})`;
+    let annotation_string = `@${type.fullyQualifiedName()}(${annotation.string()})`;
     out.append(br());
     out.append(annotation_string);
     return out;
@@ -319,11 +319,11 @@ function addClassToTable(table, class_id) {
 }
 
 function addMethodToTable(table, classID, method, current_class_id = null) {
-    let row = addRow(table, href(span(classID), `#${getClass(classID).type()}`), createMethodSignature(method.data), createFullSignature(classID));
+    let row = addRow(table, href(span(classID), `#${getClass(classID).fullyQualifiedName()}`), createMethodSignature(method.data), createFullSignature(classID));
     appendAttributesToMethodTableRow(row, classID, method, current_class_id);
 }
 
 function addFieldToTable(table, class_id, field, current_class_id = null) {
-    let row = addRow(table, href(span(class_id), `#${getClass(class_id).type()}`), createFieldSignature(field.data), createFullSignature(class_id));
+    let row = addRow(table, href(span(class_id), `#${getClass(class_id).fullyQualifiedName()}`), createFieldSignature(field.data), createFullSignature(class_id));
     appendAttributesToFieldTableRow(row, class_id, field, current_class_id);
 }
