@@ -179,7 +179,7 @@ function getClass(id) {
     }
 
     output.isRawClass = function () {
-        return exists(PROPERTY.CLASS_NAME)
+        return exists(this.data[PROPERTY.CLASS_NAME])
     }
 
     output.isParameterizedType = function () {
