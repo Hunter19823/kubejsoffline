@@ -1,3 +1,4 @@
+const LOOK_UP_CACHE = new Map();
 function exists(thing) {
     return thing !== null && thing !== undefined;
 }
@@ -32,15 +33,70 @@ function getAnySuperClass(id) {
         return data[PROPERTY.SUPER_CLASS];
     }
 
-    if (exists(data[PROPERTY.GENERIC_SUPER_CLASS])) {
-        return data[PROPERTY.GENERIC_SUPER_CLASS];
-    }
-
     return null;
 }
 
-const LOOK_UP_CACHE = new Map();
+function _getAsArray(value) {
+    if (!exists(value)) {
+        return [];
+    }
+    if (Array.isArray(value)) {
+        return value;
+    }
+    return [value];
+}
 
+function joiner(values, separator, transformer = (a) => a, prefix = "", suffix = "") {
+    let output = prefix;
+    for (let i = 0; i < values.length; i++) {
+        output += transformer(values[i]);
+        // If not the last element, add the separator
+        if (i < values.length - 1) {
+            output += separator;
+        }
+    }
+    output += suffix;
+    return output;
+
+}
+
+function getTypeData(id) {
+    return DATA.types[id];
+}
+
+function getParameterData(id) {
+    return DATA.parameters[id];
+}
+
+function getPackageData(id) {
+    return DATA.packages[id];
+}
+
+function getPackageName(id) {
+    let parts = _getAsArray(getPackageData(id));
+    if (parts.length === 1) {
+        return parts[0];
+    }
+    return getPackageName(parts[1]) + "." + parts[0];
+}
+
+function getNameData(id) {
+    return DATA.names[id];
+}
+
+function getAnnotationData(id) {
+    return DATA.annotations[id];
+}
+
+function clearAllCaches() {
+    LOOK_UP_CACHE.clear();
+    for (let i = 0; i < DATA.types.length; i++) {
+        delete DATA.types[i]._name_cache;
+        delete DATA.types[i]._type_cache;
+        delete DATA.types[i]._cachedPackageName;
+        delete DATA.types[i]._id;
+    }
+}
 function getClass(id) {
     let output = {};
     if (!exists(id)) {
@@ -49,21 +105,23 @@ function getClass(id) {
     }
     switch (typeof (id)) {
         case "number":
-            if (id < 0 || id >= DATA.length) {
+            if (id < 0 || id >= DATA.types.length) {
                 console.error("Invalid class id: " + id);
                 return null;
             }
-            if (!exists(DATA[id])) {
+            if (!exists(getTypeData(id))) {
                 console.error("Invalid class data: " + id);
                 return null;
             }
-            output.data = DATA[id];
+            output.data = getTypeData(id);
+            output.data._id = id;
             break;
         case "object":
             if (exists(id['data'])) {
                 output.data = id.data;
             } else if (exists(id[PROPERTY.TYPE_ID])) {
-                output.data = DATA[id[PROPERTY.TYPE_ID]];
+                output.data = getTypeData(id[PROPERTY.TYPE_ID]);
+                output.data._id = id[PROPERTY.TYPE_ID];
             }
             break;
         case "string":
@@ -83,7 +141,7 @@ function getClass(id) {
                 return null;
             }
             // See if the string is a class type
-            for (let i = LOOK_UP_CACHE.size; i < DATA.length; i++) {
+            for (let i = LOOK_UP_CACHE.size; i < DATA.types.length; i++) {
                 let lower = getClass(i).type().toLowerCase();
                 LOOK_UP_CACHE.set(lower, i);
                 if (lowerID === lower) {
@@ -91,13 +149,13 @@ function getClass(id) {
                 }
             }
             // See if the string is a class name
-            for (let i = 0; i < DATA.length; i++) {
+            for (let i = 0; i < DATA.types.length; i++) {
                 if (lowerID === getClass(i).name().toLowerCase()) {
                     return getClass(i);
                 }
             }
             // See if the string is a class simple name
-            for (let i = 0; i < DATA.length; i++) {
+            for (let i = 0; i < DATA.types.length; i++) {
                 if (getClass(i)?.simplename()?.toLowerCase() === lowerID) {
                     return getClass(i);
                 }
@@ -113,25 +171,112 @@ function getClass(id) {
         console.error("Invalid class data: ", id, typeof (id));
     }
 
-    output.id = function () {
-        return this.data[PROPERTY.TYPE_ID];
+    output.isRawClass = function () {
+        return exists(PROPERTY.CLASS_NAME)
     }
 
-    output.name = function () {
-        if (!this.data._name_cache) {
-            if (exists(this.data[PROPERTY.BASE_CLASS_NAME])) {
-                this.data._name_cache = uncompressString(this.data[PROPERTY.BASE_CLASS_NAME]);
-            } else {
-                let baseClass = this.baseclass();
-                if (baseClass === this.id()) {
-                    this.data._name_cache = this.simplename();
-                } else {
-                    this.data._name_cache = getClass(baseClass).name();
+    output.isParameterizedType = function () {
+        return exists(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]);
+    }
+
+    output.isWildcard = function () {
+        return Object.keys(this.data).length === 0 || exists(this.data[PROPERTY.WILDCARD_LOWER_BOUNDS]) || exists(this.data[PROPERTY.WILDCARD_UPPER_BOUNDS])
+    }
+
+    output.isTypeVariable = function () {
+        return exists(this.data[PROPERTY.TYPE_VARIABLE_NAME]);
+    }
+
+    output.id = function () {
+        // TODO: Rewrite.
+        return this.data._id;
+    }
+
+    output.name = function (parameterized_map = new Map()) {
+        if (this.data._name_cache) {
+            return this.data._name_cache;
+        }
+        if (this.isWildcard()) {
+            this.data._name_cache = "?";
+            let values = [];
+            if (exists(this.data[PROPERTY.WILDCARD_UPPER_BOUNDS])) {
+                this.data._name_cache += " extends ";
+                values = _getAsArray(this.data[PROPERTY.WILDCARD_UPPER_BOUNDS]);
+            }
+            if (exists(this.data[PROPERTY.WILDCARD_LOWER_BOUNDS])) {
+                this.data._name_cache += " super ";
+                values = _getAsArray(this.data[PROPERTY.WILDCARD_LOWER_BOUNDS]);
+            }
+            if (values.length > 0) {
+                this.data._name_cahce += joiner(values, " & ", (a) => getClass(a).name(parameterized_map));
+            }
+            return this.data._name_cache;
+        }
+        if (this.isParameterizedType()) {
+            if (exists(this.data[PROPERTY.OWNER_TYPE])) {
+                this.data._name_cache = getClass(this.data[PROPERTY.OWNER_TYPE]).name(parameterized_map) + ".";
+            }
+            if (!exists(this.data[PROPERTY.TYPE_VARIABLES])) {
+                this.data._name_cahce = getClass(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]).name(parameterized_map);
+                return this.data._name_cache;
+            }
+            getClass(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]).getTypeVariables();
+            let actualTypes = _getAsArray(this.data[PROPERTY.TYPE_VARIABLES]);
+            let typeVariables = getClass(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]).getTypeVariables();
+            if (actualTypes.length !== typeVariables.length) {
+                console.error("Type variable length mismatch for class " + this.name() + " (" + this.id() + ").");
+                return this.name();
+            }
+            for (let i = 0; i < actualTypes.length; i++) {
+                parameterized_map.set(typeVariables[i], actualTypes[i]);
+            }
+            this.data._name_cache = getClass(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]).name(parameterized_map);
+            return this.data._name_cache;
+        }
+        if (this.isTypeVariable()) {
+            let name = uncompressString(this.data[PROPERTY.TYPE_VARIABLE_NAME]);
+            if (parameterized_map.has(this.id())) {
+                return getClass(parameterized_map.get(name)).name(parameterized_map);
+            }
+            this.data._name_cache = name;
+
+            if (exists(this.data[PROPERTY.TYPE_VARIABLE_BOUNDS])) {
+                let bounds = _getAsArray(this.data[PROPERTY.TYPE_VARIABLE_BOUNDS]);
+                if (bounds.length > 0) {
+                    this.data._name_cache += " extends ";
+                    this.data._name_cache += joiner(bounds, " & ", (a) => getClass(a).name(parameterized_map));
                 }
             }
+
+            return this.data._name_cache;
         }
-        return this.data._name_cache;
+        if (this.isRawClass()) {
+            this.data._name_cache = uncompressString(this.data[PROPERTY.CLASS_NAME]);
+
+            if (this.data[PROPERTY.ENCLOSING_CLASS]) {
+                this.data._name_cache = getClass(this.data[PROPERTY.ENCLOSING_CLASS]).name(parameterized_map) + "." + this.data._name_cache;
+            }
+
+            return this.data._name_cache;
+        }
+        console.error("Unable to determine name for class " + this.id() + ". Data: ", this.data);
     }
+
+    output.getTypeVariables = function () {
+        if (!exists(this.data[PROPERTY.TYPE_VARIABLES])) {
+            console.error("No type variables found for class " + this.name());
+        }
+        return _getAsArray(this.data[PROPERTY.TYPE_VARIABLES]);
+    }
+
+    output.getUpperBound = function () {
+        return this.data[PROPERTY.WILDCARD_UPPER_BOUNDS];
+    }
+
+    output.getLowerBound = function () {
+        return this.data[PROPERTY.WILDCARD_LOWER_BOUNDS];
+    }
+
 
     output.type = function (seen = new Set()) {
         if (!this.data._type_cache) {
@@ -231,29 +376,12 @@ function getClass(id) {
         }
 
         if (exists(pkg)) {
-            this.data._cachedPackageName = loadPackageName(pkg);
+            this.data._cachedPackageName = getPackageName(pkg);
             return this.data._cachedPackageName;
         }
 
-        let fullName = this.type();
-        // Remove any Generics
-        let index = fullName.indexOf("<");
-        if (index !== -1) {
-            fullName = fullName.substring(0, index);
-        }
-        // Remove any array brackets
-        index = fullName.indexOf("[");
-        if (index !== -1) {
-            fullName = fullName.substring(0, index);
-        }
-        // Remove class name
-        index = fullName.lastIndexOf(".");
-        if (index !== -1) {
-            fullName = fullName.substring(0, index);
-        }
-
-        this.data._cachedPackageName = fullName;
-        return fullName;
+        this.data._cachedPackageName = "";
+        return "";
     }
 
     output.paramargs = function () {
@@ -285,14 +413,6 @@ function getClass(id) {
             output = getClass(output).rawtype();
         }
         return output;
-    }
-
-    output.isParameterizedType = function () {
-        return exists(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]);
-    }
-
-    output.isWildcard = function () {
-        return this.name().includes("?");
     }
 
     output.arrayDepth = function () {
@@ -347,7 +467,7 @@ function getClass(id) {
             this._follow_inheritance((data) => {
                 addFields(data);
                 getClass(data).interfaces()?.forEach((interfaceId) => {
-                    let data = DATA[interfaceId];
+                    let data = getTypeData(interfaceId);
                     addFields(data);
                 });
             });
@@ -382,7 +502,7 @@ function getClass(id) {
             this._follow_inheritance((data) => {
                 addMethods(data);
                 getClass(data).interfaces()?.forEach((interfaceId) => {
-                    let data = DATA[interfaceId];
+                    let data = getTypeData(interfaceId);
                     addMethods(data);
                 });
             });

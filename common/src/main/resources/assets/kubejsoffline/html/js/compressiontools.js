@@ -22,7 +22,7 @@ function mapUncompress(part) {
 }
 
 function uncompressString(compressedString) {
-    return compressedString;
+    return DATA.names[compressedString];
     // return splitModifyCollect(
     // 		compressedString,
     // 		'<',
