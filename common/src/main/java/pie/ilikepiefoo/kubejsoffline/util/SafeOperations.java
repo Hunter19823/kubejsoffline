@@ -180,15 +180,18 @@ public class SafeOperations {
         final var name = tryGet(method::getName);
         if (getRemap().isEmpty()) {
             if (name.isEmpty()) {
-                return null;
+                throw new IllegalStateException("Method name is null!");
             }
             if (name.get().isBlank()) {
-                return null;
+                throw new IllegalStateException("Method name is blank!");
             }
             return name.get();
         }
         final var remap = getRemap().get().getMappedMethod(method.getDeclaringClass(), method);
         if (remap.isBlank()) {
+            if (name.isEmpty()) {
+                throw new IllegalStateException("Method name is null!");
+            }
             return name.get();
         }
         return remap;
@@ -223,20 +226,23 @@ public class SafeOperations {
 
     public static String safeRemap(final Field field) {
         if (null == field) {
-            return null;
+            throw new IllegalArgumentException("Field is null!");
         }
         final var name = tryGet(field::getName);
         if (getRemap().isEmpty()) {
             if (name.isEmpty()) {
-                return null;
+                throw new IllegalStateException("Field name is null!");
             }
             if (name.get().isBlank()) {
-                return null;
+                throw new IllegalStateException("Field name is blank!");
             }
             return name.get();
         }
         final var remap = getRemap().get().getMappedField(field.getDeclaringClass(), field);
         if (remap.isBlank()) {
+            if (name.isEmpty()) {
+                throw new IllegalStateException("Field name is null!");
+            }
             return name.get();
         }
         return remap;

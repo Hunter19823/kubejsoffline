@@ -53,7 +53,7 @@ public class FieldWrapper implements FieldData {
         if (name != null) {
             return name;
         }
-        return this.name = collectionGroup.names().addName(field.getName());
+        return this.name = collectionGroup.names().addName(SafeOperations.safeRemap(field));
     }
 
     @Override

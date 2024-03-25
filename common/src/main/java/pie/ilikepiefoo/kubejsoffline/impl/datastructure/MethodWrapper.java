@@ -80,7 +80,7 @@ public class MethodWrapper implements MethodData {
         if (name != null) {
             return name;
         }
-        return this.name = collectionGroup.names().addName(method.getName());
+        return this.name = collectionGroup.names().addName(SafeOperations.safeRemap(method));
     }
 
     @Override

@@ -60,7 +60,7 @@ public class RawClassWrapper implements RawClassData {
         if (name != null) {
             return name;
         }
-        String name = clazz.getSimpleName();
+        String name = SafeOperations.safeRemap(clazz);
         if (name.contains("$")) {
             name = name.substring(name.lastIndexOf("$") + 1);
         }
