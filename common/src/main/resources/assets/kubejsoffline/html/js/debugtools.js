@@ -93,3 +93,27 @@ const PACKAGE_COMPRESSION_DATA = [
     "java.util"
 ]
 
+function countCircularReferences() {
+    for (let prop of Object.entries(PROPERTY)) {
+        let circularReferences = 0;
+        DATA.types.forEach((data, index) => {
+            if (data[prop[1]] !== index) {
+                return;
+            }
+            circularReferences++;
+        });
+        if (circularReferences === 0) continue;
+        console.log(`Property '${prop[0]}' has ${circularReferences} Circular References.`);
+    }
+}
+
+
+function clearAllCaches() {
+    LOOK_UP_CACHE.clear();
+    for (let i = 0; i < DATA.types.length; i++) {
+        delete DATA.types[i]._name_cache;
+        delete DATA.types[i]._type_cache;
+        delete DATA.types[i]._cachedPackageName;
+        delete DATA.types[i]._id;
+    }
+}
