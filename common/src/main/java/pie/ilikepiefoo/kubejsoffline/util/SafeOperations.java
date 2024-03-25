@@ -76,7 +76,13 @@ public class SafeOperations {
                         return false;
                     }
                 }
-                return isTypePresent(parameterizedType.getRawType());
+                if (parameterizedType == parameterizedType.getRawType()) {
+                    return false;
+                }
+                if (parameterizedType == parameterizedType.getOwnerType()) {
+                    return false;
+                }
+                return isTypePresent(parameterizedType.getRawType()) && isTypePresent(parameterizedType.getOwnerType());
             }
             if (type instanceof WildcardType wildcardType) {
                 for (var bound : wildcardType.getUpperBounds()) {
