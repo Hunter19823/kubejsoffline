@@ -188,11 +188,43 @@ function getClass(id) {
         // TODO: Rewrite.
         return this.data._id;
     }
-
-    output.name = function (parameterized_map = new Map()) {
+    /**
+     * Gets the name of the class.
+     *
+     * @param parameterized_map {Map<number,number>} A map of type variables to their actual types.
+     * @param includeGenerics {boolean} Whether or not to include the generic type arguments in the name.
+     * This is used for when an enclosing class is being printed.
+     * @returns {string}
+     */
+    output.name = function (parameterized_map = new Map(), includeGenerics = true) {
         if (this.data._name_cache) {
             return this.data._name_cache + "[]".repeat(this.arrayDepth());
         }
+
+        // Only cache names for non-raw classes so that we can handle parameterized types and type variables.
+        if (this.isRawClass()) {
+            let name = uncompressString(this.data[PROPERTY.CLASS_NAME]);
+
+            if (this.data[PROPERTY.ENCLOSING_CLASS]) {
+                name = getClass(this.data[PROPERTY.ENCLOSING_CLASS]).name(parameterized_map, false) + "." + name;
+            }
+
+            // Check if this class is a generic type
+            if (exists(this.data[PROPERTY.TYPE_VARIABLES]) && includeGenerics) {
+                let typeVariables = _getAsArray(this.data[PROPERTY.TYPE_VARIABLES]);
+                let genericsTail = joiner(
+                        typeVariables,
+                        ",",
+                        (a) => getClass(a).name(parameterized_map),
+                        "<",
+                        ">"
+                );
+                name = name + genericsTail;
+            }
+
+            return name + "[]".repeat(this.arrayDepth());
+        }
+        this.data._name_cache = "";
         if (this.isWildcard()) {
             this.data._name_cache = "?";
             let values = [];
@@ -210,30 +242,38 @@ function getClass(id) {
             return this.data._name_cache;
         }
         if (this.isParameterizedType()) {
-            if (exists(this.data[PROPERTY.OWNER_TYPE])) {
-                this.data._name_cache = getClass(this.data[PROPERTY.OWNER_TYPE]).name(parameterized_map) + ".";
-            }
+            // First check if this parameterized type is just a nested class.
             if (!exists(this.data[PROPERTY.TYPE_VARIABLES])) {
-                this.data._name_cahce = getClass(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]).name(parameterized_map);
+                let name = getClass(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]).name(parameterized_map, true);
+                if (exists(this.data[PROPERTY.OWNER_TYPE])) {
+                    name = getClass(this.data[PROPERTY.OWNER_TYPE]).name(parameterized_map, true) + "." + name;
+                } else {
+                    throw new Error("No owner type for parameterized type " + this.id() + " that contains no type arguments.");
+                }
+                this.data._name_cache = name;
                 return this.data._name_cache + "[]".repeat(this.arrayDepth());
             }
-            getClass(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]).getTypeVariables();
+            // Assume we have a parameterized type with type arguments.
             let actualTypes = _getAsArray(this.data[PROPERTY.TYPE_VARIABLES]);
             let typeVariables = getClass(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]).getTypeVariables();
             if (actualTypes.length !== typeVariables.length) {
-                console.error("Type variable length mismatch for class " + this.name() + " (" + this.id() + ").");
-                return this.name() + "[]".repeat(this.arrayDepth());
+                console.error("Type variable length mismatch for class " + this.id() + ".");
+                throw new Error("Type variable length mismatch for class " + this.id);
             }
             for (let i = 0; i < actualTypes.length; i++) {
                 parameterized_map.set(typeVariables[i], actualTypes[i]);
             }
             this.data._name_cache = getClass(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]).name(parameterized_map);
-            return this.data._name_cache;
+            if (exists(this.data[PROPERTY.OWNER_TYPE])) {
+                this.data._name_cache = getClass(this.data[PROPERTY.OWNER_TYPE]).name(parameterized_map) + "." + this.data._name_cache;
+            }
+
+            return this.data._name_cache + "[]".repeat(this.arrayDepth());
         }
         if (this.isTypeVariable()) {
             let name = uncompressString(this.data[PROPERTY.TYPE_VARIABLE_NAME]);
             if (parameterized_map.has(this.id())) {
-                return getClass(parameterized_map.get(name)).name(parameterized_map) + "[]".repeat(this.arrayDepth());
+                return getClass(parameterized_map.get(this.id())).name(parameterized_map) + "[]".repeat(this.arrayDepth());
             }
             this.data._name_cache = name;
 
@@ -243,15 +283,6 @@ function getClass(id) {
                     this.data._name_cache += " extends ";
                     this.data._name_cache += joiner(bounds, " & ", (a) => getClass(a).name(parameterized_map));
                 }
-            }
-
-            return this.data._name_cache + "[]".repeat(this.arrayDepth());
-        }
-        if (this.isRawClass()) {
-            this.data._name_cache = uncompressString(this.data[PROPERTY.CLASS_NAME]);
-
-            if (this.data[PROPERTY.ENCLOSING_CLASS]) {
-                this.data._name_cache = getClass(this.data[PROPERTY.ENCLOSING_CLASS]).name(parameterized_map) + "." + this.data._name_cache;
             }
 
             return this.data._name_cache + "[]".repeat(this.arrayDepth());
