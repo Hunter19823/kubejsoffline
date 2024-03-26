@@ -117,3 +117,79 @@ function clearAllCaches() {
         delete DATA.types[i]._id;
     }
 }
+
+function findBrokenClassNames() {
+    let brokenNames = [];
+    DATA.types.forEach((data, index) => {
+        try {
+            getClass(index).name();
+        } catch (e) {
+            brokenNames.push([data, index, e]);
+        }
+    })
+    console.log("Total Broken Names: " + brokenNames.length);
+    return brokenNames;
+}
+
+function findInvalidNames() {
+    let invalidNames = [];
+    for (let i = 0; i < DATA.types.length; i++) {
+        try {
+            let name = getClass(i).name();
+            // If it's blank
+            if (name.trim().length === 0) {
+                invalidNames.push([name, i]);
+            }
+            // If it ends with a period
+            if (name.trim().endsWith(".")) {
+                invalidNames.push([name, i]);
+            }
+            // If it starts with a period
+            if (name.trim().startsWith(".")) {
+                invalidNames.push([name, i]);
+            }
+            // If it contains an empty generic definition
+            if (name.trim().includes("<>")) {
+                invalidNames.push([name, i]);
+            }
+        } catch (e) {
+            invalidNames.push([e, i]);
+        }
+    }
+    console.log("Total Invalid Names: " + invalidNames.length);
+    return invalidNames;
+}
+
+function findAllTypeVariablesWithInvalidState() {
+    let invalid = [];
+    DATA.types.forEach((data, index) => {
+        if (!getClass(index).isParameterizedType())
+            return;
+        if (!exists(data[PROPERTY.TYPE_VARIABLES]))
+            return;
+        let actualTypes = _getAsArray(data[PROPERTY.TYPE_VARIABLES]);
+        let typeVariables = getClass(data[PROPERTY.RAW_PARAMETERIZED_TYPE]).getTypeVariables();
+        if (actualTypes.length !== typeVariables.length) {
+            invalid.push([data, index, actualTypes, typeVariables]);
+        }
+    });
+    console.log("Total Invalid Type Variables: " + invalid.length);
+    return invalid;
+}
+
+function findWeirdestNames() {
+    let weirdNames = [];
+    DATA.types.forEach((data, index) => {
+        let name = getClass(index).name();
+        // If the name contains more than 2 periods.
+        if (name.split(".").length > 2) {
+            weirdNames.push([name, data, index]);
+        }
+        // If the name contains more than 2 generics.
+        if (name.split("<").length > 2) {
+            weirdNames.push([name, data, index]);
+        }
+    });
+    console.log("Total Weird Names: " + weirdNames.length);
+    return weirdNames;
+}
