@@ -77,11 +77,11 @@ function Props() {
 const PROPERTY = new Props();
 
 const DATA = {
-    types: {},
-    parameters: {},
-    packages: {},
-    names: {},
-    annotations: {}
+    types: [],
+    parameters: [],
+    packages: [],
+    names: [],
+    annotations: []
 }
 
 const STRING_COMPRESSION_DATA = []

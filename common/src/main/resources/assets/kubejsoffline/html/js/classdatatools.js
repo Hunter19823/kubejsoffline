@@ -8,7 +8,6 @@ function exists(thing) {
  * and returns the value if the value is already an Array.
  * @param value
  * @returns {[*]}
- * @private
  */
 function getAsArray(value) {
     if (!exists(value)) {
@@ -696,43 +695,14 @@ function getParameter(parameterID, typeVariableMap = {}) {
     output.data = paramData;
     output._type_variable_map = typeVariableMap;
 
-    output.name = function () {
-        if (!exists(this.data._name_cache)) {
-            this.data._name_cache = uncompressString(this.data[PROPERTY.PARAMETER_NAME]);
-        }
-        return this.data._name_cache;
-    }
+    output = setBasicName(output);
+    output = setRemapType(output, PROPERTY.PARAMETER_TYPE);
+    output = setModifiers(output);
+    output = setAnnotations(output);
+    output = setDataIndex(output);
+    output = setTypeBasedID(output);
+    output = setTypeVariableMap(output);
 
-    output.type = function () {
-        const paramType = this.data[PROPERTY.PARAMETER_TYPE];
-        if (!exists(paramType)) {
-            return paramType;
-        }
-        if (exists(this._type_variable_map[paramType])) {
-            return this._type_variable_map[paramType];
-        }
-        return paramType;
-    }
-
-    output.modifiers = function () {
-        return this.data[PROPERTY.MODIFIERS];
-    }
-
-    output.annotations = function () {
-        return getAsArray(this.data[PROPERTY.ANNOTATIONS]);
-    }
-
-    output.dataIndex = function () {
-        return this.data.dataIndex;
-    }
-
-    output.id = function () {
-        return this.type();
-    }
-
-    output.getTypeVariableMap = function () {
-        return this._type_variable_map;
-    }
 
     return output;
 }
@@ -745,47 +715,15 @@ function getMethod(methodData, typeVariableMap = {}) {
     output.data = methodData;
     output._type_variable_map = typeVariableMap;
 
-    output.name = function () {
-        if (!exists(this.data._name_cache)) {
-            this.data._name_cache = uncompressString(this.data[PROPERTY.METHOD_NAME]);
-        }
-        return this.data._name_cache;
-    }
-
-    output.returnType = function () {
-        const returnType = this.data[PROPERTY.METHOD_RETURN_TYPE];
-        if (!exists(returnType)) {
-            return returnType;
-        }
-        if (exists(this._type_variable_map[returnType])) {
-            return this._type_variable_map[returnType];
-        }
-        return returnType;
-    }
-
-    output.modifiers = function () {
-        return this.data[PROPERTY.MODIFIERS];
-    }
-
-    output.annotations = function () {
-        return getAsArray(this.data[PROPERTY.ANNOTATIONS]);
-    }
-
-    output.parameters = function () {
-        return getAsArray(this.data[PROPERTY.PARAMETERS]);
-    }
-
-    output.declaredIn = function () {
-        return this.data.declaringClass;
-    }
-
-    output.dataIndex = function () {
-        return this.data.dataIndex;
-    }
-
-    output.getTypeVariableMap = function () {
-        return this._type_variable_map;
-    }
+    output = setBasicName(output);
+    output = setRemapType(output, PROPERTY.METHOD_RETURN_TYPE);
+    output = setModifiers(output);
+    output = setAnnotations(output);
+    output = setParameters(output);
+    output = setDataIndex(output);
+    output = setDeclaredIn(output);
+    output = setTypeVariables(output);
+    output = setTypeVariableMap(output);
 
     output.toKubeJSStaticCall = function () {
         let parent = getClass(this.declaredIn());
@@ -825,43 +763,13 @@ function getField(fieldData, typeVariableMap = {}) {
     output.data = fieldData;
     output._type_variable_map = typeVariableMap;
 
-    output.name = function () {
-        if (!exists(this.data._name_cache)) {
-            this.data._name_cache = uncompressString(this.data[PROPERTY.FIELD_NAME]);
-        }
-        return this.data._name_cache;
-    }
-
-    output.type = function () {
-        const fieldType = this.data[PROPERTY.FIELD_TYPE];
-        if (!exists(fieldType)) {
-            return fieldType;
-        }
-        if (exists(this._type_variable_map[fieldType])) {
-            return this._type_variable_map[fieldType];
-        }
-        return fieldType;
-    }
-
-    output.modifiers = function () {
-        return this.data[PROPERTY.MODIFIERS];
-    }
-
-    output.annotations = function () {
-        return getAsArray(this.data[PROPERTY.ANNOTATIONS]);
-    }
-
-    output.declaredIn = function () {
-        return this.data.declaringClass;
-    }
-
-    output.dataIndex = function () {
-        return this.data.dataIndex;
-    }
-
-    output.getTypeVariableMap = function () {
-        return this._type_variable_map;
-    }
+    output = setBasicName(output);
+    output = setRemapType(output, PROPERTY.FIELD_TYPE);
+    output = setModifiers(output);
+    output = setAnnotations(output);
+    output = setDataIndex(output);
+    output = setDeclaredIn(output);
+    output = setTypeVariableMap(output);
 
     output.toKubeJSStaticReference = function () {
         let parent = getClass(this.declaredIn());
@@ -890,29 +798,12 @@ function getConstructor(constructorData, typeVariableMap = {}) {
     output.data = constructorData;
     output._type_variable_map = typeVariableMap;
 
-    output.modifiers = function () {
-        return this.data[PROPERTY.MODIFIERS];
-    }
-
-    output.annotations = function () {
-        return getAsArray(this.data[PROPERTY.ANNOTATIONS]);
-    }
-
-    output.parameters = function () {
-        return getAsArray(this.data[PROPERTY.PARAMETERS]);
-    }
-
-    output.declaredIn = function () {
-        return this.data.declaringClass;
-    }
-
-    output.dataIndex = function () {
-        return this.data.dataIndex;
-    }
-
-    output.getTypeVariableMap = function () {
-        return this._type_variable_map;
-    }
+    output = setModifiers(output);
+    output = setAnnotations(output);
+    output = setParameters(output);
+    output = setDataIndex(output);
+    output = setDeclaredIn(output);
+    output = setTypeVariableMap(output);
 
     output.toKubeJSStaticCall = function () {
         let parent = getClass(this.declaredIn());
@@ -955,16 +846,8 @@ function getAnnotation(annotationData, typeVariableMap = {}) {
     output.data = getAnnotationData(annotationData);
     output._type_variable_map = typeVariableMap;
 
-    output.type = function () {
-        const annotationType = this.data[PROPERTY.ANNOTATION_TYPE];
-        if (!exists(annotationType)) {
-            return annotationType;
-        }
-        if (exists(this._type_variable_map[annotationType])) {
-            return this._type_variable_map[annotationType];
-        }
-        return annotationType;
-    }
+    output = setRemapType(output, PROPERTY.ANNOTATION_TYPE);
+    output = setTypeVariableMap(output);
 
     output.string = function () {
         if (exists(this.data[PROPERTY.ANNOTATION_STRING])) {
@@ -972,10 +855,6 @@ function getAnnotation(annotationData, typeVariableMap = {}) {
         } else {
             return "";
         }
-    }
-
-    output.getTypeVariableMap = function () {
-        return this._type_variable_map;
     }
 
     return output;
