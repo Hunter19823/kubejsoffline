@@ -71,9 +71,8 @@ function getClass(id) {
         case "object":
             if (exists(id['data'])) {
                 output.data = id.data;
-            } else if (exists(id[PROPERTY.TYPE_ID])) {
-                output.data = getTypeData(id[PROPERTY.TYPE_ID]);
-                output.data._id = id[PROPERTY.TYPE_ID];
+            } else if (exists(id._id)) {
+                output.data = getTypeData(id._id);
             } else if (Array.isArray(id) && id.length === 2) {
                 // If it's an array, then assume it's an array of a class.
                 // the first index is the array type, the depth is the second index,
@@ -170,23 +169,44 @@ function getClass(id) {
         return this.data._id;
     }
 
-    /**
-     * Gets the name of the class.
-     *
-     * This is used for when an enclosing class is being printed.
-     * @returns {string}
-     * @param typeVariableMap
-     */
+    output.fullyQualifiedName = function (typeVariableMap = {}) {
+        if (exists(this.data._type_cache)) {
+            return this.data._type_cache + "[]".repeat(this.arrayDepth());
+        }
+        if (this.isRawClass()) {
+            this.data._type_cache = getGenericDefinition(this.id(), createTypeVariableMap(this.id()));
+            return this.data._type_cache + "[]".repeat(this.arrayDepth());
+        } else {
+            return getGenericDefinition(this.id(), typeVariableMap) + "[]".repeat(this.arrayDepth());
+        }
+    }
+
+
     output.name = function (typeVariableMap = {}) {
         if (exists(this.data._name_cache)) {
             return this.data._name_cache + "[]".repeat(this.arrayDepth());
         }
         if (this.isRawClass()) {
-            this.data._name_cache = getGenericDefinition(this.id(), createTypeVariableMap(this.id()));
+            this.data._name_cache = getGenericName(this.id(), createTypeVariableMap(this.id()));
             return this.data._name_cache + "[]".repeat(this.arrayDepth());
         } else {
-            return getGenericDefinition(this.id(), typeVariableMap) + "[]".repeat(this.arrayDepth());
+            return getGenericName(this.id(), typeVariableMap) + "[]".repeat(this.arrayDepth());
         }
+    }
+
+    output.simplename = function () {
+        if (this.isWildcard()) {
+            return "?";
+        }
+        if (this.isTypeVariable()) {
+            return uncompressString(this.data[PROPERTY.TYPE_VARIABLE_NAME]);
+        }
+        if (this.isParameterizedType()) {
+            const rawName = getClass(this.rawtype()).simplename();
+            const ownerPrefix = this.getOwnerType() ? getClass(this.getOwnerType()).simplename() + "." : "";
+            return ownerPrefix + rawName;
+        }
+        return uncompressString(this.data[PROPERTY.CLASS_NAME]);
     }
 
     output.getTypeVariables = function () {
@@ -213,95 +233,8 @@ function getClass(id) {
         return this.data[PROPERTY.OWNER_TYPE];
     }
 
-    output.fullyQualifiedName = function (seen = new Set()) {
-        if (!this.data._type_cache) {
-            this._loadType(seen);
-        }
-        return this.data._type_cache;
-    }
-
-    output._loadType = function (seen = new Set()) {
-        if (seen.has(this.id())) {
-            this.data._type_cache = "...";
-            console.error("Circular reference detected while loading type for class " + this.name() + " (" + this.id() + ").");
-            seen.forEach((id) => {
-                console.error(getClass(id).name() + " (" + id + ")");
-            });
-            return;
-        }
-        seen.add(this.id());
-        if (exists(this.data[PROPERTY.TYPE_IDENTIFIER])) {
-            if (exists(this.data[PROPERTY.OWNER_TYPE]) || exists(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE])) {
-                this.data["_oldType"] = this.data[PROPERTY.TYPE_IDENTIFIER];
-                delete this.data[PROPERTY.TYPE_IDENTIFIER];
-                this._loadType();
-                return;
-            }
-            this.data._type_cache = uncompressString(this.data[PROPERTY.TYPE_IDENTIFIER]);
-            return;
-        }
-        // When the type identifier is not present, it means that the class is either a generic type, parameterized type, or array type
-        // In these cases, the base type is stored in the RAW_PARAMETERIZED_TYPE property.
-        // We need to build the type identifier from the base type, type parameters, and array dimensions.
-        let typeName = null;
-        if (exists(this.data[PROPERTY.OWNER_TYPE])) {
-            if (!exists(this.data[PROPERTY.BASE_CLASS_NAME])) {
-                console.error("Unable to load type for class ", this.data, " (" + this.id() + "). It does not contain the name of the subclass.");
-                return;
-            }
-            let ownerType = getClass(this.data[PROPERTY.OWNER_TYPE]).type(seen);
-            let simpleName = uncompressString(this.data[PROPERTY.BASE_CLASS_NAME]);
-            typeName = ownerType + "$" + simpleName;
-        } else if (!exists(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE])) {
-            console.error("Unable to load type for class ", this, " (" + this.id() + "). It does not contain a raw parameterized type or owner type!");
-            return;
-        } else {
-            typeName = getClass(this.data[PROPERTY.RAW_PARAMETERIZED_TYPE]).type(seen);
-        }
-        let paramArgs = this.paramargs();
-        if (exists(paramArgs)) {
-            typeName += "<";
-            for (let i = 0; i < paramArgs.length; i++) {
-                if (i > 0) {
-                    typeName += ",";
-                }
-                typeName += getClass(paramArgs[i]).type(seen);
-            }
-            typeName += ">";
-        }
-        let arrayDimensions = this.arrayDepth();
-        if (arrayDimensions > 0) {
-            for (let i = 0; i < arrayDimensions; i++) {
-                typeName += "[]";
-            }
-        }
-
-        this.data._type_cache = typeName;
-    }
-
     output.rawtype = function () {
         return this.data[PROPERTY.RAW_PARAMETERIZED_TYPE];
-    }
-
-    output.simplename = function () {
-        let fullName = this.fullyQualifiedName();
-        if (this.data._cachedSimpleName) {
-            return this.data._cachedSimpleName;
-        }
-        // For every period character, remove all alphanumeric characters before it and the period itself using regex and a while loop
-        let index = fullName.indexOf(".");
-        while (index !== -1) {
-            fullName = fullName.replace(new RegExp("[a-zA-Z0-9_]*\\."), "");
-            index = fullName.indexOf(".");
-        }
-        // Remove any array brackets that may be present on the end of the type.
-        index = fullName.indexOf("[");
-        while (index !== -1) {
-            fullName = fullName.substring(0, index) + fullName.substring(index + 2);
-            index = fullName.indexOf("[");
-        }
-        this.data._cachedSimpleName = fullName;
-        return fullName;
     }
 
     output.package = function () {

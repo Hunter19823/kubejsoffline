@@ -1,45 +1,5 @@
-function splitModifyCollect(input, separator, modifier) {
-    let parts = input.split(separator);
-    let output = [];
-    for (let i = 0; i < parts.length; i++) {
-        output.push(modifier(parts[i]));
-    }
-    return output.join(separator);
-}
-
-function compressFirstHalf(input, separator, modifier) {
-    let lastIndexOf = input.lastIndexOf(separator);
-    if (lastIndexOf === -1) {
-        return modifier(input);
-    }
-    let start = modifier(input.substring(0, lastIndexOf));
-    let end = modifier(input.substring(lastIndexOf + 1));
-    return start + separator + end;
-}
-
-function mapUncompress(part) {
-    return STRING_COMPRESSION_DATA[part];
-}
-
 function uncompressString(compressedString) {
     return DATA.names[compressedString];
-    // return splitModifyCollect(
-    // 		compressedString,
-    // 		'<',
-    // 		(a) => splitModifyCollect(
-    // 				a,
-    // 				'>',
-    // 				(b) => splitModifyCollect(
-    // 						b,
-    // 						'$',
-    // 						(c) => compressFirstHalf(
-    // 								c,
-    // 								'.',
-    // 								mapUncompress
-    // 						)
-    // 				)
-    // 		)
-    // );
 }
 
 function deobfuscateData(data) {
@@ -181,20 +141,25 @@ function remapTypeVariables(typeVariableMap, parameterizedType) {
 }
 
 function getGenericDefinition(type, typeVariableMap) {
-    return getGenericDefinitionLogic(type, typeVariableMap, false);
+    return getGenericDefinitionLogic(type, typeVariableMap, false, true);
 }
 
 function getGenericName(type, typeVariableMap) {
-    return getGenericDefinitionLogic(type, typeVariableMap, true);
+    return getGenericDefinitionLogic(type, typeVariableMap, false, false);
 }
 
-function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable) {
+function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable, appendPackageName) {
     type = getClass(type);
     if (type.isTypeVariable()) {
         type = getClass(exists(typeVariableMap[type]) ? typeVariableMap[type] : type);
     }
     if (type.isRawClass()) {
-        return uncompressString(type.data[PROPERTY.CLASS_NAME])
+        const name = uncompressString(type.data[PROPERTY.CLASS_NAME])
+        if (appendPackageName) {
+            return type.package() + "." + name;
+        } else {
+            return name;
+        }
     }
     if (type.isTypeVariable()) {
         const typeVariableName = uncompressString(type.data[PROPERTY.TYPE_VARIABLE_NAME]);
@@ -205,7 +170,7 @@ function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable
         if (bounds.length === 0) {
             return typeVariableName;
         }
-        return typeVariableName + joiner(bounds, " & ", (bound) => getGenericName(bound, typeVariableMap), " extends ");
+        return typeVariableName + joiner(bounds, " & ", (bound) => getGenericDefinitionLogic(bound, typeVariableMap, true, appendPackageName), " extends ");
     }
     if (type.isWildcard()) {
         const name = "?";
@@ -214,7 +179,7 @@ function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable
             return name + joiner(
                     lowerBounds,
                     " & ",
-                    (bound) => getGenericDefinitionLogic(bound, typeVariableMap, isDefiningTypeVariable),
+                    (bound) => getGenericDefinitionLogic(bound, typeVariableMap, isDefiningTypeVariable, appendPackageName),
                     " super "
             );
         }
@@ -223,16 +188,16 @@ function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable
             return name + joiner(
                     upperBounds,
                     " & ",
-                    (bound) => getGenericDefinitionLogic(bound, typeVariableMap, isDefiningTypeVariable),
+                    (bound) => getGenericDefinitionLogic(bound, typeVariableMap, isDefiningTypeVariable, appendPackageName),
                     " extends "
             );
         }
         return name;
     }
     if (type.isParameterizedType()) {
-        const rawTypeName = getGenericDefinitionLogic(type.rawtype(), typeVariableMap, isDefiningTypeVariable);
+        const rawTypeName = getGenericDefinitionLogic(type.rawtype(), typeVariableMap, isDefiningTypeVariable, appendPackageName);
         const ownerType = type.getOwnerType();
-        const ownerPrefix = (exists(ownerType) ? getGenericDefinitionLogic(ownerType, typeVariableMap, isDefiningTypeVariable) + "." : "");
+        const ownerPrefix = (exists(ownerType) ? getGenericDefinitionLogic(ownerType, typeVariableMap, isDefiningTypeVariable, appendPackageName) + "." : "");
         const actualTypes = type.getTypeVariables();
         if (actualTypes.length === 0) {
             return ownerPrefix + rawTypeName;
@@ -240,7 +205,7 @@ function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable
         const genericArguments = joiner(
                 actualTypes,
                 ", ",
-                (actualType) => getGenericDefinitionLogic(actualType, typeVariableMap, isDefiningTypeVariable),
+                (actualType) => getGenericDefinitionLogic(actualType, typeVariableMap, isDefiningTypeVariable, appendPackageName),
                 "<",
                 ">"
         );

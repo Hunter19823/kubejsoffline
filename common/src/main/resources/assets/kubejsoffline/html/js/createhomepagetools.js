@@ -34,17 +34,34 @@ function wipePage() {
 
 function createHomePage() {
     wipePage();
-    let keys = Object.keys(EVENTS);
+    const EVENTS = {
+        "dev.latvian.mods.kubejs.event.EventJS": [],
+        "net.fabricmc.fabric.api.event.Event": [],
+        "dev.architectury.event.Event": [],
+        "dev.latvian.mods.kubejs.recipe.RecipeJS": [],
+        "net.minecraftforge.eventbus.api.Event": []
+    }
+
+    const keys = Object.keys(EVENTS);
+    for (let i = 0; i < keys.length; i++) {
+        let eventClass = getClass(keys[i]);
+        if (eventClass === null) {
+            continue;
+        }
+        EVENTS[keys[i]].push(eventClass.id());
+    }
+
     let span = null;
     let table = null;
     for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
         span = document.createElement('span');
-        span.innerHTML = keys[i];
-        let period = keys[i]?.lastIndexOf('.');
-        table = createTableWithHeaders(createSortableTable(period === -1 ? keys[i] : keys[i].substring(period + 1)), 'Link', span);
-        for (let j = 0; j < EVENTS[keys[i]].length; j++) {
-            let row = addRow(table, EVENTS[keys[i]][j]);
-            appendAttributesToClassTableRow(row, EVENTS[keys[i]][j]);
+        span.innerHTML = key;
+        let period = key?.lastIndexOf('.');
+        table = createTableWithHeaders(createSortableTable(period === -1 ? key : key.substring(period + 1)), 'Link', span);
+        for (let j = 0; j < EVENTS[key].length; j++) {
+            let row = addRow(table, EVENTS[key][j]);
+            appendAttributesToClassTableRow(row, EVENTS[key][j]);
         }
     }
 }
