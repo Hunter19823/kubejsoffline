@@ -91,7 +91,7 @@ function dataFilter() {
     // Any
 
     output.withClassAny = function (query, exact = false, includes = true) {
-        const TYPE_FILTER = attributeMatcher('type', query, exact, includes);
+        const TYPE_FILTER = attributeMatcher('fullyQualifiedName', query, exact, includes);
 
         return this.withClassFilter((subject) => {
             return TYPE_FILTER(subject);

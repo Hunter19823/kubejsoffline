@@ -167,18 +167,20 @@ function getClass(id) {
                 console.error("Invalid class id/search: " + id);
                 return null;
             }
-            // See if the string is a class type
-            for (let i = LOOK_UP_CACHE.size; i < DATA.types.length; i++) {
-                let lower = getClass(i).fullyQualifiedName().toLowerCase();
-                LOOK_UP_CACHE.set(lower, i);
-                if (lowerID === lower) {
-                    return getClass(i);
+            for (let i = 0; i < 2; i++) {
+                // See if the string is a class type
+                for (let i = LOOK_UP_CACHE.size; i < DATA.types.length; i++) {
+                    let lower = getClass(i).fullyQualifiedName({}, i % 2 === 0).toLowerCase();
+                    LOOK_UP_CACHE.set(lower, i);
+                    if (lowerID === lower) {
+                        return getClass(i);
+                    }
                 }
-            }
-            // See if the string is a class name
-            for (let i = 0; i < DATA.types.length; i++) {
-                if (lowerID === getClass(i).name().toLowerCase()) {
-                    return getClass(i);
+                // See if the string is a class name
+                for (let i = 0; i < DATA.types.length; i++) {
+                    if (lowerID === getClass(i).name({}, i % 2 === 0).toLowerCase()) {
+                        return getClass(i);
+                    }
                 }
             }
             // See if the string is a class simple name
@@ -243,26 +245,60 @@ function getClass(id) {
         return this.fullyQualifiedName(typeVariableMap);
     }
 
-    output.fullyQualifiedName = function (typeVariableMap = {}) {
+    output.fullyQualifiedName = function (typeVariableMap = {}, includeGenerics = true) {
         if (exists(this.data._type_cache)) {
+            if (includeGenerics && this.isRawClass()) {
+                const typeVariables = this.getTypeVariables();
+                let genericSuffix = "";
+                if (typeVariables.length > 0) {
+                    genericSuffix = joiner(typeVariables, ", ", (type) => {
+                        return getClass(type).fullyQualifiedName(typeVariableMap);
+                    }, "<", ">");
+                }
+                return this.data._type_cache + genericSuffix + "[]".repeat(this.getArrayDepth());
+            }
             return this.data._type_cache + "[]".repeat(this.getArrayDepth());
         }
         if (this.isRawClass()) {
             this.data._type_cache = getGenericDefinition(this.id(), createTypeVariableMap(this.id()));
-            return this.data._type_cache + "[]".repeat(this.getArrayDepth());
+            const typeVariables = this.getTypeVariables();
+            let genericSuffix = "";
+            if (typeVariables.length > 0 && includeGenerics) {
+                genericSuffix = joiner(typeVariables, ", ", (type) => {
+                    return getClass(type).fullyQualifiedName(typeVariableMap);
+                }, "<", ">");
+            }
+            return this.data._type_cache + genericSuffix + "[]".repeat(this.getArrayDepth());
         } else {
             return getGenericDefinition(this.id(), typeVariableMap) + "[]".repeat(this.getArrayDepth());
         }
     }
 
 
-    output.name = function (typeVariableMap = {}) {
+    output.name = function (typeVariableMap = {}, includeGenerics = true) {
         if (exists(this.data._name_cache)) {
+            if (includeGenerics && this.isRawClass()) {
+                const typeVariables = this.getTypeVariables();
+                let genericSuffix = "";
+                if (typeVariables.length > 0) {
+                    genericSuffix = joiner(typeVariables, ", ", (type) => {
+                        return getClass(type).name(typeVariableMap);
+                    }, "<", ">");
+                }
+                return this.data._name_cache + genericSuffix + "[]".repeat(this.getArrayDepth());
+            }
             return this.data._name_cache + "[]".repeat(this.getArrayDepth());
         }
         if (this.isRawClass()) {
             this.data._name_cache = getGenericName(this.id(), createTypeVariableMap(this.id()));
-            return this.data._name_cache + "[]".repeat(this.getArrayDepth());
+            const typeVariables = this.getTypeVariables();
+            let genericSuffix = "";
+            if (typeVariables.length > 0 && includeGenerics) {
+                genericSuffix = joiner(typeVariables, ", ", (type) => {
+                    return getClass(type).name(typeVariableMap);
+                }, "<", ">");
+            }
+            return this.data._name_cache + genericSuffix + "[]".repeat(this.getArrayDepth());
         } else {
             return getGenericName(this.id(), typeVariableMap) + "[]".repeat(this.getArrayDepth());
         }

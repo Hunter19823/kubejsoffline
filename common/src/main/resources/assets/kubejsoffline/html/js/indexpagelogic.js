@@ -75,7 +75,7 @@ function loadParameterizedType(parameterizedType) {
     for (let i = 0; i < typeVariables.length; i++) {
         typeVariableMap[typeVariables[i]] = actualTypeArguments[i];
     }
-    loadRawClass(rawType.id, typeVariableMap);
+    loadRawClass(rawType.id(), typeVariableMap);
 }
 
 function loadRawClass(id, typeVariableMap = {}) {
