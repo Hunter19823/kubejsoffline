@@ -252,7 +252,7 @@ function tagJoiner(values, separator, transformer = (a) => span(a), prefix, suff
 
 }
 
-function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, appendPackageName) {
+function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, appendPackageName, overrideID) {
     type = getClass(type);
     const outputSpan = document.createElement('span');
     if (type.isTypeVariable()) {
@@ -263,10 +263,18 @@ function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, 
         if (appendPackageName && type.package() && typeof type.package() === 'string' && type.package().length > 0) {
             outputSpan.append(span(type.package()));
             outputSpan.append(span('.'));
-            outputSpan.append(createLink(span(name), type.id()));
+            if (exists(overrideID)) {
+                outputSpan.append(createLink(span(name), overrideID));
+            } else {
+                outputSpan.append(createLink(span(name), type.id()));
+            }
             return outputSpan;
         } else {
-            outputSpan.append(createLink(span(name), type.id()));
+            if (exists(overrideID)) {
+                outputSpan.append(createLink(span(name), overrideID));
+            } else {
+                outputSpan.append(createLink(span(name), type.id()));
+            }
             return outputSpan;
         }
     }
@@ -337,7 +345,7 @@ function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, 
         return outputSpan;
     }
     if (type.isParameterizedType()) {
-        const rawTypeName = createLinkableSignature(type.getRawType(), typeVariableMap, isDefiningTypeVariable, appendPackageName && !(type.package().length > 0));
+        const rawTypeName = createLinkableSignature(type.getRawType(), typeVariableMap, isDefiningTypeVariable, appendPackageName && !(type.package().length > 0), type.id());
         const ownerType = type.getOwnerType();
         if (exists(ownerType)) {
             const ownerPrefix = createLinkableSignature(ownerType, typeVariableMap, isDefiningTypeVariable, appendPackageName);
