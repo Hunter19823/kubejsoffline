@@ -372,6 +372,18 @@ function getClass(id) {
         return exists(this.data[PROPERTY.OWNER_TYPE]);
     }
 
+    output.getAllInheritedClasses = function () {
+        if (exists(this.data._cachedInheritedClasses)) {
+            return this.data._cachedInheritedClasses;
+        }
+        let classes = new Set();
+        this._follow_inheritance((data, index) => {
+            classes.add(index);
+        });
+        this.data._cachedInheritedClasses = classes;
+        return classes;
+    }
+
     output.rawtype = function () {
         return this.data[PROPERTY.RAW_PARAMETERIZED_TYPE];
     }
@@ -560,10 +572,82 @@ function getClass(id) {
 
     output.relation = function (index) {
         if (!exists(index)) {
-            return null;
+            return [];
         }
         if (index >= 0 && index < RELATIONS.length) {
-            return this.data["" + index];
+            switch (RELATIONS[index]) {
+                case "SUPER_CLASS_OF":
+                    // Find all classes that inherit from this class
+                    if (exists(this.data._subclasses)) {
+                        return this.data._subclasses;
+                    }
+                    this.data._subclasses = [...new Set(findAllClassesThatMatch((data) => {
+                        return this.id() === data.getSuperClass();
+                    }))];
+                    return this.data._subclasses;
+                case "INNER_TYPE_OF":
+                    // Find all inner classes of this class
+                    if (exists(this.data._innerclasses)) {
+                        return this.data._innerclasses;
+                    }
+                    this.data._innerclasses = [...new Set(findAllClassesThatMatch((data) => {
+                        return this.id() === data.getOwnerType();
+                    }))];
+                    return this.data._innerclasses;
+                case "COMPONENT_OF":
+                    // Find all classes that this class is a component of
+                    if (exists(this.data._components)) {
+                        return this.data._components;
+                    }
+                    this.data._components = [...new Set(findAllClassesThatMatch((data) => {
+                        return this.id() === data.getRawType();
+                    }))]
+                    return this.data._components;
+                case "IMPLEMENTATION_OF":
+                    // Find all classes that implement this class
+                    if (exists(this.data._implementations)) {
+                        return this.data._implementations;
+                    }
+                    this.data._implementations = [...new Set(findAllClassesThatMatch((data) => {
+                        return data.getAllInheritedClasses().has(this.id());
+                    }))];
+                    return this.data._implementations;
+                case "DECLARED_FIELD_TYPE_OF":
+                    // Find all classes that contain a field with this type
+                    if (exists(this.data._fields)) {
+                        return this.data._fields;
+                    }
+                    this.data._fields = [...new Set(findAllClassesThatMatch((data) => {
+                        return data.fields(true).some((field) => {
+                            return getClass(getField(field, data.getTypeVariableMap()).type()).id() === this.id();
+                        });
+                    }))];
+                    return this.data._fields;
+                case "DECLARED_METHOD_RETURN_TYPE_OF":
+                    // Find all classes that contain a method with this return type
+                    if (exists(this.data._methods)) {
+                        return this.data._methods;
+                    }
+                    this.data._methods = [...new Set(findAllClassesThatMatch((data) => {
+                        return data.methods(true).some((method) => {
+                            return getClass(getMethod(method, data.getTypeVariableMap()).returnType()).id() === this.id();
+                        });
+                    }))];
+                    return this.data._methods;
+                case "DECLARED_METHOD_PARAMETER_TYPE_OF":
+                    // Find all classes that contain a method with this parameter type
+                    if (exists(this.data._methods)) {
+                        return this.data._methods;
+                    }
+                    this.data._methods = [...new Set(findAllClassesThatMatch((data) => {
+                        return data.methods(true).some((method) => {
+                            return getMethod(method, data.getTypeVariableMap()).parameters().some((param) => {
+                                return getClass(getParameter(param, data.getTypeVariableMap()).type()).id() === this.id();
+                            });
+                        });
+                    }))];
+                    return this.data._methods;
+            }
         }
     }
 

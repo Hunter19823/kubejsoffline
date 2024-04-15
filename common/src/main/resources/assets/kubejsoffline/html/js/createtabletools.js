@@ -97,7 +97,7 @@ function createConstructorTable(id, typeVariableMap = {}) {
     }
 }
 
-function createRelationshipTable(id) {
+function createRelationshipTable(id, typeVariableMap = {}) {
     let data = getClass(id);
     if (GLOBAL_SETTINGS.showRelationships === false) {
         return;
@@ -110,11 +110,9 @@ function createRelationshipTable(id) {
         relation = data.relation(i);
         if (relation) {
             for (let j = 0; j < relation.length; j++) {
-                if (!seen.has(relation[j])) {
-                    row = addRow(table, span(RELATIONS[i]), createFullSignature(relation[j]));
-                    appendAttributesToRelationshipToTableRow(row, relation[j], RELATIONS[i], data.id())
-                    seen.add(relation[j]);
-                }
+                row = addRow(table, span(RELATIONS[i]), createFullSignature(relation[j], typeVariableMap));
+                appendAttributesToRelationshipToTableRow(row, relation[j], RELATIONS[i], data.id())
+                seen.add(relation[j]);
             }
         }
     }

@@ -48,7 +48,7 @@ function createHomePage() {
         if (eventClass === null) {
             continue;
         }
-        EVENTS[keys[i]].push(eventClass.id());
+        EVENTS[keys[i]].push(...eventClass.relation(RELATIONS.indexOf("IMPLEMENTATION_OF")));
     }
 
     let span = null;
@@ -60,8 +60,7 @@ function createHomePage() {
         let period = key?.lastIndexOf('.');
         table = createTableWithHeaders(createSortableTable(period === -1 ? key : key.substring(period + 1)), 'Link', span);
         for (let j = 0; j < EVENTS[key].length; j++) {
-            let row = addRow(table, EVENTS[key][j]);
-            appendAttributesToClassTableRow(row, EVENTS[key][j]);
+            addClassToTable(table, EVENTS[key][j]);
         }
     }
 }

@@ -89,24 +89,22 @@ function loadRawClass(id, typeVariableMap = {}) {
     let classNameTag = document.createElement('h3');
     document.body.append(classNameTag);
     classNameTag.append(createFullSignature(id, typeVariableMap));
-    if (data.isRawClass()) {
-        const typeVariables = data.getTypeVariables();
-        if (typeVariables.length > 0) {
-            classNameTag.append(
-                    tagJoiner(
-                            typeVariables,
-                            ", ",
-                            (actualType) => createLinkableSignature(
-                                    actualType,
-                                    typeVariableMap,
-                                    false,
-                                    true
-                            ),
-                            span("<"),
-                            span(">")
-                    )
-            )
-        }
+    const typeVariables = data.getTypeVariables();
+    if (typeVariables.length > 0) {
+        classNameTag.append(
+                tagJoiner(
+                        typeVariables,
+                        ", ",
+                        (actualType) => createLinkableSignature(
+                                actualType,
+                                typeVariableMap,
+                                false,
+                                true
+                        ),
+                        span("<"),
+                        span(">")
+                )
+        )
     }
     if (superClass) {
         classNameTag.append(span(" extends "));
@@ -126,7 +124,7 @@ function loadRawClass(id, typeVariableMap = {}) {
     createConstructorTable(id, typeVariableMap);
     createFieldTable(id, typeVariableMap);
     createMethodTable(id, typeVariableMap);
-    // createRelationshipTable(id, typeVariableMap);
+    createRelationshipTable(id, typeVariableMap);
 }
 
 function focusElement(elementId) {
