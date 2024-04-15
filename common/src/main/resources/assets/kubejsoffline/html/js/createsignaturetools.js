@@ -33,11 +33,55 @@ function createLink(element, id, rawId = null, focus = null) {
 }
 
 function createShortLink(id, typeVariableMap = {}) {
-    return createLinkableSignature(id, typeVariableMap, false, false);
+    const target = getClass(id);
+    const shortSignature = createLinkableSignature(id, typeVariableMap, false, false);
+    if (target.isRawClass()) {
+        const typeVariables = target.getTypeVariables();
+        if (typeVariables.length === 0) {
+            return shortSignature;
+        }
+        shortSignature.append(
+                tagJoiner(
+                        typeVariables,
+                        ", ",
+                        (actualType) => createLinkableSignature(
+                                actualType,
+                                typeVariableMap,
+                                false,
+                                false
+                        ),
+                        span("<"),
+                        span(">")
+                )
+        )
+    }
+    return shortSignature;
 }
 
 function createFullSignature(id, typeVariableMap = {}) {
-    return createLinkableSignature(id, typeVariableMap, false, true);
+    const target = getClass(id);
+    const fullSignature = createLinkableSignature(id, typeVariableMap, false, true);
+    if (target.isRawClass()) {
+        const typeVariables = target.getTypeVariables();
+        if (typeVariables.length === 0) {
+            return fullSignature;
+        }
+        fullSignature.append(
+                tagJoiner(
+                        typeVariables,
+                        ", ",
+                        (actualType) => createLinkableSignature(
+                                actualType,
+                                typeVariableMap,
+                                false,
+                                true
+                        ),
+                        span("<"),
+                        span(">")
+                )
+        )
+    }
+    return fullSignature;
 }
 
 function createMethodSignature(method_data, typeVariableMap = {}) {
