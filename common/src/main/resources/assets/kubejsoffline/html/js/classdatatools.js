@@ -589,9 +589,16 @@ function getClass(id) {
     return output;
 }
 
-function getParameter(paramData) {
+function getParameter(parameterID, typeVariableMap = {}) {
+    if (typeof parameterID !== "number") {
+        console.error("Invalid parameter type for parameter:", parameterID);
+        throw new Error("Invalid parameter type for parameter: " + parameterID);
+    }
+    const paramData = getParameterData(parameterID);
+
     let output = {};
     output.data = paramData;
+    output._type_variable_map = typeVariableMap;
 
     output.name = function () {
         if (!exists(this.data._name_cache)) {
@@ -601,7 +608,14 @@ function getParameter(paramData) {
     }
 
     output.type = function () {
-        return this.data[PROPERTY.PARAMETER_TYPE];
+        const paramType = this.data[PROPERTY.PARAMETER_TYPE];
+        if (!exists(paramType)) {
+            return paramType;
+        }
+        if (exists(this._type_variable_map[paramType])) {
+            return this._type_variable_map[paramType];
+        }
+        return paramType;
     }
 
     output.modifiers = function () {
@@ -622,6 +636,10 @@ function getParameter(paramData) {
 
     output.id = function () {
         return this.type();
+    }
+
+    output.getTypeVariableMap = function () {
+        return this._type_variable_map;
     }
 
     return output;
