@@ -46,8 +46,7 @@ function joiner(values, separator, transformer = (a) => a, prefix = "", suffix =
  */
 function createTypeVariableMap(type) {
     if (!getClass(type).isRawClass()) {
-        console.log("Type is not a raw class. Cannot make type variable map for this type.");
-        return;
+        return {};
     }
     const typeVariableMap = {};
     // Treat like a stack

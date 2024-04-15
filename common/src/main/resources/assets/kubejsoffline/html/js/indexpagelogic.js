@@ -6,33 +6,107 @@ function loadClass(id) {
         return;
     }
     wipePage();
-    let superClass = data.superclass();
-    let interfaces = data.interfaces();
-    let h1 = document.createElement('h3');
-    let _interface = null;
-    document.body.append(h1);
-    h1.append(createFullSignature(id));
-
-    if (superClass) {
-        h1.append(span(" extends "));
-        h1.append(createFullSignature(superClass));
+    if (data.isWildcard()) {
+        loadWildcard(data);
+        return;
     }
+    if (data.isTypeVariable()) {
+        loadTypeVariable(data);
+        return;
+    }
+    if (data.isParameterizedType()) {
+        loadParameterizedType(data);
+        return;
+    }
+    if (data.isRawClass()) {
+        loadRawClass(id, createTypeVariableMap(id));
+        return;
+    }
+    throw new Error("Unknown class type.");
+}
 
+function loadWildcard(wildcard) {
+    let bigText = document.createElement('h1');
+    document.body.append(bigText);
+    bigText.append("Wildcard Type (");
+    bigText.append(createFullSignature(wildcard.id));
+    bigText.append(")");
+    let text = document.createElement('p');
+    document.body.append(text);
+    text.append("This is a wildcard type. It is used to represent an unknown type. It is used in generics to allow for flexibility in the type system. ");
+    text.append("For example, a List(&lt;?(&gt; can be used to represent a List of any type. ");
+    text.append("The wildcard type is represented by a question mark (?). ");
+    text.append("There are two types of wildcard types: Upper Bounded Wildcards and Lower Bounded Wildcards. ");
+    text.append("An upper bounded wildcard is represented by ? extends T where T is a type. ");
+    text.append("A lower bounded wildcard is represented by ? super T where T is a type. ");
+    text.append("A wildcard type can also have multiple bounds. ");
+    text.append("For example, a wildcard type that is bounded by two types T and S is represented by ? extends T & S. ");
+    text.append("Wildcard types are used to provide flexibility in the type system. ");
+    text.append("They are used to represent unknown types in the context of generics. ");
+}
+
+function loadTypeVariable(typeVariable) {
+    let bigText = document.createElement('h1');
+    document.body.append(bigText);
+    bigText.append("Type Variable (");
+    bigText.append(createFullSignature(typeVariable.id));
+    bigText.append(")");
+    let text = document.createElement('p');
+    document.body.append(text);
+    text.append("This is a type variable. It is used to represent a type that is not known at compile time. ");
+    text.append("It is used in generics to allow for flexibility in the type system. ");
+    text.append("A type variable is represented by a name enclosed in angle brackets (&lt; and &gt;). ");
+    text.append("For example, a List&lt;T&gt; can be used to represent a List of any type. ");
+    text.append("A type variable can also have bounds. ");
+    text.append("For example, a type variable, for instance T, is bounded by a type, for instance S, is represented by 'T extends S'. ");
+    text.append("A type variable can have multiple bounds. ");
+    text.append("For example, a type variable that is bounded by two types T and S is represented by 'T extends S & T'. ");
+    text.append("Type variables can also be cyclic, meaning that a type variable can be bounded by itself. This can be a headache for us to handle at times.");
+}
+
+function loadParameterizedType(parameterizedType) {
+    // Because a parameterized Type is just a raw type with type variables replaced, we can just load the raw type
+    // with a fake parameterized type.
+    let rawType = getClass(parameterizedType.getRawType());
+    let typeVariableMap = {};
+    let actualTypeArguments = parameterizedType.getTypeVariables();
+    let typeVariables = rawType.getTypeVariables();
+    for (let i = 0; i < typeVariables.length; i++) {
+        typeVariableMap[typeVariables[i]] = actualTypeArguments[i];
+    }
+    loadRawClass(rawType.id, typeVariableMap);
+}
+
+function loadRawClass(id, typeVariableMap = {}) {
+    let data = getClass(id);
+    if (!data) {
+        console.error("No class data found for id " + id);
+        return;
+    }
+    const superClass = data.getSuperClass();
+    const interfaces = data.getInterfaces();
+    let classNameTag = document.createElement('h3');
+    document.body.append(classNameTag);
+    classNameTag.append(createFullSignature(id, typeVariableMap));
+    if (superClass) {
+        classNameTag.append(span(" extends "));
+        classNameTag.append(createFullSignature(superClass, typeVariableMap));
+    }
     if (interfaces) {
-        h1.append(span(" implements "));
+        classNameTag.append(span(" implements "));
         let i = 0;
-        for (_interface of interfaces) {
-            h1.append(createFullSignature(_interface));
-            if (i < interfaces.size - 1) {
-                h1.append(', ');
+        for (let _interface of interfaces) {
+            classNameTag.append(createFullSignature(_interface, typeVariableMap));
+            if (i < interfaces.length - 1) {
+                classNameTag.append(', ');
             }
             i++;
         }
     }
-    createConstructorTable(id);
-    createFieldTable(id);
-    createMethodTable(id);
-    createRelationshipTable(id);
+    createConstructorTable(id, typeVariableMap);
+    createFieldTable(id, typeVariableMap);
+    createMethodTable(id, typeVariableMap);
+    // createRelationshipTable(id, typeVariableMap);
 }
 
 function focusElement(elementId) {

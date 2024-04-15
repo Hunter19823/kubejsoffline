@@ -1,4 +1,4 @@
-function createMethodTable(id) {
+function createMethodTable(id, typeVariableMap = {}) {
     let target = getClass(id);
     let methods = target.methods();
     let table = null;
@@ -7,7 +7,7 @@ function createMethodTable(id) {
     let row = null;
     if (methods && GLOBAL_SETTINGS.showMethods) {
         methods = methods.filter((method) => {
-            let m = getMethod(method);
+            let m = getMethod(method, typeVariableMap);
             if (GLOBAL_SETTINGS.showPrivate === false && MODIFIER.isPrivate(m.modifiers())) {
                 return false;
             }
@@ -24,14 +24,14 @@ function createMethodTable(id) {
         }
         table = createTableWithHeaders(createSortableTable('methods'), 'Link', 'Methods', 'Return Type');
         for (method of methods) {
-            meth = getMethod(method);
-            row = addRow(table, createMethodSignature(method), createFullSignature(getMethod(method).returnType()));
+            meth = getMethod(method, typeVariableMap);
+            row = addRow(table, createMethodSignature(method, typeVariableMap), createFullSignature(getMethod(method, typeVariableMap).returnType()));
             appendAttributesToMethodTableRow(row, meth.declaredIn(), meth, target.id());
         }
     }
 }
 
-function createFieldTable(id) {
+function createFieldTable(id, typeVariableMap = {}) {
     let target = getClass(id);
     let fields = target.fields();
     let table = null;
@@ -40,7 +40,7 @@ function createFieldTable(id) {
     let field = null;
     if (fields && GLOBAL_SETTINGS.showFields) {
         fields = fields.filter((field) => {
-            let f = getField(field);
+            let f = getField(field, typeVariableMap);
             if (GLOBAL_SETTINGS.showPrivate === false && MODIFIER.isPrivate(f.modifiers())) {
                 return false;
             }
@@ -57,14 +57,14 @@ function createFieldTable(id) {
         }
         table = createTableWithHeaders(createSortableTable('fields'), 'Link', 'Fields', 'Type');
         for (data of fields) {
-            field = getField(data);
-            row = addRow(table, createFieldSignature(data), createFullSignature(getField(data).type()));
+            field = getField(data, typeVariableMap);
+            row = addRow(table, createFieldSignature(data, typeVariableMap), createFullSignature(getField(data, typeVariableMap).type()));
             appendAttributesToFieldTableRow(row, field.declaredIn(), field, target.id());
         }
     }
 }
 
-function createConstructorTable(id) {
+function createConstructorTable(id, typeVariableMap = {}) {
     let target = getClass(id);
     let constructors = target.constructors();
     let table = null;
@@ -73,7 +73,7 @@ function createConstructorTable(id) {
     let cons = null;
     if (constructors && GLOBAL_SETTINGS.showConstructors) {
         constructors = [...constructors].filter((constructor) => {
-            let c = getConstructor(constructor);
+            let c = getConstructor(constructor, typeVariableMap);
             if (GLOBAL_SETTINGS.showPrivate === false && MODIFIER.isPrivate(c.modifiers())) {
                 return false;
             }
@@ -90,8 +90,8 @@ function createConstructorTable(id) {
         }
         table = createTableWithHeaders(createSortableTable('constructors'), 'Link', 'Constructors');
         for (constructor of constructors) {
-            cons = getConstructor(constructor);
-            row = addRow(table, createConstructorSignature(constructor, id));
+            cons = getConstructor(constructor, typeVariableMap);
+            row = addRow(table, createConstructorSignature(constructor, id, typeVariableMap));
             appendAttributesToConstructorTableRow(row, cons.declaredIn(), cons, target.id());
         }
     }

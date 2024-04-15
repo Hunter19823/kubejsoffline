@@ -135,7 +135,7 @@ function href(element, url) {
 }
 
 
-function appendAnnotationToolTip(tag, annotations) {
+function appendAnnotationToolTip(tag, annotations, typeVariableMap = {}) {
     if (!annotations || annotations.size === 0)
         return;
 
@@ -143,7 +143,7 @@ function appendAnnotationToolTip(tag, annotations) {
     let tooltip = document.createElement('div');
     tooltip.classList.add('tooltiptext');
     for (let annotation of annotations) {
-        tooltip.appendChild(createAnnotationSignature(annotation));
+        tooltip.appendChild(createAnnotationSignature(annotation, typeVariableMap));
     }
     tag.appendChild(tooltip);
 }

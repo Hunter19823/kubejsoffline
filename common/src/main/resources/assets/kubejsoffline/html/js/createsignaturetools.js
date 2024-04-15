@@ -32,128 +32,31 @@ function createLink(element, id, rawId = null, focus = null) {
     return element;
 }
 
-function removeExtends(name) {
-    let phrase = "? extends ";
-    if (name.startsWith(phrase)) {
-        return name.substring(phrase.length);
-    }
-    phrase = "? super ";
-    if (name.startsWith(phrase)) {
-        return name.substring(phrase.length);
-    }
-    return name;
+function createShortLink(id, typeVariableMap = {}) {
+    return createLinkableSignature(id, typeVariableMap, false, false);
 }
 
-function createShortLink(id, parents) {
-    if (!parents) {
-        parents = new Set();
-    }
-    if (parents.has(id)) {
-        let rout = span(getClass(id).name());
-        createLink(rout, id, getClass(id).rawtype());
-        return rout;
-    }
-    parents.add(id);
-    let out = document.createElement('span');
-    let data = getClass(id);
-    let type = span(data.name());
-    let args = data.paramargs();
-    let depth = null;
-    if (data.isInnerClass()) {
-        let firstHalf = createShortLink(data.outerclass(), parents);
-        let middle = span('$');
-        out.append(firstHalf);
-        out.append(middle);
-    }
-    createLink(type, id, data.rawtype());
-    out.append(type);
-    if (args) {
-        out.append('<');
-        for (let i = 0; i < args.length; i++) {
-            out.appendChild(createShortLink(args[i], parents));
-            if (i < args.length - 1) {
-                out.append(', ');
-            }
-        }
-        out.append('>');
-    }
-    depth = data.arrayDepth();
-    if (depth) {
-        for (let i = 0; i < depth; i++) {
-            type.append('[]');
-        }
-    }
-    return out;
+function createFullSignature(id, typeVariableMap = {}) {
+    return createLinkableSignature(id, typeVariableMap, false, true);
 }
 
-function createFullSignature(id, parents) {
-    // if (!parents) {
-    // 	parents = new Set();
-    // } else {
-    // 	if (parents.has(id)) {
-    // 		let rout = span(getClass(id).name());
-    // 		createLink(rout, id, getClass(id).rawtype());
-    // 		return rout;
-    // 	}
-    // }
-    // parents.add(id);
-    let data = getClass(id);
+function createMethodSignature(method_data, typeVariableMap = {}) {
     let out = document.createElement('span');
-    let name = span(removeExtends(data.name()));
-    if (data.isInnerClass()) {
-        let firstHalf = createFullSignature(data.outerclass(), parents);
-        let middle = span('$');
-        out.append(firstHalf);
-        out.append(middle);
-    } else {
-        let package = data.package();
-        if (!exists(package)) {
-            package = "";
-            console.error("Package does not exist for: " + data.name(), data.data);
-        }
-        let parts = package.split('.');
-        let part = null;
-        for (let i = 0; i < parts.length; i++) {
-            part = parts[i];
-            out.appendChild(span(part));
-            out.append('.');
-        }
-    }
-    let args = data.paramargs();
-    createLink(name, id, data.rawtype());
-    appendAnnotationToolTip(name, data.annotations());
-    out.appendChild(name);
-    if (args) {
-        out.append('<');
-        for (let i = 0; i < args.length; i++) {
-            out.appendChild(createFullSignature(args[i], parents));
-            if (i < args.length - 1) {
-                out.append(', ');
-            }
-        }
-        out.append('>');
-    }
-
-    return out;
-}
-
-function createMethodSignature(method_data) {
-    let out = document.createElement('span');
-    let method = getMethod(method_data);
+    let method = getMethod(method_data, typeVariableMap);
     let parameters = method.parameters();
     let param = null;
     let name = span(method.name());
-    appendAnnotationToolTip(name, method.annotations());
+    appendAnnotationToolTip(name, method.annotations(), typeVariableMap);
     out.append(span(MODIFIER.toString(method.modifiers()) + " "));
-    out.append(createShortLink(method.returnType()));
+    out.append(createShortLink(method.returnType(), typeVariableMap));
     out.append(' ');
     out.append(name);
     out.append('(');
     for (let i = 0; i < parameters.length; i++) {
-        param = getParameter(parameters[i]);
-        out.appendChild(createShortLink(param.type()));
+        param = getParameter(parameters[i], typeVariableMap);
+        out.appendChild(createShortLink(param.type(), typeVariableMap));
         name = span(param.name());
-        appendAnnotationToolTip(name, param.annotations());
+        appendAnnotationToolTip(name, param.annotations(), typeVariableMap);
         out.append(' ');
         out.append(name);
         if (i < parameters.length - 1) {
@@ -164,33 +67,33 @@ function createMethodSignature(method_data) {
     return out;
 }
 
-function createFieldSignature(field_data) {
-    let field = getField(field_data);
+function createFieldSignature(field_data, typeVariableMap = {}) {
+    let field = getField(field_data, typeVariableMap);
     let out = document.createElement('span');
     let name = span(field.name());
-    appendAnnotationToolTip(name, field.annotations());
+    appendAnnotationToolTip(name, field.annotations(), typeVariableMap);
     out.append(span(MODIFIER.toString(field.modifiers()) + " "));
-    out.append(createShortLink(field.type()));
+    out.append(createShortLink(field.type(), typeVariableMap));
     out.append(' ');
     out.append(name);
     return out;
 }
 
-function createConstructorSignature(constructor_data, classID) {
+function createConstructorSignature(constructor_data, classID, typeVariableMap = {}) {
     let class_type = getClass(classID);
-    let constructor = getConstructor(constructor_data);
+    let constructor = getConstructor(constructor_data, typeVariableMap);
     let out = document.createElement('span');
     let parameters = constructor.parameters();
     let param = null;
     let name = null;
     out.append(span(MODIFIER.toString(constructor.modifiers()) + " "));
-    out.append(createShortLink(class_type.id()));
+    out.append(createShortLink(class_type.id(), typeVariableMap));
     out.append('(');
     for (let i = 0; i < parameters.length; i++) {
-        param = getParameter(parameters[i]);
-        out.appendChild(createShortLink(param.type()));
+        param = getParameter(parameters[i], typeVariableMap);
+        out.appendChild(createShortLink(param.type(), typeVariableMap));
         name = span(param.name());
-        appendAnnotationToolTip(name, param.annotations());
+        appendAnnotationToolTip(name, param.annotations(), typeVariableMap);
         out.append(' ');
         out.append(name);
         if (i < parameters.length - 1) {
@@ -201,12 +104,12 @@ function createConstructorSignature(constructor_data, classID) {
     return out;
 }
 
-function createAnnotationSignature(annotation_data) {
-    let annotation = getAnnotation(annotation_data);
+function createAnnotationSignature(annotation_data, typeVariableMap) {
+    let annotation = getAnnotation(annotation_data, typeVariableMap);
     let out = document.createElement('span');
     let type = getClass(annotation.type());
-    let simple_name = span(type.simplename());
-    let annotation_string = `@${type.fullyQualifiedName()}(${annotation.string()})`;
+    let simple_name = span(type.simplename(typeVariableMap));
+    let annotation_string = `@${type.fullyQualifiedName(typeVariableMap)}(${annotation.string()})`;
     out.append(br());
     out.append(annotation_string);
     return out;
@@ -218,7 +121,7 @@ function appendAttributesToClassTableRow(row, class_id) {
     row.setAttribute('name', clazz.name());
     row.setAttribute('type', class_id);
     row.setAttribute('row-type', 'class');
-    row.id = clazz.type();
+    row.id = clazz.id();
     // row.setAttribute('declared-in', clazz);
 }
 
@@ -326,4 +229,146 @@ function addMethodToTable(table, classID, method, current_class_id = null) {
 function addFieldToTable(table, class_id, field, current_class_id = null) {
     let row = addRow(table, href(span(class_id), `#${getClass(class_id).fullyQualifiedName()}`), createFieldSignature(field.data), createFullSignature(class_id));
     appendAttributesToFieldTableRow(row, class_id, field, current_class_id);
+}
+
+function tagJoiner(values, separator, transformer = (a) => span(a), prefix, suffix) {
+    if (!exists(transformer)) {
+        transformer = (a) => span(a);
+    }
+    const output = span();
+    if (prefix) {
+        output.append(prefix);
+    }
+    for (let i = 0; i < values.length; i++) {
+        output.append(transformer(values[i]));
+        // If not the last element, add the separator
+        if (i < values.length - 1) {
+            output.append(span(separator));
+        }
+    }
+    if (suffix) {
+        output.append(suffix);
+    }
+    return output;
+
+}
+
+function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, appendPackageName) {
+    type = getClass(type);
+    const outputSpan = document.createElement('span');
+    if (type.isTypeVariable()) {
+        type = getClass(exists(typeVariableMap[type]) ? typeVariableMap[type] : type);
+    }
+    if (type.isRawClass()) {
+        const name = uncompressString(type.data[PROPERTY.CLASS_NAME])
+        if (appendPackageName) {
+            outputSpan.append(span(type.package()));
+            outputSpan.append(span('.'));
+            outputSpan.append(createLink(span(name), type.id()));
+            return outputSpan;
+        } else {
+            outputSpan.append(createLink(span(name), type.id()));
+            return outputSpan;
+        }
+    }
+    if (type.isTypeVariable()) {
+        const typeVariableName = uncompressString(type.data[PROPERTY.TYPE_VARIABLE_NAME]);
+        if (isDefiningTypeVariable) {
+            outputSpan.append(createLink(span(typeVariableName), type.id()));
+            return outputSpan;
+        }
+        const bounds = type.getTypeVariableBounds();
+        if (bounds.length === 0) {
+            outputSpan.append(createLink(span(typeVariableName), type.id()));
+            return outputSpan;
+        }
+        outputSpan.append(createLink(span(typeVariableName), type.id()));
+        outputSpan.append(
+                tagJoiner(
+                        bounds,
+                        " & ",
+                        (bound) => createLinkableSignature(
+                                bound,
+                                typeVariableMap,
+                                true,
+                                appendPackageName
+                        ),
+                        span(" extends ")
+                )
+        );
+        return outputSpan;
+    }
+    if (type.isWildcard()) {
+        const name = "?";
+        const lowerBounds = type.getLowerBound();
+        outputSpan.append(span(name));
+        if (lowerBounds.length !== 0) {
+            outputSpan.append(
+                    tagJoiner(
+                            lowerBounds,
+                            " & ",
+                            (bound) => createLinkableSignature(
+                                    bound,
+                                    typeVariableMap,
+                                    isDefiningTypeVariable,
+                                    appendPackageName
+                            ),
+                            span(" super ")
+                    )
+            );
+            return outputSpan;
+        }
+        const upperBounds = type.getUpperBound();
+        if (upperBounds.length !== 0) {
+            outputSpan.append(
+                    tagJoiner(
+                            upperBounds,
+                            " & ",
+                            (bound) => createLinkableSignature(
+                                    bound,
+                                    typeVariableMap,
+                                    isDefiningTypeVariable,
+                                    appendPackageName
+                            ),
+                            span(" extends ")
+                    )
+            );
+            return outputSpan;
+        }
+        return outputSpan;
+    }
+    if (type.isParameterizedType()) {
+        const rawTypeName = createLinkableSignature(type.rawtype(), typeVariableMap, isDefiningTypeVariable, appendPackageName);
+        const ownerType = type.getOwnerType();
+        if (exists(ownerType)) {
+            const ownerPrefix = createLinkableSignature(ownerType, typeVariableMap, isDefiningTypeVariable, appendPackageName);
+            outputSpan.append(ownerPrefix);
+            outputSpan.append(span('.'));
+        }
+        outputSpan.append(rawTypeName);
+        const actualTypes = type.getTypeVariables();
+        if (actualTypes.length === 0) {
+            return outputSpan;
+        }
+        outputSpan.append(
+                tagJoiner(
+                        actualTypes,
+                        ", ",
+                        (actualType) => createLinkableSignature(
+                                actualType,
+                                typeVariableMap,
+                                isDefiningTypeVariable,
+                                appendPackageName
+                        ),
+                        span("<"),
+                        span(">")
+                )
+        );
+        return outputSpan;
+    }
+
+    console.error("Unknown Type! Cannot get generic definition for: ", type.id(), type.data);
+    return span("Unknown Type");
+
+
 }
