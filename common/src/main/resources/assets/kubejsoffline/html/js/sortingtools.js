@@ -189,40 +189,6 @@ function defaultSort(a, b) {
     }
 }
 
-const SORT_FUNCTIONS = {
-    'default': defaultSort,
-    'name': sortByAttribute('name'),
-    'public': sortByModifiedAttribute('mod', (mod) => {
-        return MODIFIER.isPublic(mod);
-    }),
-    'protected': sortByModifiedAttribute('mod', (mod) => {
-        return MODIFIER.isProtected(mod);
-    }),
-    'private': sortByModifiedAttribute('mod', (mod) => {
-        return MODIFIER.isPrivate(mod);
-    }),
-    'final': sortByModifiedAttribute('mod', (mod) => {
-        return MODIFIER.isFinal(mod);
-    }),
-    'static': sortByModifiedAttribute('mod', (mod) => {
-        return MODIFIER.isStatic(mod);
-    }),
-    'super_class': sortByModifiedAttribute('type', (type) => {
-        return getClass(type).superclass();
-    }),
-    'simple_name': sortByModifiedAttribute('type', (type) => {
-        return getClass(type).simplename();
-    }),
-    'type': sortByModifiedAttribute('type', (type) => {
-        return getClass(type).fullyQualifiedName();
-    }),
-    'declared': sortByModifiedAttribute('declared-in', (type) => {
-        return getClass(type).name();
-    }),
-    'parameter_count': sortByModifiedAttribute('parameters', (count) => {
-        return parseInt(count);
-    }),
-}
 
 function addSortTables() {
     let tables = document.getElementsByClassName('sortable-table');

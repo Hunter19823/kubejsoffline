@@ -29,6 +29,7 @@ public class IndexPage extends HTMLFile {
         this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/createtabletools.js"));
         this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/sortingtools.js"));
         this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/searchingtools.js"));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/searching_and_sorting_constants.js"));
         this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/indexpagelogic.js"));
         this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/contextmenu.js"));
     }
