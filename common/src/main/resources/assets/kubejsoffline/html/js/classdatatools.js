@@ -171,42 +171,42 @@ function getClass(id) {
 
     output.fullyQualifiedName = function (typeVariableMap = {}) {
         if (exists(this.data._type_cache)) {
-            return this.data._type_cache + "[]".repeat(this.arrayDepth());
+            return this.data._type_cache + "[]".repeat(this.getArrayDepth());
         }
         if (this.isRawClass()) {
             this.data._type_cache = getGenericDefinition(this.id(), createTypeVariableMap(this.id()));
-            return this.data._type_cache + "[]".repeat(this.arrayDepth());
+            return this.data._type_cache + "[]".repeat(this.getArrayDepth());
         } else {
-            return getGenericDefinition(this.id(), typeVariableMap) + "[]".repeat(this.arrayDepth());
+            return getGenericDefinition(this.id(), typeVariableMap) + "[]".repeat(this.getArrayDepth());
         }
     }
 
 
     output.name = function (typeVariableMap = {}) {
         if (exists(this.data._name_cache)) {
-            return this.data._name_cache + "[]".repeat(this.arrayDepth());
+            return this.data._name_cache + "[]".repeat(this.getArrayDepth());
         }
         if (this.isRawClass()) {
             this.data._name_cache = getGenericName(this.id(), createTypeVariableMap(this.id()));
-            return this.data._name_cache + "[]".repeat(this.arrayDepth());
+            return this.data._name_cache + "[]".repeat(this.getArrayDepth());
         } else {
-            return getGenericName(this.id(), typeVariableMap) + "[]".repeat(this.arrayDepth());
+            return getGenericName(this.id(), typeVariableMap) + "[]".repeat(this.getArrayDepth());
         }
     }
 
     output.simplename = function () {
         if (this.isWildcard()) {
-            return "?";
+            return "?" + "[]".repeat(this.getArrayDepth());
         }
         if (this.isTypeVariable()) {
-            return uncompressString(this.data[PROPERTY.TYPE_VARIABLE_NAME]);
+            return uncompressString(this.data[PROPERTY.TYPE_VARIABLE_NAME]) + "[]".repeat(this.getArrayDepth());
         }
         if (this.isParameterizedType()) {
-            const rawName = getClass(this.rawtype()).simplename();
+            const rawName = getClass(this.getRawType()).simplename();
             const ownerPrefix = this.getOwnerType() ? getClass(this.getOwnerType()).simplename() + "." : "";
-            return ownerPrefix + rawName;
+            return ownerPrefix + rawName + "[]".repeat(this.getArrayDepth());
         }
-        return uncompressString(this.data[PROPERTY.CLASS_NAME]);
+        return uncompressString(this.data[PROPERTY.CLASS_NAME]) + "[]".repeat(this.getArrayDepth());
     }
 
     output.getTypeVariables = function () {
@@ -231,6 +231,47 @@ function getClass(id) {
 
     output.getOwnerType = function () {
         return this.data[PROPERTY.OWNER_TYPE];
+    }
+
+    output.getSuperClass = function () {
+        return this.data[PROPERTY.SUPER_CLASS];
+    }
+
+    output.getArrayDepth = function () {
+        return (exists(this._array_depth) ? this._array_depth : 0);
+    }
+
+    output.getRawType = function () {
+        return this.data[PROPERTY.RAW_PARAMETERIZED_TYPE];
+    }
+
+    output.getPackageName = function () {
+        if (exists(this.data._cachedPackageName)) {
+            return this.data._cachedPackageName;
+        }
+        const packageName = this.data[PROPERTY.PACKAGE_NAME];
+        if (exists(packageName)) {
+            this.data._cachedPackageName = getPackageName(packageName);
+        } else {
+            this.data._cachedPackageName = "";
+        }
+        return this.data._cachedPackageName;
+    }
+
+    output.getParameterizedArgs = function () {
+        return getAsArray(this.data[PROPERTY.PARAMETERIZED_ARGUMENTS]);
+    }
+
+    output.getModifiers = function () {
+        return this.data[PROPERTY.MODIFIERS];
+    }
+
+    output.isGeneric = function () {
+        return exists(this.data[PROPERTY.PARAMETERIZED_ARGUMENTS]);
+    }
+
+    output.isInnerClass = function () {
+        return exists(this.data[PROPERTY.OWNER_TYPE]);
     }
 
     output.rawtype = function () {
@@ -258,14 +299,6 @@ function getClass(id) {
             return null;
         }
         return args;
-    }
-
-    output.isGeneric = function () {
-        return exists(this.data[PROPERTY.PARAMETERIZED_ARGUMENTS]);
-    }
-
-    output.isInnerClass = function () {
-        return exists(this.data[PROPERTY.OWNER_TYPE]);
     }
 
     output.outerclass = function () {
@@ -426,12 +459,21 @@ function getClass(id) {
     }
 
     output._follow_inheritance = function (action) {
-        let seen = new Set();
-        let current = this.id();
-        while (exists(current) && !seen.has(current)) {
-            action(DATA.types[current]);
+        const seen = new Set();
+        const unprocessed = [this.id()];
+        while (unprocessed.length > 0) {
+            const current = unprocessed.pop();
+            if (!exists(current)) {
+                continue;
+            }
+            if (seen.has(current)) {
+                continue;
+            }
             seen.add(current);
-            current = getClass(current).superclass();
+            action(DATA.types[current]);
+            unprocessed.push(getClass(current).getSuperClass());
+            unprocessed.push(...getClass(current).getInterfaces());
+            unprocessed.push(getClass(current).getOwnerType());
         }
     }
 
@@ -452,12 +494,19 @@ function getClass(id) {
         return `// KJSODocs: ${output.hrefLink()}\nconst $${output.simplename().toUpperCase()} = Java.loadClass("${output.fullyQualifiedName()}");`
     }
 
+    output.toKubeJSLoad_1_20 = function () {
+        return `// KJSODocs: ${output.hrefLink()}\nconst $${output.simplename().toUpperCase()} = Java.loadClass("${output.fullyQualifiedName()}");`
+    }
+
     output.toKubeJSLoad = function () {
         if (PROJECT_INFO.minecraft_version.includes("1.18")) {
             return this.toKubeJSLoad_1_18();
         }
         if (PROJECT_INFO.minecraft_version.includes("1.19")) {
             return this.toKubeJSLoad_1_19();
+        }
+        if (PROJECT_INFO.minecraft_version.includes("1.20")) {
+            return this.toKubeJSLoad_1_20();
         }
     }
 
