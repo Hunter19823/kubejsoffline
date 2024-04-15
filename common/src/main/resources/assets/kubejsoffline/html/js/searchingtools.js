@@ -835,50 +835,45 @@ function addSearchDetails(title, list, focus, page_number, page_size) {
 }
 
 function createSearchBar() {
+    const decodedURLParams = DecodeURL().params;
     // Create one div that contains the search bar
     let searchDiv = document.createElement('div');
     searchDiv.append(document.createElement('br'));
-    searchDiv.id = 'search-bar';
 
     // Create two elements, one for a search type, the other for search input
     let searchType = document.createElement('select');
     let searchInput = document.createElement('input');
-    searchInput.id = 'search-input';
-    searchType.id = 'search-type';
     searchInput.type = 'text';
     searchInput.placeholder = 'Search...';
-    // Use the enter key to change the URL
-    searchInput.onkeydown = function (e) {
-        if (e.key === 'Enter') {
-            const searchType = document.getElementById('search-type');
-            const searchInput = document.getElementById('search-input');
-            const inclusive = document.getElementById('inclusive-search');
-            const exact = document.getElementById('exact-search');
-            changeURL(`#?${searchType.value}=${searchInput.value}&inclusive=${inclusive.checked}&exact=${exact.checked}`);
-        }
-    }
 
-    // Add check box for inclusive search
-    let inclusive = document.createElement('input');
-    inclusive.type = 'checkbox';
-    inclusive.checked = true;
-    inclusive.id = 'inclusive-search';
-    let inclusiveLabel = document.createElement('label');
-    inclusiveLabel.htmlFor = 'inclusive-search';
-    inclusiveLabel.innerText = 'Inclusive Search';
-    searchDiv.append(inclusive);
-    searchDiv.append(inclusiveLabel);
 
     // Add check box for exact search
     let exact = document.createElement('input');
     exact.type = 'checkbox';
-    exact.checked = false;
-    exact.id = 'exact-search';
+    // Set it based on whether the URL has the exact search parameter
+    exact.checked = decodedURLParams.has('exact') ? decodedURLParams.get('exact') === 'true' : false;
     let exactLabel = document.createElement('label');
     exactLabel.htmlFor = 'exact-search';
     exactLabel.innerText = 'Exact Search';
-    searchDiv.append(exact);
-    searchDiv.append(exactLabel);
+
+    // Add check box for inclusive search
+    let inclusive = document.createElement('input');
+    inclusive.type = 'checkbox';
+    inclusive.checked = decodedURLParams.has('inclusive') ? decodedURLParams.get('inclusive') === 'true' : true;
+    let inclusiveLabel = document.createElement('label');
+    inclusiveLabel.htmlFor = 'inclusive-search';
+    inclusiveLabel.innerText = 'Inclusive Search';
+
+    // Use the enter key to change the URL
+    searchInput.onkeydown = function (e) {
+        if (e.key === 'Enter') {
+            const type = searchType.value;
+            const value = searchInput.value;
+            const exactValue = exact.checked;
+            const inclusiveValue = inclusive.checked;
+            changeURL(`#?${type}=${value}&inclusive=${inclusiveValue}&exact=${exactValue}`);
+        }
+    }
 
 
     // Add the search types
@@ -896,6 +891,10 @@ function createSearchBar() {
     // Add the search bar to the page
     searchDiv.append(searchType);
     searchDiv.append(searchInput);
+    searchDiv.append(inclusive);
+    searchDiv.append(inclusiveLabel);
+    searchDiv.append(exact);
+    searchDiv.append(exactLabel);
     document.body.append(searchDiv);
     return searchDiv;
 }
