@@ -337,7 +337,7 @@ function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, 
         return outputSpan;
     }
     if (type.isParameterizedType()) {
-        const rawTypeName = createLinkableSignature(type.rawtype(), typeVariableMap, isDefiningTypeVariable, appendPackageName);
+        const rawTypeName = createLinkableSignature(type.getRawType(), typeVariableMap, isDefiningTypeVariable, appendPackageName);
         const ownerType = type.getOwnerType();
         if (exists(ownerType)) {
             const ownerPrefix = createLinkableSignature(ownerType, typeVariableMap, isDefiningTypeVariable, appendPackageName);
