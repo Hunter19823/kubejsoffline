@@ -419,6 +419,30 @@ function dataFilter() {
         return this.withParamFilter(() => false);
     }
 
+    output.withRawClassOnly = function () {
+        return this.withClassFilter((subject) => subject.isRawClass());
+    }
+
+    output.withNonRawClassOnly = function () {
+        return this.withClassFilter((subject) => !subject.isRawClass());
+    }
+
+    output.withTypeVariableOnly = function () {
+        return this.withClassFilter((subject) => subject.isTypeVariable());
+    }
+
+    output.withNonTypeVariableOnly = function () {
+        return this.withClassFilter((subject) => !subject.isTypeVariable());
+    }
+
+    output.withWildcardOnly = function () {
+        return this.withClassFilter((subject) => subject.isWildcard());
+    }
+
+    output.withNonWildcardOnly = function () {
+        return this.withClassFilter((subject) => !subject.isWildcard());
+    }
+
 
     // Filters
     output.matchesClass = function (data) {
@@ -592,7 +616,17 @@ const NEW_QUERY_TERMS = {
     'ignore-classes': 'withIgnoreClasses',
     'ignore-fields': 'withIgnoreFields',
     'ignore-methods': 'withIgnoreMethods',
-    'ignore-parameters': 'withIgnoreParameters'
+    'ignore-parameters': 'withIgnoreParameters',
+
+
+    'raw-class-only': 'withRawClassOnly',
+    'non-raw-class-only': 'withNonRawClassOnly',
+    'type-variable-only': 'withTypeVariableOnly',
+    'non-type-variable-only': 'withNonTypeVariableOnly',
+    'wildcard-only': 'withWildcardOnly',
+    'non-wildcard-only': 'withNonWildcardOnly',
+
+
 }
 
 let _last_filter = null;
@@ -660,16 +694,18 @@ function searchFromParameters(parameters) {
         console.log("Creating new filter either because the search parameters have changed or don't exist");
         _last_search_parameters = parameters;
         _last_filter = dataFilter();
+        const INCLUSIVE = parameters.has('inclusive') ? parameters.get('inclusive') === 'true' : true;
+        const EXACT = parameters.has('exact') ? parameters.get('exact') === 'true' : false;
 
         for (const key in NEW_QUERY_TERMS) {
             let value = NEW_QUERY_TERMS[key];
             if (_last_search_parameters.has(key)) {
-                _last_filter[value](_last_search_parameters.get(key));
+                _last_filter[value](_last_search_parameters.get(key), EXACT, INCLUSIVE);
                 continue;
             }
             let key_normalized = key.replaceAll(/[^a-z0-9-_]+/g, '');
             if (_last_search_parameters.has(key_normalized)) {
-                _last_filter[value](_last_search_parameters.get(key_normalized));
+                _last_filter[value](_last_search_parameters.get(key_normalized), EXACT, INCLUSIVE);
             }
         }
 
