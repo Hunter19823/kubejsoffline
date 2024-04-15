@@ -536,7 +536,7 @@ function getClass(id) {
         });
 
 
-        return annotations;
+        return [...annotations];
     }
 
     output.modifiers = function () {

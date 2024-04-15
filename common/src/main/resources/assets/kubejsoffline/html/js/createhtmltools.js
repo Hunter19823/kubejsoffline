@@ -138,7 +138,7 @@ function href(element, url) {
 
 
 function appendAnnotationToolTip(tag, annotations, typeVariableMap = {}) {
-    if (!annotations || annotations.size === 0)
+    if (!annotations || annotations.length === 0)
         return;
 
     tag.classList.add('tooltip');
