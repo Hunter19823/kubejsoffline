@@ -209,6 +209,10 @@ function getClass(id) {
         return getAsArray(this.data[PROPERTY.INTERFACES]);
     }
 
+    output.getOwnerType = function () {
+        return this.data[PROPERTY.OWNER_TYPE];
+    }
+
     output.fullyQualifiedName = function (seen = new Set()) {
         if (!this.data._type_cache) {
             this._loadType(seen);

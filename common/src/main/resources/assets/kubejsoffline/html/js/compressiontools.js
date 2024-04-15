@@ -230,7 +230,13 @@ function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable
         return name;
     }
     if (type.isParameterizedType()) {
+        const rawTypeName = getGenericDefinitionLogic(type.rawtype(), typeVariableMap, isDefiningTypeVariable);
+        const ownerType = type.getOwnerType();
+        const ownerPrefix = (exists(ownerType) ? getGenericDefinitionLogic(ownerType, typeVariableMap, isDefiningTypeVariable) + "." : "");
         const actualTypes = type.getTypeVariables();
+        if (actualTypes.length === 0) {
+            return ownerPrefix + rawTypeName;
+        }
         const genericArguments = joiner(
                 actualTypes,
                 ", ",
@@ -238,8 +244,7 @@ function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable
                 "<",
                 ">"
         );
-        const rawTypeName = getGenericDefinitionLogic(type.rawtype(), typeVariableMap, isDefiningTypeVariable);
-        return rawTypeName + genericArguments;
+        return ownerPrefix + rawTypeName + genericArguments;
     }
 
     console.error("Unknown Type! Cannot get generic definition for: ", type.id(), type.data);
