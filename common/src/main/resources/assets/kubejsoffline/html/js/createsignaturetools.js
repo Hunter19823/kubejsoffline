@@ -260,7 +260,7 @@ function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, 
     }
     if (type.isRawClass()) {
         const name = uncompressString(type.data[PROPERTY.CLASS_NAME])
-        if (appendPackageName) {
+        if (appendPackageName && type.package() && typeof type.package() === 'string' && type.package().length > 0) {
             outputSpan.append(span(type.package()));
             outputSpan.append(span('.'));
             outputSpan.append(createLink(span(name), type.id()));
