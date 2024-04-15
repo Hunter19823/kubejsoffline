@@ -104,11 +104,10 @@ function createConstructorSignature(constructor_data, classID, typeVariableMap =
     return out;
 }
 
-function createAnnotationSignature(annotation_data, typeVariableMap) {
+function createAnnotationSignature(annotation_data, typeVariableMap = {}) {
     let annotation = getAnnotation(annotation_data, typeVariableMap);
     let out = document.createElement('span');
     let type = getClass(annotation.type());
-    let simple_name = span(type.simplename(typeVariableMap));
     let annotation_string = `@${type.fullyQualifiedName(typeVariableMap)}(${annotation.string()})`;
     out.append(br());
     out.append(annotation_string);

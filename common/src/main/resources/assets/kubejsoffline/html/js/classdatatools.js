@@ -264,7 +264,7 @@ function getClass(id) {
         }
     }
 
-    output.simplename = function () {
+    output.simplename = function (typeVariableMap = {}) {
         if (this.isWildcard()) {
             return "?" + "[]".repeat(this.getArrayDepth());
         }
@@ -272,8 +272,8 @@ function getClass(id) {
             return uncompressString(this.data[PROPERTY.TYPE_VARIABLE_NAME]) + "[]".repeat(this.getArrayDepth());
         }
         if (this.isParameterizedType()) {
-            const rawName = getClass(this.getRawType()).simplename();
-            const ownerPrefix = this.getOwnerType() ? getClass(this.getOwnerType()).simplename() + "." : "";
+            const rawName = getClass(this.getRawType()).simplename(typeVariableMap);
+            const ownerPrefix = this.getOwnerType() ? getClass(this.getOwnerType()).simplename(typeVariableMap) + "." : "";
             return ownerPrefix + rawName + "[]".repeat(this.getArrayDepth());
         }
         return uncompressString(this.data[PROPERTY.CLASS_NAME]) + "[]".repeat(this.getArrayDepth());
@@ -845,8 +845,12 @@ function getAnnotation(annotationData, typeVariableMap = {}) {
     if (!exists(annotationData)) {
         throw new Error("Invalid annotation data: " + annotationData);
     }
+    if (typeof annotationData !== "number") {
+        console.error("Invalid annotation type for annotation:", annotationData);
+        throw new Error("Invalid annotation type for annotation: " + annotationData);
+    }
     let output = {};
-    output.data = annotationData;
+    output.data = getAnnotationData(annotationData);
     output._type_variable_map = typeVariableMap;
 
     output.type = function () {
