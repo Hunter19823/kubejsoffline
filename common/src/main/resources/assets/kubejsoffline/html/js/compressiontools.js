@@ -44,11 +44,11 @@ function joiner(values, separator, transformer = (a) => a, prefix = "", suffix =
  * Creates a TypeVariableMap from a given class.
  * @param type {number} the id of the type
  */
-function createTypeVariableMap(type) {
+function createTypeVariableMap(type, existingMap = {}) {
     if (!getClass(type).isRawClass()) {
-        return {};
+        return existingMap;
     }
-    const typeVariableMap = {};
+    const typeVariableMap = existingMap;
     // Treat like a stack
     const unprocessedTypes = [type];
     while (unprocessedTypes.length > 0) {
