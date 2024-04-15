@@ -51,6 +51,14 @@ public class TypeManager {
         if (arrayDepth > 0) {
             return new TypeIdentifier(getID(currentType), arrayDepth);
         }
+        boolean isAnonymous = false;
+        while (currentType instanceof Class<?> clazz && clazz.isAnonymousClass()) {
+            currentType = clazz.getGenericSuperclass();
+            isAnonymous = true;
+        }
+        if (isAnonymous) {
+            return getID(currentType);
+        }
         // Raw Type
         if (type instanceof Class<?> clazz) {
             return cache(clazz, new RawClassWrapper(collectionGroup, clazz));

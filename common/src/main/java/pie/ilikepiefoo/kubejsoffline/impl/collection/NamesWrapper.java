@@ -24,6 +24,12 @@ public class NamesWrapper implements Names {
 
     @Override
     public synchronized NameID addName(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException("Name cannot be null!");
+        }
+        if (name.isBlank()) {
+            throw new IllegalArgumentException("Name cannot be blank!");
+        }
         return this.data.add(name);
     }
 

@@ -67,6 +67,9 @@ public class RawClassWrapper implements RawClassData {
         if (name.contains(".")) {
             name = name.substring(name.lastIndexOf(".") + 1);
         }
+        if (name.isBlank()) {
+            throw new IllegalStateException("Name of %s is blank!".formatted(clazz));
+        }
         return this.name = collectionGroup.names().addName(name);
     }
 

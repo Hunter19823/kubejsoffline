@@ -48,13 +48,16 @@ public class TypeVariableMap {
         Type[] actualTypes = parameterizedType.getActualTypeArguments();
         TYPE_LOOP:
         for (int i = 0; i < typeVariables.length; i++) {
+            // If the type variable is already mapped, skip it.
             if (typeVariableMap.containsKey(typeVariables[i])) {
                 continue TYPE_LOOP;
             }
+            // If the actual type is not a type variable, map the type variable to the actual type.
             if (!(actualTypes[i] instanceof TypeVariable<?> actualType)) {
                 typeVariableMap.put(typeVariables[i], actualTypes[i]);
                 continue TYPE_LOOP;
             }
+            // If the actual type is a type variable, find the actual type of the actual type.
             while (typeVariableMap.containsKey(actualType)) {
                 var tempType = typeVariableMap.get(actualType);
                 if (tempType instanceof TypeVariable<?> tempTypeVariable) {
