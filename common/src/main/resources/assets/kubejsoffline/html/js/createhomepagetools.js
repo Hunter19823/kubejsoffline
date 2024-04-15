@@ -48,7 +48,9 @@ function createHomePage() {
         if (eventClass === null) {
             continue;
         }
+        EVENTS[keys[i]].push(...eventClass.relation(RELATIONS.indexOf("COMPONENT_OF")));
         EVENTS[keys[i]].push(...eventClass.relation(RELATIONS.indexOf("IMPLEMENTATION_OF")));
+        // EVENTS[keys[i]].push(...eventClass.relation(RELATIONS.indexOf("TYPE_VARIABLE_OF")));
     }
 
     let span = null;
@@ -60,7 +62,8 @@ function createHomePage() {
         let period = key?.lastIndexOf('.');
         table = createTableWithHeaders(createSortableTable(period === -1 ? key : key.substring(period + 1)), 'Link', span);
         for (let j = 0; j < EVENTS[key].length; j++) {
-            addClassToTable(table, EVENTS[key][j]);
+            let row = addRow(table, createFullSignature(EVENTS[key][j]));
+            appendAttributesToClassTableRow(row, EVENTS[key][j]);
         }
     }
 }

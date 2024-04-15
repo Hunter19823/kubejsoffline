@@ -647,6 +647,16 @@ function getClass(id) {
                         });
                     }))];
                     return this.data._methods;
+                case "TYPE_VARIABLE_OF":
+                    // Find all classes that use this type variable
+                    if (exists(this.data._type_variables)) {
+                        return this.data._type_variables;
+                    }
+                    this.data._type_variables = [...new Set(findAllClassesThatMatch((data) => {
+                        return data.getTypeVariables().includes(this.id());
+                    }))];
+                    return this.data._type_variables;
+
             }
         }
     }

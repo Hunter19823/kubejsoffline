@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 
 public enum RelationType {
     UNKNOWN,
+    TYPE_VARIABLE_OF,
     COMPONENT_OF,
     INNER_TYPE_OF,
     SUPER_CLASS_OF,
