@@ -404,17 +404,11 @@ function getClass(id) {
 
     output.interfaces = function () {
         let interfaces = new Set();
-        this._follow_inheritance((data) => {
+        this._follow_inheritance((data, index) => {
             if (exists(data[PROPERTY.INTERFACES])) {
                 for (let i = 0; i < data[PROPERTY.INTERFACES].length; i++) {
-                    data[PROPERTY.INTERFACES][i].declaringClass = data[PROPERTY.TYPE_ID];
+                    data[PROPERTY.INTERFACES][i].declaringClass = index;
                     interfaces.add(data[PROPERTY.INTERFACES][i]);
-                }
-            }
-            if (exists(data[PROPERTY.GENERIC_INTERFACES])) {
-                for (let i = 0; i < data[PROPERTY.GENERIC_INTERFACES].length; i++) {
-                    data[PROPERTY.GENERIC_INTERFACES][i].declaringClass = data[PROPERTY.TYPE_ID];
-                    interfaces.add(data[PROPERTY.GENERIC_INTERFACES][i]);
                 }
             }
         });
@@ -427,23 +421,23 @@ function getClass(id) {
     output.fields = function (shallow = false) {
         let fields = new Set();
 
-        function addFields(data) {
+        function addFields(data, declaringClass) {
             if (exists(data[PROPERTY.FIELDS])) {
                 for (let i = 0; i < data[PROPERTY.FIELDS].length; i++) {
-                    data[PROPERTY.FIELDS][i].declaringClass = data[PROPERTY.TYPE_ID];
+                    data[PROPERTY.FIELDS][i].declaringClass = declaringClass;
                     fields.add(data[PROPERTY.FIELDS][i]);
                 }
             }
         }
 
         if (shallow) {
-            addFields(this.data);
+            addFields(this.data, this.id());
         } else {
-            this._follow_inheritance((data) => {
-                addFields(data);
+            this._follow_inheritance((data, index) => {
+                addFields(data, index);
                 getClass(data).interfaces()?.forEach((interfaceId) => {
                     let data = getTypeData(interfaceId);
-                    addFields(data);
+                    addFields(data, interfaceId);
                 });
             });
         }
@@ -462,23 +456,23 @@ function getClass(id) {
     output.methods = function (shallow = false) {
         let methods = new Set();
 
-        function addMethods(data) {
+        function addMethods(data, index) {
             if (exists(data[PROPERTY.METHODS])) {
                 for (let i = 0; i < data[PROPERTY.METHODS].length; i++) {
-                    data[PROPERTY.METHODS][i].declaringClass = data[PROPERTY.TYPE_ID];
+                    data[PROPERTY.METHODS][i].declaringClass = getClass(data).id();
                     methods.add(data[PROPERTY.METHODS][i]);
                 }
             }
         }
 
         if (shallow) {
-            addMethods(this.data);
+            addMethods(this.data, this.id());
         } else {
-            this._follow_inheritance((data) => {
-                addMethods(data);
+            this._follow_inheritance((data, index) => {
+                addMethods(data, index);
                 getClass(data).interfaces()?.forEach((interfaceId) => {
                     let data = getTypeData(interfaceId);
-                    addMethods(data);
+                    addMethods(data, interfaceId);
                 });
             });
         }
@@ -497,7 +491,7 @@ function getClass(id) {
         let constructors = new Set();
         if (exists(this.data[PROPERTY.CONSTRUCTORS])) {
             for (let i = 0; i < this.data[PROPERTY.CONSTRUCTORS].length; i++) {
-                this.data[PROPERTY.CONSTRUCTORS][i].declaringClass = this.data[PROPERTY.TYPE_ID];
+                this.data[PROPERTY.CONSTRUCTORS][i].declaringClass = this.data.id();
                 this.data[PROPERTY.CONSTRUCTORS][i].dataIndex = i;
                 constructors.add(this.data[PROPERTY.CONSTRUCTORS][i]);
             }
@@ -540,7 +534,7 @@ function getClass(id) {
                 continue;
             }
             seen.add(current);
-            action(DATA.types[current]);
+            action(DATA.types[current], current);
             unprocessed.push(getClass(current).getSuperClass());
             unprocessed.push(...getClass(current).getInterfaces());
             unprocessed.push(getClass(current).getOwnerType());
