@@ -35,7 +35,7 @@ function loadWildcard(wildcard) {
     let text = document.createElement('p');
     document.body.append(text);
     text.append("This is a wildcard type. It is used to represent an unknown type. It is used in generics to allow for flexibility in the type system. ");
-    text.append("For example, a List(&lt;?(&gt; can be used to represent a List of any type. ");
+    text.append("For example, a List<?> can be used to represent a List of any type. ");
     text.append("The wildcard type is represented by a question mark (?). ");
     text.append("There are two types of wildcard types: Upper Bounded Wildcards and Lower Bounded Wildcards. ");
     text.append("An upper bounded wildcard is represented by ? extends T where T is a type. ");
@@ -44,6 +44,7 @@ function loadWildcard(wildcard) {
     text.append("For example, a wildcard type that is bounded by two types T and S is represented by ? extends T & S. ");
     text.append("Wildcard types are used to provide flexibility in the type system. ");
     text.append("They are used to represent unknown types in the context of generics. ");
+    createRelationshipTable(wildcard.id(), {});
 }
 
 function loadTypeVariable(typeVariable) {
@@ -56,13 +57,14 @@ function loadTypeVariable(typeVariable) {
     document.body.append(text);
     text.append("This is a type variable. It is used to represent a type that is not known at compile time. ");
     text.append("It is used in generics to allow for flexibility in the type system. ");
-    text.append("A type variable is represented by a name enclosed in angle brackets (&lt; and &gt;). ");
-    text.append("For example, a List&lt;T&gt; can be used to represent a List of any type. ");
+    text.append("A type variable is represented by a name enclosed in angle brackets (< and >). ");
+    text.append("For example, a List<T> can be used to represent a List of any type. ");
     text.append("A type variable can also have bounds. ");
     text.append("For example, a type variable, for instance T, is bounded by a type, for instance S, is represented by 'T extends S'. ");
     text.append("A type variable can have multiple bounds. ");
     text.append("For example, a type variable that is bounded by two types T and S is represented by 'T extends S & T'. ");
     text.append("Type variables can also be cyclic, meaning that a type variable can be bounded by itself. This can be a headache for us to handle at times.");
+    createRelationshipTable(typeVariable.id(), {});
 }
 
 function loadParameterizedType(parameterizedType) {
