@@ -217,8 +217,6 @@ function appendAttributesToRelationshipToTableRow(row, relationship, relationshi
     }
 }
 
-const LINK_MAP = {};
-
 function handleClickLink(element) {
     LINK_MAP[element.id]();
 }

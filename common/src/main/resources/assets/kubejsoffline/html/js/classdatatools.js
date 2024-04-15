@@ -1,4 +1,3 @@
-const LOOK_UP_CACHE = new Map();
 function exists(thing) {
     return thing !== null && thing !== undefined;
 }
