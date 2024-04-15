@@ -464,10 +464,6 @@ function getClass(id) {
         } else {
             this._follow_inheritance((data, index) => {
                 addFields(data, index);
-                getClass(data).interfaces()?.forEach((interfaceId) => {
-                    let data = getTypeData(interfaceId);
-                    addFields(data, interfaceId);
-                });
             });
         }
         if (fields.size === 0) {
@@ -499,10 +495,6 @@ function getClass(id) {
         } else {
             this._follow_inheritance((data, index) => {
                 addMethods(data, index);
-                getClass(data).interfaces()?.forEach((interfaceId) => {
-                    let data = getTypeData(interfaceId);
-                    addMethods(data, interfaceId);
-                });
             });
         }
         if (methods.size === 0) {
@@ -618,7 +610,7 @@ function getClass(id) {
                         return this.data._fields;
                     }
                     this.data._fields = [...new Set(findAllClassesThatMatch((data) => {
-                        return data.fields(true).some((field) => {
+                        return data.fields().some((field) => {
                             return getClass(getField(field, data.getTypeVariableMap()).type()).id() === this.id();
                         });
                     }))];
