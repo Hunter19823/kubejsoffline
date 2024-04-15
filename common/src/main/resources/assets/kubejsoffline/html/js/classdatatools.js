@@ -22,14 +22,56 @@ function getAsArray(value) {
 }
 
 function getTypeData(id) {
+    if (!exists(id)) {
+        throw new Error("Invalid type id: " + id);
+    }
+    if (typeof id !== "number") {
+        throw new Error("Invalid type id type: " + typeof id);
+    }
+    if (id < 0 || id >= DATA.types.length) {
+        throw new Error("Type id not within range: " + id);
+    }
+
+    if (!exists(DATA.types[id])) {
+        throw new Error("Illegal State: Type data does not exist for id: " + id);
+    }
+
     return DATA.types[id];
 }
 
 function getParameterData(id) {
+    if (!exists(id)) {
+        throw new Error("Invalid parameter id: " + id);
+    }
+    if (typeof id !== "number") {
+        throw new Error("Invalid parameter id type: " + typeof id);
+    }
+    if (id < 0 || id >= DATA.parameters.length) {
+        throw new Error("Parameter id not within range: " + id);
+    }
+
+    if (!exists(DATA.parameters[id])) {
+        throw new Error("Illegal State: Parameter data does not exist for id: " + id);
+    }
+
     return DATA.parameters[id];
 }
 
 function getPackageData(id) {
+    if (!exists(id)) {
+        throw new Error("Invalid package id: " + id);
+    }
+    if (typeof id !== "number") {
+        throw new Error("Invalid package id type: " + typeof id);
+    }
+    if (id < 0 || id >= DATA.packages.length) {
+        throw new Error("Package id not within range: " + id);
+    }
+
+    if (!exists(DATA.packages[id])) {
+        throw new Error("Illegal State: Package data does not exist for id: " + id);
+    }
+
     return DATA.packages[id];
 }
 
@@ -42,10 +84,38 @@ function getPackageName(id) {
 }
 
 function getNameData(id) {
+    if (!exists(id)) {
+        throw new Error("Invalid name id: " + id);
+    }
+    if (typeof id !== "number") {
+        throw new Error("Invalid name id type: " + typeof id);
+    }
+    if (id < 0 || id >= DATA.names.length) {
+        throw new Error("Name id not within range: " + id);
+    }
+
+    if (!exists(DATA.names[id])) {
+        throw new Error("Illegal State: Name data does not exist for id: " + id);
+    }
+
     return DATA.names[id];
 }
 
 function getAnnotationData(id) {
+    if (!exists(id)) {
+        throw new Error("Invalid annotation id: " + id);
+    }
+    if (typeof id !== "number") {
+        throw new Error("Invalid annotation id type: " + typeof id);
+    }
+    if (id < 0 || id >= DATA.annotations.length) {
+        throw new Error("Annotation id not within range: " + id);
+    }
+
+    if (!exists(DATA.annotations[id])) {
+        throw new Error("Illegal State: Annotation data does not exist for id: " + id);
+    }
+
     return DATA.annotations[id];
 }
 
