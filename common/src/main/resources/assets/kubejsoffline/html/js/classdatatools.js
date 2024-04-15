@@ -706,7 +706,7 @@ function getMethod(methodData, typeVariableMap = {}) {
 
     output.id = function () {
         // Generate a unique HTML ID for this method
-        return getClass(this.declaredIn()).fullyQualifiedName() + "." + this.name() + "(" + this.parameters().map((param) => {
+        return getClass(this.declaredIn()).fullyQualifiedName(this._type_variable_map) + "." + this.name() + "(" + this.parameters().map((param) => {
             return getParameter(param, this._type_variable_map).id();
         }).join(",") + ")";
     }
@@ -763,9 +763,13 @@ function getField(fieldData, typeVariableMap = {}) {
         return this.data.dataIndex;
     }
 
+    output.getTypeVariableMap = function () {
+        return this._type_variable_map;
+    }
+
     output.toKubeJSStaticReference = function () {
         let parent = getClass(this.declaredIn());
-        return `// KJSODocs: ${getClass(this.type()).hrefLink()}\n$${parent.simplename().toUpperCase()}.${this.name()};`;
+        return `// KJSODocs: ${getClass(this.type()).hrefLink()}\n$${parent.simplename(this._type_variable_map).toUpperCase()}.${this.name()};`;
     }
 
     output.id = function () {
@@ -782,28 +786,24 @@ function getField(fieldData, typeVariableMap = {}) {
     return output;
 }
 
-function getConstructor(constructorData) {
+function getConstructor(constructorData, typeVariableMap = {}) {
+    if (!exists(constructorData)) {
+        throw new Error("Invalid constructor data: " + constructorData);
+    }
     let output = {};
     output.data = constructorData;
+    output._type_variable_map = typeVariableMap;
 
     output.modifiers = function () {
         return this.data[PROPERTY.MODIFIERS];
     }
 
     output.annotations = function () {
-        let annotations = this.data[PROPERTY.ANNOTATIONS];
-        if (!exists(annotations) || annotations.length === 0) {
-            return null;
-        }
-        return new Set(annotations);
+        return getAsArray(this.data[PROPERTY.ANNOTATIONS]);
     }
 
     output.parameters = function () {
-        let parameters = this.data[PROPERTY.PARAMETERS];
-        if (!exists(parameters) || parameters.length === 0) {
-            return [];
-        }
-        return parameters;
+        return getAsArray(this.data[PROPERTY.PARAMETERS]);
     }
 
     output.declaredIn = function () {
@@ -814,11 +814,15 @@ function getConstructor(constructorData) {
         return this.data.dataIndex;
     }
 
+    output.getTypeVariableMap = function () {
+        return this._type_variable_map;
+    }
+
     output.toKubeJSStaticCall = function () {
         let parent = getClass(this.declaredIn());
-        let out = `// KJSODocs: ${this.hrefLink()}\nlet ${parent.simplename()} = new $${parent.simplename().toUpperCase()}(`;
+        let out = `// KJSODocs: ${this.hrefLink()}\nlet ${parent.simplename(this._type_variable_map)} = new $${parent.simplename(this._type_variable_map).toUpperCase()}(`;
         for (let i = 0; i < this.parameters().length; i++) {
-            out += getParameter(this.parameters()[i]).name();
+            out += getParameter(this.parameters()[i], this._type_variable_map).name();
             if (i < this.parameters().length - 1) {
                 out += ", ";
             }
@@ -829,8 +833,8 @@ function getConstructor(constructorData) {
 
     output.id = function () {
         // Generate a unique HTML ID for this constructor
-        return getClass(this.declaredIn()).fullyQualifiedName() + ".__init__(" + this.parameters().map((param) => {
-            return getParameter(param).id();
+        return getClass(this.declaredIn()).fullyQualifiedName(this._type_variable_map) + ".__init__(" + this.parameters().map((param) => {
+            return getParameter(param, this._type_variable_map).id();
         }).join(",") + ")";
     }
 
@@ -843,12 +847,23 @@ function getConstructor(constructorData) {
     return output;
 }
 
-function getAnnotation(annotationData) {
+function getAnnotation(annotationData, typeVariableMap = {}) {
+    if (!exists(annotationData)) {
+        throw new Error("Invalid annotation data: " + annotationData);
+    }
     let output = {};
     output.data = annotationData;
+    output._type_variable_map = typeVariableMap;
 
     output.type = function () {
-        return this.data[PROPERTY.ANNOTATION_TYPE];
+        const annotationType = this.data[PROPERTY.ANNOTATION_TYPE];
+        if (!exists(annotationType)) {
+            return annotationType;
+        }
+        if (exists(this._type_variable_map[annotationType])) {
+            return this._type_variable_map[annotationType];
+        }
+        return annotationType;
     }
 
     output.string = function () {
@@ -857,6 +872,10 @@ function getAnnotation(annotationData) {
         } else {
             return "";
         }
+    }
+
+    output.getTypeVariableMap = function () {
+        return this._type_variable_map;
     }
 
     return output;
