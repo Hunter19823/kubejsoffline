@@ -193,3 +193,76 @@ function findWeirdestNames() {
     console.log("Total Weird Names: " + weirdNames.length);
     return weirdNames;
 }
+
+function deobfuscateData(data) {
+    if (typeof data === 'number') {
+        data = getClass(data).data;
+    }
+    let deobfuscatedData = {};
+    for (let prop of Object.entries(PROPERTY)) {
+        if (exists(data[prop[1]])) {
+            deobfuscatedData[prop[0]] = data[prop[1]];
+            if (Array.isArray(deobfuscatedData[prop[0]])) {
+                deobfuscatedData[prop[0]] = deobfuscatedData[prop[0]].map((content) => {
+                    if (typeof content === 'number')
+                        return getClass(content).data;
+                    return deobfuscateData(content);
+                });
+            }
+        }
+    }
+    return deobfuscatedData;
+}
+
+function getRawClasses() {
+    let rawClasses = [];
+    DATA.types.forEach((data, index) => {
+        if (getClass(index).isRawClass()) {
+            rawClasses.push([deobfuscateData(data), index]);
+        }
+    });
+    console.log("Total Raw Classes: " + rawClasses.length);
+    return rawClasses;
+}
+
+function getParameterizedClasses() {
+    let parameterizedClasses = [];
+    DATA.types.forEach((data, index) => {
+        if (getClass(index).isParameterizedType()) {
+            parameterizedClasses.push([deobfuscateData(data), index]);
+        }
+    });
+    console.log("Total Parameterized Classes: " + parameterizedClasses.length);
+    return parameterizedClasses;
+}
+
+function getWildcardClasses() {
+    let wildcardClasses = [];
+    DATA.types.forEach((data, index) => {
+        if (getClass(index).isWildcard()) {
+            wildcardClasses.push([deobfuscateData(data), index]);
+        }
+    });
+    console.log("Total Wildcard Classes: " + wildcardClasses.length);
+    return wildcardClasses;
+}
+
+function getTypeVariables() {
+    let typeVariables = [];
+    DATA.types.forEach((data, index) => {
+        if (getClass(index).isTypeVariable()) {
+            typeVariables.push([deobfuscateData(data), index]);
+        }
+    });
+    console.log("Total Type Variables: " + typeVariables.length);
+    return typeVariables;
+}
+
+function getProperNameOfRawClass(id) {
+    const classType = getClass(id);
+    if (!classType.isRawClass()) {
+        console.error("Type is not a raw class. Cannot get proper name.");
+    }
+    const typeVariableMap = createTypeVariableMap(id);
+    return getGenericDefinitionLogic(classType, typeVariableMap, false);
+}
