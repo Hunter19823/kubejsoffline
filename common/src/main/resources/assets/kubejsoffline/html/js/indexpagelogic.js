@@ -3,6 +3,7 @@ function loadClass(id) {
     let data = getClass(id);
     if (!data) {
         console.error("No class data found for id " + id);
+        createHomePage();
         return;
     }
     wipePage();
