@@ -720,9 +720,14 @@ function getMethod(methodData, typeVariableMap = {}) {
     return output;
 }
 
-function getField(fieldData) {
+function getField(fieldData, typeVariableMap = {}) {
+    if (!exists(fieldData)) {
+        throw new Error("Invalid field data: " + fieldData);
+    }
+
     let output = {};
     output.data = fieldData;
+    output._type_variable_map = typeVariableMap;
 
     output.name = function () {
         if (!exists(this.data._name_cache)) {
@@ -732,7 +737,14 @@ function getField(fieldData) {
     }
 
     output.type = function () {
-        return this.data[PROPERTY.FIELD_TYPE];
+        const fieldType = this.data[PROPERTY.FIELD_TYPE];
+        if (!exists(fieldType)) {
+            return fieldType;
+        }
+        if (exists(this._type_variable_map[fieldType])) {
+            return this._type_variable_map[fieldType];
+        }
+        return fieldType;
     }
 
     output.modifiers = function () {
@@ -740,11 +752,7 @@ function getField(fieldData) {
     }
 
     output.annotations = function () {
-        let annotations = this.data[PROPERTY.ANNOTATIONS];
-        if (!exists(annotations) || annotations.length === 0) {
-            return null;
-        }
-        return new Set(annotations);
+        return getAsArray(this.data[PROPERTY.ANNOTATIONS]);
     }
 
     output.declaredIn = function () {
@@ -762,7 +770,7 @@ function getField(fieldData) {
 
     output.id = function () {
         // Generate a unique HTML ID for this field
-        return getClass(this.declaredIn()).type() + "." + this.name();
+        return getClass(this.declaredIn()).fullyQualifiedName(this._type_variable_map) + "." + this.name();
     }
 
     output.hrefLink = function () {
