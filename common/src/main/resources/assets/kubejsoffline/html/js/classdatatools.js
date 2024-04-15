@@ -236,16 +236,23 @@ function getClass(id) {
         return exists(this.data[PROPERTY.TYPE_VARIABLE_NAME]);
     }
 
+    output.getTypeVariableMap = function () {
+        if (!exists(this.data._type_variable_map)) {
+            this.data._type_variable_map = createTypeVariableMap(this.id());
+        }
+        return this.data._type_variable_map;
+    }
+
     output.id = function () {
         // TODO: Rewrite.
         return this.data._id;
     }
 
     output.referenceName = function (typeVariableMap = {}) {
-        return this.fullyQualifiedName(typeVariableMap);
+        return this.fullyQualifiedName(typeVariableMap, true);
     }
 
-    output.fullyQualifiedName = function (typeVariableMap = {}, includeGenerics = true) {
+    output.fullyQualifiedName = function (typeVariableMap = {}, includeGenerics = false) {
         if (exists(this.data._type_cache)) {
             if (includeGenerics && this.isRawClass()) {
                 const typeVariables = this.getTypeVariables();
@@ -260,7 +267,7 @@ function getClass(id) {
             return this.data._type_cache + "[]".repeat(this.getArrayDepth());
         }
         if (this.isRawClass()) {
-            this.data._type_cache = getGenericDefinition(this.id(), createTypeVariableMap(this.id()));
+            this.data._type_cache = getGenericDefinition(this.id(), this.getTypeVariableMap());
             const typeVariables = this.getTypeVariables();
             let genericSuffix = "";
             if (typeVariables.length > 0 && includeGenerics) {
@@ -275,7 +282,7 @@ function getClass(id) {
     }
 
 
-    output.name = function (typeVariableMap = {}, includeGenerics = true) {
+    output.name = function (typeVariableMap = {}, includeGenerics = false) {
         if (exists(this.data._name_cache)) {
             if (includeGenerics && this.isRawClass()) {
                 const typeVariables = this.getTypeVariables();
@@ -909,7 +916,7 @@ function getAnnotation(annotationData, typeVariableMap = {}) {
 }
 
 function applyToAllClasses(action) {
-    for (let i = 0; i < DATA.length; i++) {
+    for (let i = 0; i < DATA.types.length; i++) {
         action(getClass(i));
     }
 }
