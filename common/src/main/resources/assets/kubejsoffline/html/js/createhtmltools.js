@@ -53,6 +53,8 @@ function div(...args) {
 
 function span(text) {
     let span = document.createElement('span');
+    if (!exists(text))
+        return span;
     span.innerText = text;
     return span;
 }
