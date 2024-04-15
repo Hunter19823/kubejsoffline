@@ -139,6 +139,10 @@ function findBrokenClassNames() {
             getClass(index).name();
         } catch (e) {
             brokenNames.push([data, index, e]);
+            if (brokenNames.length > 100) {
+                console.log("Breaking after 100 broken names.", brokenNames);
+                throw new Error("Too many broken names.");
+            }
         }
     })
     console.log("Total Broken Names: " + brokenNames.length);
@@ -194,18 +198,26 @@ function findAllTypeVariablesWithInvalidState() {
 function findWeirdestNames() {
     let weirdNames = [];
     DATA.types.forEach((data, index) => {
-        let name = getClass(index).name();
-        // If the name contains more than 2 periods.
-        if (name.split(".").length > 2) {
-            weirdNames.push([name, data, index]);
-        }
-        // If the name contains more than 2 generics.
-        if (name.split("<").length > 2) {
-            weirdNames.push([name, data, index]);
+        try {
+            let name = getClass(index).name();
+            // If the name contains more than 2 periods.
+            if (name.split(".").length > 2) {
+                weirdNames.push([name, data, index]);
+            }
+            // If the name contains more than 2 generics.
+            if (name.split("<").length > 2) {
+                weirdNames.push([name, data, index]);
+            }
+        } catch (e) {
+            console.error(e);
+            console.log(data, index);
+            throw e;
         }
     });
     console.log("Total Weird Names: " + weirdNames.length);
-    return weirdNames;
+    return weirdNames.sort((a, b) => {
+        return a[0].length - b[0].length;
+    });
 }
 
 function deobfuscateData(data) {
