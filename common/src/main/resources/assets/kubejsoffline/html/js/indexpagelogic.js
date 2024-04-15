@@ -29,7 +29,7 @@ function loadWildcard(wildcard) {
     let bigText = document.createElement('h1');
     document.body.append(bigText);
     bigText.append("Wildcard Type (");
-    bigText.append(createFullSignature(wildcard.id));
+    bigText.append(createFullSignature(wildcard.id()));
     bigText.append(")");
     let text = document.createElement('p');
     document.body.append(text);
@@ -49,7 +49,7 @@ function loadTypeVariable(typeVariable) {
     let bigText = document.createElement('h1');
     document.body.append(bigText);
     bigText.append("Type Variable (");
-    bigText.append(createFullSignature(typeVariable.id));
+    bigText.append(createFullSignature(typeVariable.id()));
     bigText.append(")");
     let text = document.createElement('p');
     document.body.append(text);

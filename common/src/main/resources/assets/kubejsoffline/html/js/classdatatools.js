@@ -239,6 +239,10 @@ function getClass(id) {
         return this.data._id;
     }
 
+    output.referenceName = function (typeVariableMap = {}) {
+        return this.fullyQualifiedName(typeVariableMap);
+    }
+
     output.fullyQualifiedName = function (typeVariableMap = {}) {
         if (exists(this.data._type_cache)) {
             return this.data._type_cache + "[]".repeat(this.getArrayDepth());
@@ -373,17 +377,6 @@ function getClass(id) {
 
     output.outerclass = function () {
         return this.data[PROPERTY.OWNER_TYPE];
-    }
-
-    output.baseclass = function () {
-        let output = this.id();
-        while (getClass(output).isInnerClass()) {
-            output = getClass(output).outerclass();
-        }
-        while (getClass(output).isParameterizedType()) {
-            output = getClass(output).rawtype();
-        }
-        return output;
     }
 
     output.arrayDepth = function () {
