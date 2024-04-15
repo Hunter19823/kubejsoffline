@@ -623,11 +623,7 @@ function getParameter(parameterID, typeVariableMap = {}) {
     }
 
     output.annotations = function () {
-        let annotations = this.data[PROPERTY.PARAMETER_ANNOTATIONS];
-        if (!exists(this.data[PROPERTY.PARAMETER_ANNOTATIONS]) || annotations.length === 0) {
-            return null;
-        }
-        return new Set(annotations);
+        return getAsArray(this.data[PROPERTY.ANNOTATIONS]);
     }
 
     output.dataIndex = function () {
@@ -645,9 +641,13 @@ function getParameter(parameterID, typeVariableMap = {}) {
     return output;
 }
 
-function getMethod(methodData) {
+function getMethod(methodData, typeVariableMap = {}) {
+    if (!exists(methodData)) {
+        throw new Error("Invalid method data: " + methodData);
+    }
     let output = {};
     output.data = methodData;
+    output._type_variable_map = typeVariableMap;
 
     output.name = function () {
         if (!exists(this.data._name_cache)) {
@@ -657,7 +657,14 @@ function getMethod(methodData) {
     }
 
     output.returnType = function () {
-        return this.data[PROPERTY.METHOD_RETURN_TYPE];
+        const returnType = this.data[PROPERTY.METHOD_RETURN_TYPE];
+        if (!exists(returnType)) {
+            return returnType;
+        }
+        if (exists(this._type_variable_map[returnType])) {
+            return this._type_variable_map[returnType];
+        }
+        return returnType;
     }
 
     output.modifiers = function () {
@@ -665,19 +672,11 @@ function getMethod(methodData) {
     }
 
     output.annotations = function () {
-        let annotations = this.data[PROPERTY.METHOD_ANNOTATIONS];
-        if (!exists(annotations) || annotations.length === 0) {
-            return null;
-        }
-        return new Set(annotations);
+        return getAsArray(this.data[PROPERTY.ANNOTATIONS]);
     }
 
     output.parameters = function () {
-        let parameters = this.data[PROPERTY.PARAMETERS];
-        if (!exists(parameters) || parameters.length === 0) {
-            return [];
-        }
-        return parameters;
+        return getAsArray(this.data[PROPERTY.PARAMETERS]);
     }
 
     output.declaredIn = function () {
@@ -688,11 +687,15 @@ function getMethod(methodData) {
         return this.data.dataIndex;
     }
 
+    output.getTypeVariableMap = function () {
+        return this._type_variable_map;
+    }
+
     output.toKubeJSStaticCall = function () {
         let parent = getClass(this.declaredIn());
         let out = `// KJSODocs: ${this.hrefLink()}\n$${parent.simplename().toUpperCase()}.${this.name()}(`;
         for (let i = 0; i < this.parameters().length; i++) {
-            out += getParameter(this.parameters()[i]).name();
+            out += getParameter(this.parameters()[i], this._type_variable_map).name();
             if (i < this.parameters().length - 1) {
                 out += ", ";
             }
@@ -704,7 +707,7 @@ function getMethod(methodData) {
     output.id = function () {
         // Generate a unique HTML ID for this method
         return getClass(this.declaredIn()).fullyQualifiedName() + "." + this.name() + "(" + this.parameters().map((param) => {
-            return getParameter(param).id();
+            return getParameter(param, this._type_variable_map).id();
         }).join(",") + ")";
     }
 
@@ -737,7 +740,7 @@ function getField(fieldData) {
     }
 
     output.annotations = function () {
-        let annotations = this.data[PROPERTY.FIELD_ANNOTATIONS];
+        let annotations = this.data[PROPERTY.ANNOTATIONS];
         if (!exists(annotations) || annotations.length === 0) {
             return null;
         }
@@ -780,7 +783,7 @@ function getConstructor(constructorData) {
     }
 
     output.annotations = function () {
-        let annotations = this.data[PROPERTY.CONSTRUCTOR_ANNOTATIONS];
+        let annotations = this.data[PROPERTY.ANNOTATIONS];
         if (!exists(annotations) || annotations.length === 0) {
             return null;
         }
