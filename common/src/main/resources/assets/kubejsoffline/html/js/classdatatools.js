@@ -491,7 +491,7 @@ function getClass(id) {
         let constructors = new Set();
         if (exists(this.data[PROPERTY.CONSTRUCTORS])) {
             for (let i = 0; i < this.data[PROPERTY.CONSTRUCTORS].length; i++) {
-                this.data[PROPERTY.CONSTRUCTORS][i].declaringClass = this.data.id();
+                this.data[PROPERTY.CONSTRUCTORS][i].declaringClass = this.id();
                 this.data[PROPERTY.CONSTRUCTORS][i].dataIndex = i;
                 constructors.add(this.data[PROPERTY.CONSTRUCTORS][i]);
             }
