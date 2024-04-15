@@ -88,11 +88,30 @@ function loadRawClass(id, typeVariableMap = {}) {
     let classNameTag = document.createElement('h3');
     document.body.append(classNameTag);
     classNameTag.append(createFullSignature(id, typeVariableMap));
+    if (data.isRawClass()) {
+        const typeVariables = data.getTypeVariables();
+        if (typeVariables.length > 0) {
+            classNameTag.append(
+                    tagJoiner(
+                            typeVariables,
+                            ", ",
+                            (actualType) => createLinkableSignature(
+                                    actualType,
+                                    typeVariableMap,
+                                    false,
+                                    true
+                            ),
+                            span("<"),
+                            span(">")
+                    )
+            )
+        }
+    }
     if (superClass) {
         classNameTag.append(span(" extends "));
         classNameTag.append(createFullSignature(superClass, typeVariableMap));
     }
-    if (interfaces) {
+    if (interfaces.length > 0) {
         classNameTag.append(span(" implements "));
         let i = 0;
         for (let _interface of interfaces) {
