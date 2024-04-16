@@ -306,7 +306,7 @@ function DecodeURL() {
     }
     output.params = new URLSearchParams("");
 
-    if (hash.includes("?") && !hash.includes("? extends ")) {
+    if (hash.startsWith("?") && !hash.startsWith("? ")) {
         let split = hash.split("?");
         hash = split[0];
         output.params = new URLSearchParams(split[1]);
