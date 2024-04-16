@@ -122,12 +122,12 @@ function createBaseContextMenu() {
             let methods = tableEntries.filter((node) => {
                 return node.getAttribute('row-type') === 'method' && MODIFIER.isStatic(node.getAttribute('mod')) && node.hasAttribute('current-class');
             }).map((node) => {
-                return getMethod(getClass(node.getAttribute('current-class')).methods()[node.getAttribute('dataIndex')]);
+                return getClass(node.getAttribute('current-class')).methods()[node.getAttribute('dataIndex')];
             });
             let fields = tableEntries.filter((node) => {
                 return node.getAttribute('row-type') === 'field' && MODIFIER.isStatic(node.getAttribute('mod')) && node.hasAttribute('current-class');
             }).map((node) => {
-                return getField(getClass(node.getAttribute('current-class')).fields()[node.getAttribute('dataIndex')]);
+                return getClass(node.getAttribute('current-class')).fields()[node.getAttribute('dataIndex')];
             });
             let constructors = tableEntries.filter((node) => {
                 return node.getAttribute('row-type') === 'constructor';

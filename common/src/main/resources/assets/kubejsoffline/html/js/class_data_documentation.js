@@ -38,6 +38,7 @@
  * ? extends java.lang.Number
  * @example Wildcard Type with super bounds
  * ? super java.lang.String
+ * @public
  */
 /**
  * A Java Type name without package information
@@ -78,6 +79,7 @@
  * ? extends Number
  * @example Wildcard Type with super bounds
  * ? super String
+ * @public
  */
 /**
  * A Java Type name without package information and type variables
@@ -118,35 +120,42 @@
  * ?
  * @example Wildcard Type with super bounds
  * ?
+ * @public
  */
 /**
  * A type that identifies something.
  * @typedef {*} Identifier
+ * @public
  */
 /**
  * The index of a type within the {@link DATA.types} array
  * @extends {Identifier}
  * @typedef {(int)} TypeIdentifier
+ * @public
  */
 /**
  * The index of a parameter within the {@link DATA.parameters} array
  * @extends {Identifier}
  * @typedef {(int)} ParameterIdentifier
+ * @public
  */
 /**
  * The index of a package within the {@link DATA.packages} array
  * @extends {Identifier}
  * @typedef {(int)} PackageIdentifier
+ * @public
  */
 /**
  * The index of a name within the {@link DATA.names} array
  * @extends {Identifier}
  * @typedef {(int)} NameIdentifier
+ * @public
  */
 /**
  * The index of an annotation within the {@link DATA.annotations} array
  * @extends {Identifier}
  * @typedef {(int)} AnnotationIdentifier
+ * @public
  */
 /**
  * The data structure for all compressed data.
@@ -157,11 +166,13 @@
  * @property {Array<?>} types
  * @property {Array<?>} parameters
  * @property {Array<?>} annotations
+ * @public
  */
 
 /**
  * Used to map type variables to their actual types.
  * @typedef {{[key: TypeIdentifier]: TypeIdentifier}} TypeVariableMap
+ * @public
  */
 
 /**
@@ -169,6 +180,7 @@
  * @typedef CompressedDataHolder
  * @property {Object} data - The compressed data.
  * @property {TypeVariableMap} _type_variable_map - The type variable map.
+ * @public
  */
 /**
  * @typedef TypeHolder
@@ -176,6 +188,7 @@
  * @method getType - Retrieves the type of the object. (Alias for type)
  * @property {function(): TypeIdentifier} type - Retrieves the type of the object.
  * @property {function(): TypeIdentifier} getType - Retrieves the type of the object. (Alias for type)
+ * @public
  */
 /**
  * @typedef ModifiersHolder
@@ -183,30 +196,36 @@
  * @method getModifiers - Retrieves the modifiers of the object. (Alias for modifiers)
  * @property {function(): int} modifiers - Retrieves the modifiers of the object.
  * @property {function(): int} getModifiers - Retrieves the modifiers of the object. (Alias for modifiers)
+ * @public
  */
 /**
  * @typedef ParametersHolder
  * @method parameters - Retrieves the parameters of the object.
  * @method getParameters - Retrieves the parameters of the object. (Alias for parameters)
- * @property {function(): ParameterIdentifier[]} parameters - Retrieves the parameters of the object.
- * @property {function(): ParameterIdentifier[]} getParameters - Retrieves the parameters of the object. (Alias for parameters)
+ * @property {function(): Array<Parameter>} parameters - Retrieves the parameters of the object.
+ * @property {function(): Array<Parameter>} getParameters - Retrieves the parameters of the object. (Alias for parameters)
+ * @public
  */
 /**
  * @typedef AnnotationsHolder
  * @method annotations - Retrieves the annotations of the object.
  * @method getAnnotations - Retrieves the annotations of the object. (Alias for annotations)
- * @property {function(): AnnotationIdentifier[]} annotations - Retrieves the annotations of the object.
- * @property {function(): AnnotationIdentifier[]} getAnnotations - Retrieves the annotations of the object. (Alias for annotations)
+ * @property {function(): Array<Annotation>} annotations - Retrieves the annotations of the object.
+ * @property {function(): Array<Annotation>} getAnnotations - Retrieves the annotations of the object. (Alias for annotations)
+ * @public
  */
 /**
  * @typedef TypeVariableMapHolder
+ * @property _type_variable_map - The type variable map.
  * @method getTypeVariableMap - Retrieves the type variable map of the object.
  * @property {function(): TypeVariableMap} getTypeVariableMap - Retrieves the type variable map of the object.
+ * @public
  */
 /**
  * @typedef TypeVariablesHolder
  * @method getTypeVariables - Retrieves the type variables of the object.
  * @property {function(): Array} getTypeVariables - Retrieves the type variables of the object.
+ * @public
  */
 /**
  * @typedef NameHolder
@@ -214,6 +233,7 @@
  * @method getName - Retrieves the name of the object. (Alias for name)
  * @property {function(): string} name - Retrieves the name of the object.
  * @property {function(): string} getName - Retrieves the name of the object. (Alias for name)
+ * @public
  */
 /**
  * @typedef DataIndexHolder
@@ -221,6 +241,7 @@
  * @method getDataIndex - Retrieves the index of the object in the data array. (Alias for dataIndex)
  * @property {function(): int} dataIndex - Retrieves the index of the object in the data array.
  * @property {function(): int} getDataIndex - Retrieves the index of the object in the data array. (Alias for dataIndex)
+ * @public
  */
 /**
  * @typedef DeclaringClassHolder
@@ -228,6 +249,7 @@
  * @method getDeclaringClass - Retrieves the index of the object that declares this object. (Alias for declaredIn)
  * @property {function(): int} declaringClass - Retrieves the index of the object that declares this object.
  * @property {function(): int} getDeclaringClass - Retrieves the index of the object that declares this object. (Alias for declaredIn)
+ * @public
  */
 /**
  * @typedef IdHolder
@@ -235,12 +257,105 @@
  * @method getId - Retrieves the id of the object. (Alias for id)
  * @property {function(): int} id - Retrieves the id of the object.
  * @property {function(): int} getId - Retrieves the id of the object. (Alias for id)
+ * @public
  */
-
+/**
+ * @typedef HyperLinkable
+ * @method hrefLink - Retrieves the hyperlink for the object.
+ * @method getHrefLink - Retrieves the hyperlink for the object. (Alias for hrefLink)
+ * @property {function(): string} hrefLink - Retrieves the hyperlink for the object.
+ * @property {function(): string} getHrefLink - Retrieves the hyperlink for the object. (Alias for hrefLink)
+ * @public
+ */
+/**
+ * @typedef KubeJSCodeFormattable
+ * @method toKubeJSStaticCall - Formats the object as a KubeJS static call.
+ * @method toKubeJSCode - Formats the object as a KubeJS static reference.
+ * @property {function(): string} toKubeJSStaticCall - Formats the object as a KubeJS static call.
+ * @property {function(): string} toKubeJSCode - Formats the object as a KubeJS static reference.
+ * @public
+ */
 /**
  * @typedef ExceptionsHolder
  * @method getExceptions - Retrieves the exceptions thrown by the object.
  * @property {function(): Array} getExceptions - Retrieves the exceptions thrown by the object.
+ * @public
+ */
+
+/**
+ * @typedef {
+ * NameHolder &
+ * TypeHolder &
+ * ModifiersHolder &
+ * AnnotationsHolder &
+ * DataIndexHolder &
+ * TypeVariableMapHolder &
+ * IdHolder
+ * } Parameter
+ *
+ * @public
+ */
+
+/**
+ * @typedef {
+ *     TypeHolder &
+ *     TypeVariableMap
+ * } Annotation
+ * @property {function(): string} string Returns the string representation of the annotation.
+ * @property {function(): string} getString Returns the string representation of the annotation. (Alias of string)
+ *
+ * @public
+ */
+
+/**
+ * @typedef {
+ * ModifiersHolder &
+ * AnnotationsHolder &
+ * ParametersHolder &
+ * DataIndexHolder &
+ * DeclaringClassHolder &
+ * TypeVariableMapHolder &
+ * IdHolder &
+ * HyperLinkable
+ * } Constructor
+ *
+ * @public
+ */
+
+/**
+ * @typedef {
+ * NameHolder &
+ * TypeHolder &
+ * ModifiersHolder &
+ * AnnotationsHolder &
+ * DataIndexHolder &
+ * DeclaringClassHolder &
+ * TypeVariablesHolder &
+ * IdHolder &
+ * HyperLinkable &
+ * KubeJSCodeFormattable
+ * } Field
+ *
+ * @public
+ */
+
+/**
+ * @typedef {
+ * NameHolder &
+ * TypeHolder &
+ * ModifiersHolder &
+ * AnnotationsHolder &
+ * TypeVariableMapHolder &
+ * ParametersHolder &
+ * DataIndexHolder &
+ * DeclaringClassHolder &
+ * TypeVariablesHolder &
+ * IdHolder &
+ * HyperLinkable &
+ * KubeJSCodeFormattable
+ * } Method
+ *
+ * @public
  */
 
 /**
@@ -300,12 +415,20 @@ function setModifiers(target) {
  */
 function setParameters(target) {
     /**
+     * Converts a parameter to a Parameter object.
+     * @param {ParameterIdentifier} parameter - The parameter to convert.
+     * @returns {Parameter} The converted parameter.
+     */
+    function mapParameter(parameter) {
+        return getParameter(parameter, target.getTypeVariableMap());
+    }
+    /**
      * Retrieves the parameters of the object.
      *
-     * @returns {ParameterIdentifier[]} The parameters of the object.
+     * @returns {Parameter[]} The parameters of the object.
      */
     target.parameters = function () {
-        return getAsArray(target.data[PROPERTY.PARAMETERS]);
+        return getAsArray(target.data[PROPERTY.PARAMETERS]).map(mapParameter);
     }
 
     target.getParameters = target.parameters;
@@ -321,13 +444,23 @@ function setParameters(target) {
  * @returns {T & AnnotationsHolder} The same object with the annotations function added.
  */
 function setAnnotations(target) {
+
+    /**
+     * Maps an annotation to an Annotation object.
+     * @param {AnnotationIdentifier} annotation - The annotation to map.
+     * @returns {Annotation} The mapped annotation.
+     */
+    function mapAnnotation(annotation) {
+        return getAnnotation(annotation, target.getTypeVariableMap());
+    }
+
     /**
      * Retrieves the annotations of the object.
      *
-     * @returns {AnnotationIdentifier[]} The annotations of the object.
+     * @returns {Annotation[]} The annotations of the object.
      */
     target.annotations = function () {
-        return getAsArray(target.data[PROPERTY.ANNOTATIONS]);
+        return getAsArray(target.data[PROPERTY.ANNOTATIONS]).map(mapAnnotation);
     }
 
     target.getAnnotations = target.annotations;

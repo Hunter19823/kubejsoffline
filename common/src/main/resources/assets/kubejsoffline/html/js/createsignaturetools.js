@@ -110,8 +110,13 @@ function createMethodSignature(method, typeVariableMap = {}) {
     return out;
 }
 
-function createFieldSignature(field_data, typeVariableMap = {}) {
-    let field = getField(field_data, typeVariableMap);
+/**
+ * This function creates a html element representing a field.
+ * @param {Field} field Created from the Field class
+ * @param {TypeVariableMap} typeVariableMap
+ * @returns {HTMLSpanElement}
+ */
+function createFieldSignature(field, typeVariableMap = {}) {
     let out = document.createElement('span');
     let name = span(field.name());
     appendAnnotationToolTip(name, field.annotations(), typeVariableMap);
@@ -147,8 +152,14 @@ function createConstructorSignature(constructor_data, classID, typeVariableMap =
     return out;
 }
 
-function createAnnotationSignature(annotation_data, typeVariableMap = {}) {
-    let annotation = getAnnotation(annotation_data, typeVariableMap);
+/**
+ * This function creates a html element representing an annotation.
+ *
+ * @param {Annotation} annotation
+ * @param {TypeVariableMap} typeVariableMap
+ * @returns {HTMLSpanElement}
+ */
+function createAnnotationSignature(annotation, typeVariableMap = {}) {
     let out = document.createElement('span');
     let type = getClass(annotation.type());
     let annotation_string = `@${type.fullyQualifiedName(typeVariableMap)}(${annotation.string()})`;

@@ -459,22 +459,20 @@ function dataFilter() {
             }
             if (this._fieldFilters.length !== 0) {
                 for (let field of subject.fields(true)) {
-                    let f = getField(field, subject.getTypeVariableMap());
-                    if (this.matchesFiled(f)) {
-                        this.results.fields.push(f);
+                    if (this.matchesFiled(field)) {
+                        this.results.fields.push(field);
                     }
                 }
             }
             if (this._methodFilters.length !== 0) {
                 for (let method of subject.methods(true)) {
-                    let m = getMethod(method, subject.getTypeVariableMap());
-                    if (this.matchesMethod(m)) {
-                        this.results.methods.push(m);
+                    if (this.matchesMethod(method)) {
+                        this.results.methods.push(method);
                     } else {
                         if (this._paramFilters.length !== 0) {
-                            for (let param of m.parameters()) {
-                                if (this.matchesParam(getParameter(param, m.getTypeVariableMap()))) {
-                                    this.results.parameters.push(m);
+                            for (let param of method.parameters()) {
+                                if (this.matchesParam(param)) {
+                                    this.results.parameters.push(method);
                                     break;
                                 }
                             }

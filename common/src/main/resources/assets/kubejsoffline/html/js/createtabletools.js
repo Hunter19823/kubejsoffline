@@ -9,14 +9,13 @@ function createMethodTable(id, typeVariableMap = {}) {
         return;
     }
     methods = methods.filter((method) => {
-        let m = getMethod(method, typeVariableMap);
-        if (GLOBAL_SETTINGS.showPrivate === false && MODIFIER.isPrivate(m.modifiers())) {
+        if (GLOBAL_SETTINGS.showPrivate === false && MODIFIER.isPrivate(method.modifiers())) {
             return false;
         }
-        if (GLOBAL_SETTINGS.showProtected === false && MODIFIER.isProtected(m.modifiers())) {
+        if (GLOBAL_SETTINGS.showProtected === false && MODIFIER.isProtected(method.modifiers())) {
             return false;
         }
-        if (GLOBAL_SETTINGS.showMethodsInherited === false && m.getDeclaringClass() != id) {
+        if (GLOBAL_SETTINGS.showMethodsInherited === false && method.getDeclaringClass() != id) {
             return false;
         }
         return true;
@@ -26,9 +25,8 @@ function createMethodTable(id, typeVariableMap = {}) {
     }
     table = createTableWithHeaders(createSortableTable('methods'), 'Link', 'Methods', 'Return Type');
     for (method of methods) {
-        meth = getMethod(method, typeVariableMap);
-        row = addRow(table, createMethodSignature(meth, typeVariableMap), createFullSignature(meth.type()));
-        appendAttributesToMethodTableRow(row, meth.getDeclaringClass(), meth, target.id());
+        row = addRow(table, createMethodSignature(method, typeVariableMap), createFullSignature(method.type()));
+        appendAttributesToMethodTableRow(row, method.getDeclaringClass(), method, target.id());
     }
 }
 
@@ -43,14 +41,13 @@ function createFieldTable(id, typeVariableMap = {}) {
         return;
     }
     fields = fields.filter((field) => {
-        let f = getField(field, typeVariableMap);
-        if (GLOBAL_SETTINGS.showPrivate === false && MODIFIER.isPrivate(f.modifiers())) {
+        if (GLOBAL_SETTINGS.showPrivate === false && MODIFIER.isPrivate(field.modifiers())) {
             return false;
         }
-        if (GLOBAL_SETTINGS.showProtected === false && MODIFIER.isProtected(f.modifiers())) {
+        if (GLOBAL_SETTINGS.showProtected === false && MODIFIER.isProtected(field.modifiers())) {
             return false;
         }
-        if (GLOBAL_SETTINGS.showFieldsInherited === false && f.getDeclaringClass() != id) {
+        if (GLOBAL_SETTINGS.showFieldsInherited === false && field.getDeclaringClass() != id) {
             return false;
         }
         return true;
@@ -59,9 +56,8 @@ function createFieldTable(id, typeVariableMap = {}) {
         return;
     }
     table = createTableWithHeaders(createSortableTable('fields'), 'Link', 'Fields', 'Type');
-    for (data of fields) {
-        field = getField(data, typeVariableMap);
-        row = addRow(table, createFieldSignature(data, typeVariableMap), createFullSignature(getField(data, typeVariableMap).type()));
+    for (field of fields) {
+        row = addRow(table, createFieldSignature(field, typeVariableMap), createFullSignature(field.type()));
         appendAttributesToFieldTableRow(row, field.getDeclaringClass(), field, target.id());
     }
 }
