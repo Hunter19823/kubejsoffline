@@ -205,6 +205,10 @@ function getClass(id) {
         console.error("Invalid class data: ", id, typeof (id));
     }
 
+
+    output = setModifiers(output);
+    output = setTypeVariables(output);
+
     /**
      * Whether this type is a Class type.
      * This means the Type extends Class<?> and is not a parameterized type.
@@ -305,10 +309,6 @@ function getClass(id) {
         return uncompressString(this.data[PROPERTY.CLASS_NAME]) + "[]".repeat(this.getArrayDepth());
     }
 
-    output.getTypeVariables = function () {
-        return getAsArray(this.data[PROPERTY.TYPE_VARIABLES]);
-    }
-
     output.getTypeVariableBounds = function () {
         return getAsArray(this.data[PROPERTY.TYPE_VARIABLE_BOUNDS]);
     }
@@ -356,10 +356,6 @@ function getClass(id) {
 
     output.getParameterizedArgs = function () {
         return getAsArray(this.data[PROPERTY.PARAMETERIZED_ARGUMENTS]);
-    }
-
-    output.getModifiers = function () {
-        return this.data[PROPERTY.MODIFIERS];
     }
 
     output.isGeneric = function () {
@@ -434,7 +430,7 @@ function getClass(id) {
         this._follow_inheritance((data, index) => {
             if (exists(data[PROPERTY.INTERFACES])) {
                 for (let i = 0; i < data[PROPERTY.INTERFACES].length; i++) {
-                    data[PROPERTY.INTERFACES][i].declaringClass = index;
+                    data[PROPERTY.INTERFACES][i]._declaringClass = index;
                     interfaces.add(data[PROPERTY.INTERFACES][i]);
                 }
             }
@@ -451,7 +447,7 @@ function getClass(id) {
         function addFields(data, declaringClass) {
             if (exists(data[PROPERTY.FIELDS])) {
                 for (let i = 0; i < data[PROPERTY.FIELDS].length; i++) {
-                    data[PROPERTY.FIELDS][i].declaringClass = declaringClass;
+                    data[PROPERTY.FIELDS][i]._declaringClass = declaringClass;
                     fields.add(data[PROPERTY.FIELDS][i]);
                 }
             }
@@ -470,7 +466,7 @@ function getClass(id) {
 
         let out = [...fields]
         for (let i = 0; i < out.length; i++) {
-            out[i].dataIndex = i;
+            out[i]._dataIndex = i;
         }
 
         return out;
@@ -482,7 +478,7 @@ function getClass(id) {
         function addMethods(data, index) {
             if (exists(data[PROPERTY.METHODS])) {
                 for (let i = 0; i < data[PROPERTY.METHODS].length; i++) {
-                    data[PROPERTY.METHODS][i].declaringClass = getClass(data).id();
+                    data[PROPERTY.METHODS][i]._declaringClass = getClass(data).id();
                     methods.add(data[PROPERTY.METHODS][i]);
                 }
             }
@@ -500,7 +496,7 @@ function getClass(id) {
         }
         let out = [...methods]
         for (let i = 0; i < out.length; i++) {
-            out[i].dataIndex = i;
+            out[i]._dataIndex = i;
         }
 
         return out;
@@ -510,8 +506,8 @@ function getClass(id) {
         let constructors = new Set();
         if (exists(this.data[PROPERTY.CONSTRUCTORS])) {
             for (let i = 0; i < this.data[PROPERTY.CONSTRUCTORS].length; i++) {
-                this.data[PROPERTY.CONSTRUCTORS][i].declaringClass = this.id();
-                this.data[PROPERTY.CONSTRUCTORS][i].dataIndex = i;
+                this.data[PROPERTY.CONSTRUCTORS][i]._declaringClass = this.id();
+                this.data[PROPERTY.CONSTRUCTORS][i]._dataIndex = i;
                 constructors.add(this.data[PROPERTY.CONSTRUCTORS][i]);
             }
         }
@@ -527,7 +523,7 @@ function getClass(id) {
         this._follow_inheritance((data) => {
             if (exists(data[PROPERTY.ANNOTATIONS])) {
                 for (let i = 0; i < data[PROPERTY.ANNOTATIONS].length; i++) {
-                    data[PROPERTY.ANNOTATIONS][i].dataIndex = i;
+                    data[PROPERTY.ANNOTATIONS][i]._dataIndex = i;
                     annotations.add(data[PROPERTY.ANNOTATIONS][i]);
                 }
             }
@@ -535,10 +531,6 @@ function getClass(id) {
 
 
         return [...annotations];
-    }
-
-    output.modifiers = function () {
-        return this.data[PROPERTY.MODIFIERS];
     }
 
     output._follow_inheritance = function (action) {
@@ -620,7 +612,7 @@ function getClass(id) {
                     }
                     this.data._methods = [...new Set(findAllClassesThatMatch((data) => {
                         return data.methods(true).some((method) => {
-                            return getClass(getMethod(method, data.getTypeVariableMap()).returnType()).id() === this.id();
+                            return getClass(getMethod(method, data.getTypeVariableMap()).type()).id() === this.id();
                         });
                     }))];
                     return this.data._methods;
@@ -684,6 +676,13 @@ function getClass(id) {
     return output;
 }
 
+/**
+ * Returns a parameter wrapper object with the given parameter data.
+ *
+ * @param parameterID The id of the parameter.
+ * @param typeVariableMap The type variable map to use for this parameter.
+ * @returns {NameHolder & TypeHolder & ModifiersHolder & AnnotationsHolder & DataIndexHolder & TypeVariablesHolder & IdHolder}
+ */
 function getParameter(parameterID, typeVariableMap = {}) {
     if (typeof parameterID !== "number") {
         console.error("Invalid parameter type for parameter:", parameterID);
@@ -696,7 +695,7 @@ function getParameter(parameterID, typeVariableMap = {}) {
     output._type_variable_map = typeVariableMap;
 
     output = setBasicName(output);
-    output = setRemapType(output, PROPERTY.PARAMETER_TYPE);
+    output = setRemapType(output);
     output = setModifiers(output);
     output = setAnnotations(output);
     output = setDataIndex(output);
@@ -707,6 +706,13 @@ function getParameter(parameterID, typeVariableMap = {}) {
     return output;
 }
 
+/**
+ * Returns a method wrapper object with the given method data.
+
+ * @param methodData The blob of method data
+ * @param typeVariableMap The type variable map to use for this method.
+ * @returns {NameHolder & TypeHolder & ModifiersHolder & AnnotationsHolder & TypeVariableMapHolder & ParametersHolder & DataIndexHolder & DeclaringClassHolder & TypeVariablesHolder & {toKubeJSStaticCall: (function(): string), id: (function(): string), hrefLink: (function(): string)}}
+ */
 function getMethod(methodData, typeVariableMap = {}) {
     if (!exists(methodData)) {
         throw new Error("Invalid method data: " + methodData);
@@ -716,17 +722,17 @@ function getMethod(methodData, typeVariableMap = {}) {
     output._type_variable_map = typeVariableMap;
 
     output = setBasicName(output);
-    output = setRemapType(output, PROPERTY.METHOD_RETURN_TYPE);
+    output = setRemapType(output);
     output = setModifiers(output);
     output = setAnnotations(output);
     output = setParameters(output);
     output = setDataIndex(output);
-    output = setDeclaredIn(output);
+    output = setDeclaringClass(output);
     output = setTypeVariables(output);
     output = setTypeVariableMap(output);
 
     output.toKubeJSStaticCall = function () {
-        let parent = getClass(this.declaredIn());
+        let parent = getClass(this.getDeclaringClass());
         let out = `// KJSODocs: ${this.hrefLink()}\n$${parent.simplename().toUpperCase()}.${this.name()}(`;
         for (let i = 0; i < this.parameters().length; i++) {
             out += getParameter(this.parameters()[i], this._type_variable_map).name();
@@ -740,7 +746,7 @@ function getMethod(methodData, typeVariableMap = {}) {
 
     output.id = function () {
         // Generate a unique HTML ID for this method
-        return getClass(this.declaredIn()).fullyQualifiedName(this._type_variable_map) + "." + this.name() + "(" + this.parameters().map((param) => {
+        return getClass(this.getDeclaringClass()).fullyQualifiedName(this._type_variable_map) + "." + this.name() + "(" + this.parameters().map((param) => {
             return getParameter(param, this._type_variable_map).id();
         }).join(",") + ")";
     }
@@ -754,6 +760,13 @@ function getMethod(methodData, typeVariableMap = {}) {
     return output;
 }
 
+/**
+ * Returns a field wrapper object with the given field data.
+ *
+ * @param fieldData The blob of field data
+ * @param typeVariableMap The type variable map to use for this field.
+ * @returns {NameHolder & TypeHolder & ModifiersHolder & AnnotationsHolder & DataIndexHolder & DeclaringClassHolder & TypeVariablesHolder & {toKubeJSStaticReference: (function(): string), id: (function(): string), hrefLink: (function(): string)}}
+ */
 function getField(fieldData, typeVariableMap = {}) {
     if (!exists(fieldData)) {
         throw new Error("Invalid field data: " + fieldData);
@@ -764,21 +777,21 @@ function getField(fieldData, typeVariableMap = {}) {
     output._type_variable_map = typeVariableMap;
 
     output = setBasicName(output);
-    output = setRemapType(output, PROPERTY.FIELD_TYPE);
+    output = setRemapType(output);
     output = setModifiers(output);
     output = setAnnotations(output);
     output = setDataIndex(output);
-    output = setDeclaredIn(output);
+    output = setDeclaringClass(output);
     output = setTypeVariableMap(output);
 
     output.toKubeJSStaticReference = function () {
-        let parent = getClass(this.declaredIn());
+        let parent = getClass(this.getDeclaringClass());
         return `// KJSODocs: ${getClass(this.type()).hrefLink()}\n$${parent.simplename(this._type_variable_map).toUpperCase()}.${this.name()};`;
     }
 
     output.id = function () {
         // Generate a unique HTML ID for this field
-        return getClass(this.declaredIn()).fullyQualifiedName(this._type_variable_map) + "." + this.name();
+        return getClass(this.getDeclaringClass()).fullyQualifiedName(this._type_variable_map) + "." + this.name();
     }
 
     output.hrefLink = function () {
@@ -790,6 +803,13 @@ function getField(fieldData, typeVariableMap = {}) {
     return output;
 }
 
+/**
+ * Returns a constructor wrapper object with the given constructor data.
+ *
+ * @param constructorData The blob of constructor data
+ * @param typeVariableMap The type variable map to use for this constructor.
+ * @returns {ModifiersHolder & AnnotationsHolder & ParametersHolder & DataIndexHolder & DeclaringClassHolder & TypeVariableMapHolder & {toKubeJSStaticCall: (function(): string), id: (function(): string), hrefLink: (function(): string)}}
+ */
 function getConstructor(constructorData, typeVariableMap = {}) {
     if (!exists(constructorData)) {
         throw new Error("Invalid constructor data: " + constructorData);
@@ -802,11 +822,11 @@ function getConstructor(constructorData, typeVariableMap = {}) {
     output = setAnnotations(output);
     output = setParameters(output);
     output = setDataIndex(output);
-    output = setDeclaredIn(output);
+    output = setDeclaringClass(output);
     output = setTypeVariableMap(output);
 
     output.toKubeJSStaticCall = function () {
-        let parent = getClass(this.declaredIn());
+        let parent = getClass(this.getDeclaringClass());
         let out = `// KJSODocs: ${this.hrefLink()}\nlet ${parent.simplename(this._type_variable_map)} = new $${parent.simplename(this._type_variable_map).toUpperCase()}(`;
         for (let i = 0; i < this.parameters().length; i++) {
             out += getParameter(this.parameters()[i], this._type_variable_map).name();
@@ -820,7 +840,7 @@ function getConstructor(constructorData, typeVariableMap = {}) {
 
     output.id = function () {
         // Generate a unique HTML ID for this constructor
-        return getClass(this.declaredIn()).fullyQualifiedName(this._type_variable_map) + ".__init__(" + this.parameters().map((param) => {
+        return getClass(this.getDeclaringClass()).fullyQualifiedName(this._type_variable_map) + ".__init__(" + this.parameters().map((param) => {
             return getParameter(param, this._type_variable_map).id();
         }).join(",") + ")";
     }
@@ -846,7 +866,7 @@ function getAnnotation(annotationData, typeVariableMap = {}) {
     output.data = getAnnotationData(annotationData);
     output._type_variable_map = typeVariableMap;
 
-    output = setRemapType(output, PROPERTY.ANNOTATION_TYPE);
+    output = setRemapType(output);
     output = setTypeVariableMap(output);
 
     output.string = function () {

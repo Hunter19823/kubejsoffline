@@ -170,30 +170,94 @@
  * @property {Object} data - The compressed data.
  * @property {TypeVariableMap} _type_variable_map - The type variable map.
  */
+/**
+ * @typedef TypeHolder
+ * @method type - Retrieves the type of the object.
+ * @method getType - Retrieves the type of the object. (Alias for type)
+ * @property {function(): TypeIdentifier} type - Retrieves the type of the object.
+ * @property {function(): TypeIdentifier} getType - Retrieves the type of the object. (Alias for type)
+ */
+/**
+ * @typedef ModifiersHolder
+ * @method modifiers - Retrieves the modifiers of the object.
+ * @method getModifiers - Retrieves the modifiers of the object. (Alias for modifiers)
+ * @property {function(): int} modifiers - Retrieves the modifiers of the object.
+ * @property {function(): int} getModifiers - Retrieves the modifiers of the object. (Alias for modifiers)
+ */
+/**
+ * @typedef ParametersHolder
+ * @method parameters - Retrieves the parameters of the object.
+ * @method getParameters - Retrieves the parameters of the object. (Alias for parameters)
+ * @property {function(): ParameterIdentifier[]} parameters - Retrieves the parameters of the object.
+ * @property {function(): ParameterIdentifier[]} getParameters - Retrieves the parameters of the object. (Alias for parameters)
+ */
+/**
+ * @typedef AnnotationsHolder
+ * @method annotations - Retrieves the annotations of the object.
+ * @method getAnnotations - Retrieves the annotations of the object. (Alias for annotations)
+ * @property {function(): AnnotationIdentifier[]} annotations - Retrieves the annotations of the object.
+ * @property {function(): AnnotationIdentifier[]} getAnnotations - Retrieves the annotations of the object. (Alias for annotations)
+ */
+/**
+ * @typedef TypeVariableMapHolder
+ * @method getTypeVariableMap - Retrieves the type variable map of the object.
+ * @property {function(): TypeVariableMap} getTypeVariableMap - Retrieves the type variable map of the object.
+ */
+/**
+ * @typedef TypeVariablesHolder
+ * @method getTypeVariables - Retrieves the type variables of the object.
+ * @property {function(): Array} getTypeVariables - Retrieves the type variables of the object.
+ */
+/**
+ * @typedef NameHolder
+ * @method name - Retrieves the name of the object.
+ * @method getName - Retrieves the name of the object. (Alias for name)
+ * @property {function(): string} name - Retrieves the name of the object.
+ * @property {function(): string} getName - Retrieves the name of the object. (Alias for name)
+ */
+/**
+ * @typedef DataIndexHolder
+ * @method dataIndex - Retrieves the index of the object in the data array.
+ * @method getDataIndex - Retrieves the index of the object in the data array. (Alias for dataIndex)
+ * @property {function(): int} dataIndex - Retrieves the index of the object in the data array.
+ * @property {function(): int} getDataIndex - Retrieves the index of the object in the data array. (Alias for dataIndex)
+ */
+/**
+ * @typedef DeclaringClassHolder
+ * @method declaringClass - Retrieves the index of the object that declares this object.
+ * @method getDeclaringClass - Retrieves the index of the object that declares this object. (Alias for declaredIn)
+ * @property {function(): int} declaringClass - Retrieves the index of the object that declares this object.
+ * @property {function(): int} getDeclaringClass - Retrieves the index of the object that declares this object. (Alias for declaredIn)
+ */
+/**
+ * @typedef IdHolder
+ * @method id - Retrieves the id of the object.
+ * @method getId - Retrieves the id of the object. (Alias for id)
+ * @property {function(): int} id - Retrieves the id of the object.
+ * @property {function(): int} getId - Retrieves the id of the object. (Alias for id)
+ */
+
+/**
+ * @typedef ExceptionsHolder
+ * @method getExceptions - Retrieves the exceptions thrown by the object.
+ * @property {function(): Array} getExceptions - Retrieves the exceptions thrown by the object.
+ */
 
 /**
  * Sets the type function on the provided object.
  * The type function retrieves the type of the object.
  * @template {CompressedDataHolder} T The source object type.
  * @param {T} target - The object to set the type for.
- * @param {string} propertyName - The name of the property that contains the type.
  * @returns {T & TypeHolder} The same object with the type function added.
  */
-function setRemapType(target, propertyName) {
-    /**
-     * @typedef TypeHolder
-     * @method type - Retrieves the type of the object.
-     * @method getType - Retrieves the type of the object. (Alias for type)
-     * @property {function(): TypeIdentifier} type - Retrieves the type of the object.
-     * @property {function(): TypeIdentifier} getType - Retrieves the type of the object. (Alias for type)
-     */
+function setRemapType(target) {
     /**
      * Retrieves the type of the object.
      *
      * @returns {TypeIdentifier} The type of the object.
      */
     target.type = function () {
-        const type = target.data[propertyName];
+        const type = target.data[PROPERTY.TYPE];
         if (!exists(target._type_variable_map)) {
             return type;
         }
@@ -217,13 +281,6 @@ function setRemapType(target, propertyName) {
  */
 function setModifiers(target) {
     /**
-     * @typedef ModifiersHolder
-     * @method modifiers - Retrieves the modifiers of the object.
-     * @method getModifiers - Retrieves the modifiers of the object. (Alias for modifiers)
-     * @property {function(): int} modifiers - Retrieves the modifiers of the object.
-     * @property {function(): int} getModifiers - Retrieves the modifiers of the object. (Alias for modifiers)
-     */
-    /**
      * Retrieves the modifiers of the object.
      *
      * @returns {int} The modifiers of the object.
@@ -246,16 +303,9 @@ function setModifiers(target) {
  */
 function setParameters(target) {
     /**
-     * @typedef ParametersHolder
-     * @method parameters - Retrieves the parameters of the object.
-     * @method getParameters - Retrieves the parameters of the object. (Alias for parameters)
-     * @property {function(): Array} parameters - Retrieves the parameters of the object.
-     * @property {function(): Array} getParameters - Retrieves the parameters of the object. (Alias for parameters)
-     */
-    /**
      * Retrieves the parameters of the object.
      *
-     * @returns {Array} The parameters of the object.
+     * @returns {ParameterIdentifier[]} The parameters of the object.
      */
     target.parameters = function () {
         return getAsArray(target.data[PROPERTY.PARAMETERS]);
@@ -275,16 +325,9 @@ function setParameters(target) {
  */
 function setAnnotations(target) {
     /**
-     * @typedef AnnotationsHolder
-     * @method annotations - Retrieves the annotations of the object.
-     * @method getAnnotations - Retrieves the annotations of the object. (Alias for annotations)
-     * @property {function(): Array} annotations - Retrieves the annotations of the object.
-     * @property {function(): Array} getAnnotations - Retrieves the annotations of the object. (Alias for annotations)
-     */
-    /**
      * Retrieves the annotations of the object.
      *
-     * @returns {Array} The annotations of the object.
+     * @returns {AnnotationIdentifier[]} The annotations of the object.
      */
     target.annotations = function () {
         return getAsArray(target.data[PROPERTY.ANNOTATIONS]);
@@ -304,14 +347,9 @@ function setAnnotations(target) {
  */
 function setTypeVariableMap(target) {
     /**
-     * @typedef TypeVariableMapHolder
-     * @method getTypeVariableMap - Retrieves the type variable map of the object.
-     * @property {function(): Object} getTypeVariableMap - Retrieves the type variable map of the object.
-     */
-    /**
      * Retrieves the type variable map of the object.
      *
-     * @returns {Object} The type variable map of the object.
+     * @returns {TypeVariableMap} The type variable map of the object.
      */
     target.getTypeVariableMap = function () {
         if (!exists(target._type_variable_map)) {
@@ -332,11 +370,6 @@ function setTypeVariableMap(target) {
  */
 function setTypeVariables(target) {
     /**
-     * @typedef TypeVariablesHolder
-     * @method getTypeVariables - Retrieves the type variables of the object.
-     * @property {function(): Array} getTypeVariables - Retrieves the type variables of the object.
-     */
-    /**
      * Retrieves the type variables of the object.
      *
      * @returns {Array} The type variables of the object.
@@ -356,13 +389,6 @@ function setTypeVariables(target) {
  * @returns {T & NameHolder} The same object with the name function added.
  */
 function setBasicName(target) {
-    /**
-     * @typedef NameHolder
-     * @method name - Retrieves the name of the object.
-     * @method getName - Retrieves the name of the object. (Alias for name)
-     * @property {function(): string} name - Retrieves the name of the object.
-     * @property {function(): string} getName - Retrieves the name of the object. (Alias for name)
-     */
     /**
      * Retrieves the name of the object.
      *
@@ -389,19 +415,12 @@ function setBasicName(target) {
  */
 function setDataIndex(target) {
     /**
-     * @typedef DataIndexHolder
-     * @method dataIndex - Retrieves the index of the object in the data array.
-     * @method getDataIndex - Retrieves the index of the object in the data array. (Alias for dataIndex)
-     * @property {function(): int} dataIndex - Retrieves the index of the object in the data array.
-     * @property {function(): int} getDataIndex - Retrieves the index of the object in the data array. (Alias for dataIndex)
-     */
-    /**
      * Retrieves the index of the object in the data array.
      *
      * @returns {int} The index of the object in the data array.
      */
     target.dataIndex = function () {
-        return target.data[PROPERTY.DATA_INDEX];
+        return target.data._dataIndex;
     }
 
     target.getDataIndex = target.dataIndex;
@@ -410,30 +429,23 @@ function setDataIndex(target) {
 }
 
 /**
- * Sets the declaredIn function on the provided object.
+ * Sets the declaringClass function on the provided object.
  * The declaredIn function retrieves the index of the object that declares this object.
  * @template {CompressedDataHolder} T The source object type.
  * @param {T} target - The object to set the declaredIn for.
- * @returns {T & DeclaredInHolder} The same object with the declaredIn function added.
+ * @returns {T & DeclaringClassHolder} The same object with the declaredIn function added.
  */
-function setDeclaredIn(target) {
-    /**
-     * @typedef DeclaredInHolder
-     * @method declaredIn - Retrieves the index of the object that declares this object.
-     * @method getDeclaredIn - Retrieves the index of the object that declares this object. (Alias for declaredIn)
-     * @property {function(): int} declaredIn - Retrieves the index of the object that declares this object.
-     * @property {function(): int} getDeclaredIn - Retrieves the index of the object that declares this object. (Alias for declaredIn)
-     */
+function setDeclaringClass(target) {
     /**
      * Retrieves the index of the object that declares this object.
      *
      * @returns {int} The index of the object that declares this object.
      */
-    target.declaredIn = function () {
-        return target.data[PROPERTY.DECLARED_IN];
+    target.declaringClass = function () {
+        return target.data._declaringClass;
     }
 
-    target.getDeclaredIn = target.declaredIn;
+    target.getDeclaringClass = target.declaringClass;
 
     return target;
 }
@@ -446,13 +458,6 @@ function setDeclaredIn(target) {
  * @returns {T & IdHolder} The same object with the id function added.
  */
 function setTypeBasedID(target) {
-    /**
-     * @typedef IdHolder
-     * @method id - Retrieves the id of the object.
-     * @method getId - Retrieves the id of the object. (Alias for id)
-     * @property {function(): int} id - Retrieves the id of the object.
-     * @property {function(): int} getId - Retrieves the id of the object. (Alias for id)
-     */
     /**
      * Retrieves the id of the object.
      *
@@ -475,11 +480,6 @@ function setTypeBasedID(target) {
  * @returns {T & ExceptionsHolder} The same object with the getExceptions function added.
  */
 function setExceptions(target) {
-    /**
-     * @typedef ExceptionsHolder
-     * @method getExceptions - Retrieves the exceptions thrown by the object.
-     * @property {function(): Array} getExceptions - Retrieves the exceptions thrown by the object.
-     */
     /**
      * Retrieves the exceptions thrown by the object.
      *

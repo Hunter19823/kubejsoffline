@@ -140,10 +140,10 @@ function createBaseContextMenu() {
                 constants.add(node.toKubeJSLoad());
             });
             methods.forEach((node) => {
-                constants.add(getClass(node.declaredIn()).toKubeJSLoad())
+                constants.add(getClass(node.getDeclaringClass()).toKubeJSLoad())
             });
             fields.forEach((node) => {
-                constants.add(getClass(node.declaredIn()).toKubeJSLoad())
+                constants.add(getClass(node.getDeclaringClass()).toKubeJSLoad())
             });
 
             constants.forEach((node) => {

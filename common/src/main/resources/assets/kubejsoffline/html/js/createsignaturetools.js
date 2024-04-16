@@ -84,15 +84,14 @@ function createFullSignature(id, typeVariableMap = {}) {
     return fullSignature;
 }
 
-function createMethodSignature(method_data, typeVariableMap = {}) {
+function createMethodSignature(method, typeVariableMap = {}) {
     let out = document.createElement('span');
-    let method = getMethod(method_data, typeVariableMap);
     let parameters = method.parameters();
     let param = null;
     let name = span(method.name());
     appendAnnotationToolTip(name, method.annotations(), typeVariableMap);
     out.append(span(MODIFIER.toString(method.modifiers()) + " "));
-    out.append(createShortLink(method.returnType(), typeVariableMap));
+    out.append(createShortLink(method.type(), typeVariableMap));
     out.append(' ');
     out.append(name);
     out.append('(');
@@ -171,7 +170,7 @@ function appendAttributesToClassTableRow(row, class_id) {
 function appendAttributesToMethodTableRow(row, class_id, method, current_class_id = null) {
     row.setAttribute('mod', method.modifiers());
     row.setAttribute('name', method.name());
-    row.setAttribute('type', method.returnType());
+    row.setAttribute('type', method.type());
     row.setAttribute('declared-in', class_id);
     row.setAttribute('parameters', method.parameters().length);
     row.setAttribute('row-type', 'method');

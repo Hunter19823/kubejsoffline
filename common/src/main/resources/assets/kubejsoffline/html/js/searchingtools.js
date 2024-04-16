@@ -61,7 +61,7 @@ function dataFilter() {
         const MATCHER = attributeMatcher(attribute, query, exact, includes);
 
         return (method) => {
-            return MATCHER(getClass(method.returnType()));
+            return MATCHER(getClass(method.t()));
         }
     }
 
@@ -455,13 +455,13 @@ function dataFilter() {
                 console.error("subject is null!");
             }
             if (this.matchesClass(subject)) {
-                this.results.classes.push(subject.id());
+                this.results.classes.push(subject);
             }
             if (this._fieldFilters.length !== 0) {
                 for (let field of subject.fields(true)) {
                     let f = getField(field, subject.getTypeVariableMap());
                     if (this.matchesFiled(f)) {
-                        this.results.fields.push(field);
+                        this.results.fields.push(f);
                     }
                 }
             }
@@ -469,12 +469,12 @@ function dataFilter() {
                 for (let method of subject.methods(true)) {
                     let m = getMethod(method, subject.getTypeVariableMap());
                     if (this.matchesMethod(m)) {
-                        this.results.methods.push(method);
+                        this.results.methods.push(m);
                     } else {
                         if (this._paramFilters.length !== 0) {
                             for (let param of m.parameters()) {
-                                if (this.matchesParam(getParameter(param, subject.getTypeVariableMap()))) {
-                                    this.results.parameters.push(method);
+                                if (this.matchesParam(getParameter(param, m.getTypeVariableMap()))) {
+                                    this.results.parameters.push(m);
                                     break;
                                 }
                             }
@@ -494,16 +494,16 @@ function dataFilter() {
 
     output.sortResults = function () {
         this.results.classes.sort((a, b) => {
-            return getClass(a).simplename().localeCompare(getClass(b).simplename());
+            return a.simplename().localeCompare(b.simplename());
         });
         this.results.fields.sort((a, b) => {
-            return getField(a).name().localeCompare(getField(b).name());
+            return a.name().localeCompare(b.name());
         });
         this.results.methods.sort((a, b) => {
-            return getMethod(a).name().localeCompare(getMethod(b).name());
+            return a.name().localeCompare(b.name());
         });
         this.results.parameters.sort((a, b) => {
-            return getMethod(a).name().localeCompare(getMethod(b).name());
+            return a.name().localeCompare(b.name());
         });
         return this;
     }
@@ -637,24 +637,20 @@ function loadSearchResults(page_number, page_size) {
         }
     }
 
-    createResultTable("Matching Classes", 'class-table', results.classes, (table, data) => {
-        let classData = getClass(data);
+    createResultTable("Matching Classes", 'class-table', results.classes, (table, classData) => {
         addClassToTable(table, classData.id());
     }, 'Link', 'ID', 'Class Name', 'Package', 'Qualified Name');
 
-    createResultTable("Matching Fields", 'field-table', results.fields, (table, data) => {
-        let fieldData = getField(data);
-        addFieldToTable(table, fieldData.declaredIn(), fieldData, fieldData.type());
+    createResultTable("Matching Fields", 'field-table', results.fields, (table, fieldData) => {
+        addFieldToTable(table, fieldData.getDeclaringClass(), fieldData, fieldData.type());
     }, 'Link', 'Declared In', 'Field Signature', 'Declaration Class');
 
-    createResultTable("Matching Methods", 'method-table', results.methods, (table, data) => {
-        let methodData = getMethod(data);
-        addMethodToTable(table, methodData.declaredIn(), methodData);
+    createResultTable("Matching Methods", 'method-table', results.methods, (table, methodData) => {
+        addMethodToTable(table, methodData.getDeclaringClass(), methodData);
     }, 'Link', 'Declared In', 'Method Signature', 'Declaration Class');
 
-    createResultTable("Matching Parameters", 'parameter-table', results.parameters, (table, data) => {
-        let methodData = getMethod(data);
-        addMethodToTable(table, methodData.declaredIn(), methodData);
+    createResultTable("Matching Parameters", 'parameter-table', results.parameters, (table, methodData) => {
+        addMethodToTable(table, methodData.getDeclaringClass(), methodData);
     }, 'Link', 'Declared In', 'Method Signature', 'Declaration Class');
 }
 
