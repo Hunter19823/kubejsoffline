@@ -96,7 +96,7 @@ function createMethodSignature(method, typeVariableMap = {}) {
     out.append(name);
     out.append('(');
     for (let i = 0; i < parameters.length; i++) {
-        param = getParameter(parameters[i], typeVariableMap);
+        param = parameters[i];
         out.appendChild(createShortLink(param.type(), typeVariableMap));
         name = span(param.name());
         appendAnnotationToolTip(name, param.annotations(), typeVariableMap);
@@ -127,9 +127,8 @@ function createFieldSignature(field, typeVariableMap = {}) {
     return out;
 }
 
-function createConstructorSignature(constructor_data, classID, typeVariableMap = {}) {
+function createConstructorSignature(constructor, classID, typeVariableMap = {}) {
     let class_type = getClass(classID);
-    let constructor = getConstructor(constructor_data, typeVariableMap);
     let out = document.createElement('span');
     let parameters = constructor.parameters();
     let param = null;
@@ -138,7 +137,7 @@ function createConstructorSignature(constructor_data, classID, typeVariableMap =
     out.append(createShortLink(class_type.id(), typeVariableMap));
     out.append('(');
     for (let i = 0; i < parameters.length; i++) {
-        param = getParameter(parameters[i], typeVariableMap);
+        param = parameters[i];
         out.appendChild(createShortLink(param.type(), typeVariableMap));
         name = span(param.name());
         appendAnnotationToolTip(name, param.annotations(), typeVariableMap);
@@ -273,12 +272,12 @@ function addClassToTable(table, class_id) {
 }
 
 function addMethodToTable(table, classID, method, current_class_id = null) {
-    let row = addRow(table, href(span(classID), `#${getClass(classID).fullyQualifiedName()}`), createMethodSignature(method.data), createFullSignature(classID));
+    let row = addRow(table, href(span(classID), `#${getClass(classID).fullyQualifiedName()}`), createMethodSignature(method), createFullSignature(classID));
     appendAttributesToMethodTableRow(row, classID, method, current_class_id);
 }
 
 function addFieldToTable(table, class_id, field, current_class_id = null) {
-    let row = addRow(table, href(span(class_id), `#${getClass(class_id).fullyQualifiedName()}`), createFieldSignature(field.data), createFullSignature(class_id));
+    let row = addRow(table, href(span(class_id), `#${getClass(class_id).fullyQualifiedName()}`), createFieldSignature(field), createFullSignature(class_id));
     appendAttributesToFieldTableRow(row, class_id, field, current_class_id);
 }
 
