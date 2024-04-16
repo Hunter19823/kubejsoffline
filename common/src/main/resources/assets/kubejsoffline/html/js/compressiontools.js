@@ -197,7 +197,7 @@ function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable
         // Append the package name as long as the owner type does not exist and appendPackageName is true
         const rawTypeName = getGenericDefinitionLogic(type.rawtype(), typeVariableMap, isDefiningTypeVariable, appendPackageName && !exists(type.getOwnerType()), includeGenerics);
         const ownerType = type.getOwnerType();
-        const ownerPrefix = (exists(ownerType) ? getGenericDefinitionLogic(ownerType, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics) + "." : "");
+        const ownerPrefix = (exists(ownerType) ? getGenericDefinitionLogic(ownerType, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics) + "$" : "");
         const actualTypes = type.getTypeVariables();
         if (actualTypes.length === 0 || !includeGenerics) {
             return ownerPrefix + rawTypeName;

@@ -99,6 +99,14 @@ function getNameData(id) {
     return DATA.names[id];
 }
 
+function optimizeDataSearch() {
+    DATA._optimized = true;
+    DATA._wildcard_types = DATA.types.filter((_, index) => getClass(index).isWildcard()).map((_, index) => index);
+    DATA._parameterized_types = DATA.types.filter((_, index) => getClass(index).isParameterizedType()).map((_, index) => index);
+    DATA._raw_types = DATA.types.filter((_, index) => getClass(index).isRawClass()).map((_, index) => index);
+    DATA._type_variables = DATA.types.filter((_, index) => getClass(index).isTypeVariable()).map((_, index) => index);
+}
+
 function getAnnotationData(id) {
     if (!exists(id)) {
         throw new Error("Invalid annotation id: " + id);
@@ -115,6 +123,70 @@ function getAnnotationData(id) {
     }
 
     return DATA.annotations[id];
+}
+
+function findClassByName(name) {
+    let isArray = name.endsWith("[]");
+    if (isArray) {
+        return findClassByName(name.substring(0, name.length - 2));
+    }
+
+    if (!DATA._optimized) {
+        optimizeDataSearch();
+    }
+    const containsGeneric = name.includes("<") && name.includes(">");
+    const containsInnerClass = name.includes("$");
+    const isParameterized = containsGeneric & name.endsWith(">") || containsInnerClass;
+    const isWildcard = name.startsWith("?");
+    const containsPackage = name.includes(".");
+
+    console.debug("Searching type: ", name, "Contains package: ", containsPackage, "Contains generic: ", containsGeneric, "Contains inner class: ", containsInnerClass, "Is parameterized: ", isParameterized, "Is wildcard: ", isWildcard);
+
+    if (isWildcard) {
+        return DATA._wildcard_types.map((index) => getClass(index)).find((type) => {
+            if (containsPackage && type.referenceName() === name) {
+                console.debug("Found wildcard type using reference name: ", type.referenceName());
+                return type;
+            }
+            if (type.name() === name) {
+                console.debug("Found wildcard type using name: ", type.name());
+                return type;
+            }
+        }) ?? null;
+    }
+
+    if (isParameterized) {
+        return DATA._parameterized_types.map((index) => getClass(index)).find((type) => {
+            if (containsPackage && type.referenceName() === name) {
+                console.debug("Found parameterized type using reference name: ", type.referenceName());
+                return type;
+            }
+            if (type.name() === name) {
+                console.debug("Found parameterized type using name: ", type.name());
+                return type;
+            }
+        }) ?? null;
+    }
+
+    return DATA._raw_types.map((index) => getClass(index)).find((type) => {
+        if (containsPackage && type.referenceName() === name) {
+            console.debug("Found raw type using reference name: ", type.referenceName());
+            return type;
+        }
+        if (type.name() === name) {
+            console.debug("Found raw type using name: ", type.name());
+            return type;
+        }
+    }) ?? DATA._type_variables.map((index) => getClass(index)).find((type) => {
+        if (containsPackage && type.referenceName() === name) {
+            console.debug("Found type variable using reference name: ", type.referenceName());
+            return type;
+        }
+        if (type.name() === name) {
+            console.debug("Found type variable using name: ", type.name());
+            return type;
+        }
+    }) ?? null;
 }
 
 function getClass(id) {
@@ -165,37 +237,7 @@ function getClass(id) {
                 console.error("Invalid class id/search: " + id);
                 return null;
             }
-            for (let i = 0; i < DATA.types.length; i++) {
-                let lower = getClass(i).referenceName().toLowerCase();
-                LOOK_UP_CACHE.set(lower, i);
-                if (lowerID === lower) {
-                    return getClass(i);
-                }
-            }
-            for (let i = 0; i < DATA.types.length; i++) {
-                let lower = getClass(i).fullyQualifiedName({}, false).toLowerCase();
-                if (lowerID === lower) {
-                    return getClass(i);
-                }
-            }
-            // See if the string is a class type
-            // See if the string is a class name
-            for (let i = 0; i < DATA.types.length; i++) {
-                if (lowerID === getClass(i).name({}, true).toLowerCase()) {
-                    return getClass(i);
-                }
-                if (lowerID === getClass(i).name({}, false).toLowerCase()) {
-                    return getClass(i);
-                }
-            }
-            // See if the string is a class simple name
-            for (let i = 0; i < DATA.types.length; i++) {
-                if (getClass(i)?.simplename()?.toLowerCase() === lowerID) {
-                    return getClass(i);
-                }
-            }
-            console.log("Class not found: " + id);
-            return null;
+            return findClassByName(id);
         default:
             console.error("Unsupported class type provided to getClass: " + id + " (" + typeof (id) + ")");
             return null;

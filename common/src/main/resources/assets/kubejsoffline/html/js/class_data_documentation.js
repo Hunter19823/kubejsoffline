@@ -258,13 +258,10 @@ function setRemapType(target) {
      */
     target.type = function () {
         const type = target.data[PROPERTY.TYPE];
-        if (!exists(target._type_variable_map)) {
+        if (!exists(target.getTypeVariableMap)) {
             return type;
         }
-        if (exists(target._type_variable_map[type])) {
-            return target._type_variable_map[type];
-        }
-        return type;
+        return target.getTypeVariableMap()[type] ?? type;
     }
 
     target.getType = target.type;
@@ -353,9 +350,9 @@ function setTypeVariableMap(target) {
      */
     target.getTypeVariableMap = function () {
         if (!exists(target._type_variable_map)) {
-            this.data._type_variable_map = {}
+            target._type_variable_map = {}
         }
-        return _type_variable_map;
+        return target._type_variable_map;
     }
 
     return target;

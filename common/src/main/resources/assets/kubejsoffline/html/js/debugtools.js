@@ -20,7 +20,7 @@ function clearAllCaches() {
     LOOK_UP_CACHE.clear();
     for (let i = 0; i < DATA.types.length; i++) {
         delete DATA.types[i]._name_cache;
-        delete DATA.types[i]._type_cache;
+        delete DATA.types[i]._cachedInheritedClasses;
         delete DATA.types[i]._cachedPackageName;
         delete DATA.types[i]._id;
     }

@@ -54,7 +54,7 @@ const GLOBAL_SETTINGS = {
     "showPrivate": false,
     "showProtected": true,
     "showPackage": true,
-    "showRelationships": true,
+    "showRelationships": false,
     "defaultSearchPageSize": 25,
     "debug": false,
 };
