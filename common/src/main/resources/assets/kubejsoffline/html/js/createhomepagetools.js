@@ -50,19 +50,20 @@ function findEventClasses() {
     const keys = Object.keys(EVENTS);
     for (let i = 0; i < keys.length; i++) {
         let eventClass = getClass(keys[i]);
-        if (eventClass === null) {
+        if (!exists(eventClass)) {
+            console.debug("Failed to find class for ", keys[i])
             continue;
         }
-        EVENTS[keys[i]].push(RELATIONSHIP_GRAPH.get("INHERITS").get(eventClass.id()))
-        EVENTS[keys[i]].push(...eventClass.relation(RELATIONS.indexOf(RELATIONSHIP.INHERITS)));
-        EVENTS[keys[i]].push(...eventClass.relation(RELATIONS.indexOf(RELATIONSHIP.COMPONENT_OF)));
+        EVENTS[keys[i]].push(eventClass.id());
+        EVENTS[keys[i]].push(...getRelation(RELATIONSHIP.INHERITS, eventClass.id()));
+        EVENTS[keys[i]].push(...getRelation(RELATIONSHIP.TYPE_VARIABLE_OF, eventClass.id()));
+        EVENTS[keys[i]].push(...getRelation(RELATIONSHIP.COMPONENT_OF, eventClass.id()));
     }
     DATA._events = EVENTS;
 }
 
 function createHomePage() {
     wipePage();
-    findEventClasses();
     const keys = Object.keys(DATA._events);
 
     let span = null;

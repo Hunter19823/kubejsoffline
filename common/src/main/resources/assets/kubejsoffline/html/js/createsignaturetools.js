@@ -307,7 +307,7 @@ function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, 
     type = getClass(type);
     const outputSpan = document.createElement('span');
     if (type.isTypeVariable()) {
-        type = getClass(exists(typeVariableMap[type.id()]) ? typeVariableMap[type.id()] : type);
+        type = exists(typeVariableMap[type.id()]) ? getClass(typeVariableMap[type.id()]) : type;
     }
     if (type.isRawClass()) {
         const name = decompressString(type.data[PROPERTY.CLASS_NAME])
@@ -430,3 +430,5 @@ function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, 
 
 
 }
+
+

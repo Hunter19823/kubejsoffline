@@ -79,7 +79,7 @@ async function indexClass(target) {
                 target,
                 [getClass(index).id()],
                 [RELATIONSHIP.INHERITS, RELATIONSHIP.REFERENCES],
-                [RELATIONSHIP.INHERITS, RELATIONSHIP.REFERENCES]
+                [RELATIONSHIP.INHERITED_BY, RELATIONSHIP.REFERENCES]
         );
     })
     markRelationship(
@@ -152,7 +152,6 @@ async function optimizeDataSearch() {
             console.error("Invalid type data in export: ", i);
             continue;
         }
-        typeData._id = i;
         const subject = getClass(i);
         indexPromises.push(indexClass(i));
         if (subject.isWildcard()) {
@@ -195,19 +194,16 @@ async function optimizeDataSearch() {
         }
     }
     await Promise.all(indexPromises);
+    findEventClasses();
 }
 
-async function indexAllClasses() {
-    const classCount = DATA.types.length;
-    const logFrequency = Math.max(1, Math.floor(classCount / 100));
-    let timeStart = Date.now();
-    for (let i = 0; i < DATA.types.length; i++) {
-        await (indexClass(i));
-        if (i % logFrequency === 0) {
-            console.debug(`Indexed ${i} out of ${classCount} classes`);
-        }
+function getRelation(relationshipType, id) {
+    if (!RELATIONSHIP_GRAPH.has(relationshipType)) {
+        return [];
     }
-    let timeEnd = Date.now();
-    console.log(`Indexing took ${timeEnd - timeStart}ms`);
-    console.debug(`Finished Indexing ${classCount} out of ${classCount} classes`);
+    const relationshipMap = RELATIONSHIP_GRAPH.get(relationshipType);
+    if (!relationshipMap.has(id)) {
+        return [];
+    }
+    return Array.from(relationshipMap.get(id));
 }

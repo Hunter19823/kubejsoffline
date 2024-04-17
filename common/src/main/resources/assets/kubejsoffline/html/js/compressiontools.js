@@ -18,6 +18,11 @@ function deobfuscateData(data) {
     if (typeof data === 'number') {
         data = getClass(data).data;
     }
+    if (Array.isArray(data)) {
+        return data.map((content) => {
+            return deobfuscateData(content);
+        });
+    }
     let deobfuscatedData = {};
     for (let prop of Object.entries(PROPERTY)) {
         if (exists(data[prop[1]])) {

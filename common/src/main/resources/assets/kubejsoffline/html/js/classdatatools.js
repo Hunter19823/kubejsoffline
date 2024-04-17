@@ -35,6 +35,9 @@ function getTypeData(id) {
         throw new Error("Illegal State: Type data does not exist for id: " + id);
     }
 
+    if (!exists(DATA.types[id]._id))
+        DATA.types[id]._id = id;
+
     return DATA.types[id];
 }
 
@@ -171,9 +174,9 @@ function findClassByName(name) {
     }
 
     const out = DATA._raw_types.map((index) => getClass(index)).find(rawFilter);
-    if (!out) {
-        return DATA._type_variables.map((index) => getClass(index)).find(typeVariableFilter) ?? null;
-    }
+    if (exists(out))
+        return out;
+    return DATA._type_variables.map((index) => getClass(index)).find(typeVariableFilter) ?? null;
 }
 
 function getClass(id) {

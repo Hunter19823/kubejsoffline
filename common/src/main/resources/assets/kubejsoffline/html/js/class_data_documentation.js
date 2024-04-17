@@ -224,7 +224,7 @@
 /**
  * @typedef TypeVariablesHolder
  * @method getTypeVariables - Retrieves the type variables of the object.
- * @property {function(): Array} getTypeVariables - Retrieves the type variables of the object.
+ * @property {function(): Array<TypeIdentifier>} getTypeVariables - Retrieves the type variables of the object.
  * @public
  */
 /**
