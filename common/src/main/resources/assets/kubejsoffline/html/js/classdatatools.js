@@ -195,9 +195,9 @@ function getClass(id) {
             output.data = getTypeData(id);
             break;
         case "object":
-            if (exists(id['data'])) {
-                output.data = id.data;
-            } else if (exists(id._id)) {
+            if (exists(id._id)) {
+                output.data = getTypeData(id._id);
+            } else if (exists('data')) {
                 output.data = getTypeData(id._id);
             } else if (Array.isArray(id) && id.length === 2) {
                 // If it's an array, then assume it's an array of a class.
@@ -205,6 +205,8 @@ function getClass(id) {
                 output.data = getTypeData(id[0]);
                 output.data._id = id[0];
                 output._array_depth = id[1];
+            } else {
+
             }
             break;
         case "string":

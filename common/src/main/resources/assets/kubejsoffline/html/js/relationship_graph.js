@@ -77,7 +77,7 @@ async function indexClass(target) {
         }
         markRelationship(
                 target,
-                [getClass(parent).id()],
+                [getClass(index).id()],
                 [RELATIONSHIP.INHERITS, RELATIONSHIP.REFERENCES],
                 [RELATIONSHIP.INHERITS, RELATIONSHIP.REFERENCES]
         );
@@ -154,7 +154,7 @@ async function optimizeDataSearch() {
         }
         typeData._id = i;
         const subject = getClass(i);
-        indexPromises.push(indexClass(subject));
+        indexPromises.push(indexClass(i));
         if (subject.isWildcard()) {
             DATA._wildcard_types.push(i);
         } else if (subject.isParameterizedType()) {
