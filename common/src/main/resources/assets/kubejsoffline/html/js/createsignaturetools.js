@@ -310,7 +310,7 @@ function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, 
         type = getClass(exists(typeVariableMap[type.id()]) ? typeVariableMap[type.id()] : type);
     }
     if (type.isRawClass()) {
-        const name = uncompressString(type.data[PROPERTY.CLASS_NAME])
+        const name = decompressString(type.data[PROPERTY.CLASS_NAME])
         if (appendPackageName && type.package() && typeof type.package() === 'string' && type.package().length > 0) {
             outputSpan.append(span(type.package()));
             outputSpan.append(span('.'));
@@ -330,7 +330,7 @@ function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, 
         }
     }
     if (type.isTypeVariable()) {
-        const typeVariableName = uncompressString(type.data[PROPERTY.TYPE_VARIABLE_NAME]);
+        const typeVariableName = decompressString(type.data[PROPERTY.TYPE_VARIABLE_NAME]);
         if (isDefiningTypeVariable) {
             outputSpan.append(createLink(span(typeVariableName), type.id()));
             return outputSpan;

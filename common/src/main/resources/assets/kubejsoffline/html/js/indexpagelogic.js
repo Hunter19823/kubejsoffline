@@ -241,7 +241,7 @@ function onHashChange() {
     let hasState = false;
 
     // Is this the home page?
-    if (decoded.isHome()) {
+    if (decoded.isHome() && !hasState) {
         console.log("Loading Homepage.");
 
         // Load the home page.
@@ -252,7 +252,7 @@ function onHashChange() {
     }
 
     // Is this a class page?
-    if (decoded.isClass()) {
+    if (decoded.isClass() && !hasState) {
         if (hasState) {
             console.error("Error state in URL detected.Cannot be a class and a homepage at the same time.");
             return;
@@ -266,7 +266,7 @@ function onHashChange() {
     }
 
     // Is this a search page?
-    if (decoded.isSearch()) {
+    if (decoded.isSearch() && !hasState) {
         if (hasState) {
             console.error("Error state in URL detected. Cannot be a search and a class/homepage at the same time.");
             return;

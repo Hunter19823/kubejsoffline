@@ -113,6 +113,7 @@ function optimizeDataSearch() {
             console.error("Invalid type data in export: ", i);
             continue;
         }
+        typeData._id = i;
         const subject = getClass(i);
         if (subject.isWildcard()) {
             DATA._wildcard_types.push(i);
@@ -178,10 +179,6 @@ function findClassByName(name) {
     if (isArray) {
         return findClassByName(name.substring(0, name.length - 2));
     }
-
-    if (!DATA._optimized) {
-        optimizeDataSearch();
-    }
     const containsGeneric = name.includes("<") && name.includes(">");
     const containsInnerClass = name.includes("$");
     const isParameterized = containsGeneric & name.endsWith(">") || containsInnerClass;
@@ -242,6 +239,9 @@ function getClass(id) {
     if (!exists(id)) {
         console.error("Invalid class id: " + id);
         return null;
+    }
+    if (!DATA._optimized) {
+        optimizeDataSearch();
     }
     switch (typeof (id)) {
         case "number":
@@ -355,7 +355,7 @@ function getClass(id) {
 
     output.fullyQualifiedName = function (typeVariableMap = {}, includeGenerics = true) {
         if (this.isRawClass()) {
-            const name = getGenericDefinition(this.id(), this.getTypeVariableMap(), includeGenerics);
+            const name = getGenericDefinition(this.id(), typeVariableMap, includeGenerics);
             const typeVariables = this.getTypeVariables();
             let genericSuffix = "";
             if (typeVariables.length > 0 && includeGenerics) {
@@ -391,14 +391,14 @@ function getClass(id) {
             return "?" + "[]".repeat(this.getArrayDepth());
         }
         if (this.isTypeVariable()) {
-            return uncompressString(this.data[PROPERTY.TYPE_VARIABLE_NAME]) + "[]".repeat(this.getArrayDepth());
+            return decompressString(this.data[PROPERTY.TYPE_VARIABLE_NAME]) + "[]".repeat(this.getArrayDepth());
         }
         if (this.isParameterizedType()) {
             const rawName = getClass(this.getRawType()).simplename(typeVariableMap);
             const ownerPrefix = this.getOwnerType() ? getClass(this.getOwnerType()).simplename(typeVariableMap) + "." : "";
             return ownerPrefix + rawName + "[]".repeat(this.getArrayDepth());
         }
-        return uncompressString(this.data[PROPERTY.CLASS_NAME]) + "[]".repeat(this.getArrayDepth());
+        return decompressString(this.data[PROPERTY.CLASS_NAME]) + "[]".repeat(this.getArrayDepth());
     }
 
     output.getTypeVariableBounds = function () {

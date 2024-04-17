@@ -1,4 +1,16 @@
-function uncompressString(compressedString) {
+function cachedFunction(func) {
+    const cache = {};
+
+    return function (...args) {
+        const key = JSON.stringify(args);
+        if (!(key in cache)) {
+            cache[key] = func(...args);
+        }
+        return cache[key];
+    };
+}
+
+function decompressString(compressedString) {
     return DATA.names[compressedString];
 }
 
@@ -140,11 +152,11 @@ function remapTypeVariables(typeVariableMap, parameterizedType) {
 }
 
 function getGenericDefinition(type, typeVariableMap, includeGenerics = true) {
-    return getGenericDefinitionLogic(type, typeVariableMap, false, true, includeGenerics);
+    return cachedGenericDefinition(type, typeVariableMap, false, true, includeGenerics);
 }
 
 function getGenericName(type, typeVariableMap, includeGenerics = true) {
-    return getGenericDefinitionLogic(type, typeVariableMap, false, false, includeGenerics);
+    return cachedGenericDefinition(type, typeVariableMap, false, false, includeGenerics);
 }
 
 function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics) {
@@ -153,7 +165,7 @@ function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable
         type = getClass(exists(typeVariableMap[type]) ? typeVariableMap[type] : type);
     }
     if (type.isRawClass()) {
-        const name = uncompressString(type.data[PROPERTY.CLASS_NAME])
+        const name = decompressString(type.data[PROPERTY.CLASS_NAME])
         if (appendPackageName) {
             return type.package() + "." + name;
         } else {
@@ -161,7 +173,7 @@ function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable
         }
     }
     if (type.isTypeVariable()) {
-        const typeVariableName = uncompressString(type.data[PROPERTY.TYPE_VARIABLE_NAME]);
+        const typeVariableName = decompressString(type.data[PROPERTY.TYPE_VARIABLE_NAME]);
         if (isDefiningTypeVariable) {
             return typeVariableName;
         }
@@ -169,7 +181,7 @@ function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable
         if (bounds.length === 0) {
             return typeVariableName;
         }
-        return typeVariableName + joiner(bounds, " & ", (bound) => getGenericDefinitionLogic(bound, typeVariableMap, true, appendPackageName, includeGenerics), " extends ");
+        return typeVariableName + joiner(bounds, " & ", (bound) => cachedGenericDefinition(bound, typeVariableMap, true, appendPackageName, includeGenerics), " extends ");
     }
     if (type.isWildcard()) {
         const name = "?";
@@ -178,7 +190,7 @@ function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable
             return name + joiner(
                     lowerBounds,
                     " & ",
-                    (bound) => getGenericDefinitionLogic(bound, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics),
+                    (bound) => cachedGenericDefinition(bound, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics),
                     " super "
             );
         }
@@ -187,7 +199,7 @@ function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable
             return name + joiner(
                     upperBounds,
                     " & ",
-                    (bound) => getGenericDefinitionLogic(bound, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics),
+                    (bound) => cachedGenericDefinition(bound, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics),
                     " extends "
             );
         }
@@ -195,9 +207,9 @@ function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable
     }
     if (type.isParameterizedType()) {
         // Append the package name as long as the owner type does not exist and appendPackageName is true
-        const rawTypeName = getGenericDefinitionLogic(type.rawtype(), typeVariableMap, isDefiningTypeVariable, appendPackageName && !exists(type.getOwnerType()), includeGenerics);
+        const rawTypeName = cachedGenericDefinition(type.rawtype(), typeVariableMap, isDefiningTypeVariable, appendPackageName && !exists(type.getOwnerType()), includeGenerics);
         const ownerType = type.getOwnerType();
-        const ownerPrefix = (exists(ownerType) ? getGenericDefinitionLogic(ownerType, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics) + "$" : "");
+        const ownerPrefix = (exists(ownerType) ? cachedGenericDefinition(ownerType, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics) + "$" : "");
         const actualTypes = type.getTypeVariables();
         if (actualTypes.length === 0 || !includeGenerics) {
             return ownerPrefix + rawTypeName;
@@ -205,7 +217,7 @@ function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable
         const genericArguments = joiner(
                 actualTypes,
                 ", ",
-                (actualType) => getGenericDefinitionLogic(actualType, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics),
+                (actualType) => cachedGenericDefinition(actualType, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics),
                 "<",
                 ">"
         );
@@ -217,3 +229,6 @@ function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable
 
 
 }
+
+
+let cachedGenericDefinition = cachedFunction(getGenericDefinitionLogic);
