@@ -32,8 +32,13 @@ function wipePage() {
     }
 }
 
-function createHomePage() {
-    wipePage();
+function findEventClasses() {
+    if (DATA._eventsIndexed) {
+        console.log("Events already indexed");
+        return;
+    }
+    console.log("Indexing events");
+    DATA._eventsIndexed = true;
     const EVENTS = {
         "dev.latvian.mods.kubejs.event.EventJS": [],
         "net.fabricmc.fabric.api.event.Event": [],
@@ -52,6 +57,13 @@ function createHomePage() {
         EVENTS[keys[i]].push(...eventClass.relation(RELATIONS.indexOf("IMPLEMENTATION_OF")));
         // EVENTS[keys[i]].push(...eventClass.relation(RELATIONS.indexOf("TYPE_VARIABLE_OF")));
     }
+    DATA._events = EVENTS;
+}
+
+function createHomePage() {
+    wipePage();
+    findEventClasses();
+    const keys = Object.keys(DATA._events);
 
     let span = null;
     let table = null;
@@ -61,9 +73,13 @@ function createHomePage() {
         span.innerHTML = key;
         let period = key?.lastIndexOf('.');
         table = createTableWithHeaders(createSortableTable(period === -1 ? key : key.substring(period + 1)), 'Link', span);
-        for (let j = 0; j < EVENTS[key].length; j++) {
-            let row = addRow(table, createFullSignature(EVENTS[key][j]));
-            appendAttributesToClassTableRow(row, EVENTS[key][j]);
+        for (let j = 0; j < DATA._events[key].length; j++) {
+            try {
+                let row = addRow(table, createFullSignature(DATA._events[key][j]));
+                appendAttributesToClassTableRow(row, DATA._events[key][j]);
+            } catch (e) {
+                console.error("Failed to create homepage entry for ", key, " Class: ", DATA._events[key][j], " Error: ", e);
+            }
         }
     }
 }

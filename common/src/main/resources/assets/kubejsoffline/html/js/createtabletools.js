@@ -25,8 +25,12 @@ function createMethodTable(id, typeVariableMap = {}) {
     }
     table = createTableWithHeaders(createSortableTable('methods'), 'Link', 'Methods', 'Return Type');
     for (method of methods) {
-        row = addRow(table, createMethodSignature(method, typeVariableMap), createFullSignature(method.type()));
-        appendAttributesToMethodTableRow(row, method.getDeclaringClass(), method, target.id());
+        try {
+            row = addRow(table, createMethodSignature(method, typeVariableMap), createFullSignature(method.type()));
+            appendAttributesToMethodTableRow(row, method.getDeclaringClass(), method, target.id());
+        } catch (e) {
+            console.error("Failed to create method entry for ", id, " method: ", method, " Error: ", e);
+        }
     }
 }
 
@@ -57,8 +61,12 @@ function createFieldTable(id, typeVariableMap = {}) {
     }
     table = createTableWithHeaders(createSortableTable('fields'), 'Link', 'Fields', 'Type');
     for (field of fields) {
-        row = addRow(table, createFieldSignature(field, typeVariableMap), createFullSignature(field.type()));
-        appendAttributesToFieldTableRow(row, field.getDeclaringClass(), field, target.id());
+        try {
+            row = addRow(table, createFieldSignature(field, typeVariableMap), createFullSignature(field.type()));
+            appendAttributesToFieldTableRow(row, field.getDeclaringClass(), field, target.id());
+        } catch (e) {
+            console.error("Failed to create field entry for ", id, " field: ", field, " Error: ", e);
+        }
     }
 }
 
@@ -90,9 +98,13 @@ function createConstructorTable(id, typeVariableMap = {}) {
     }
     table = createTableWithHeaders(createSortableTable('constructors'), 'Link', 'Constructors');
     for (constructor of constructors) {
-        cons = getConstructor(constructor, typeVariableMap);
-        row = addRow(table, createConstructorSignature(constructor, id, typeVariableMap));
-        appendAttributesToConstructorTableRow(row, cons.getDeclaringClass(), cons, target.id());
+        try {
+            cons = getConstructor(constructor, typeVariableMap);
+            row = addRow(table, createConstructorSignature(constructor, id, typeVariableMap));
+            appendAttributesToConstructorTableRow(row, cons.getDeclaringClass(), cons, target.id());
+        } catch (e) {
+            console.error("Failed to create constructor table for ", target.id(), " Constructor: ", constructor, " Error: ", e);
+        }
     }
 }
 
@@ -111,9 +123,13 @@ function createRelationshipTable(id, typeVariableMap = {}) {
             continue;
         }
         for (let j = 0; j < relation.length; j++) {
-            row = addRow(table, span(RELATIONS[i]), createFullSignature(relation[j], typeVariableMap));
-            appendAttributesToRelationshipToTableRow(row, relation[j], RELATIONS[i], data.id())
-            seen.add(relation[j]);
+            try {
+                row = addRow(table, span(RELATIONS[i]), createFullSignature(relation[j], typeVariableMap));
+                appendAttributesToRelationshipToTableRow(row, relation[j], RELATIONS[i], data.id())
+                seen.add(relation[j]);
+            } catch (e) {
+                console.error("Failed to create relationship entry for ", id, " Relationship: ", relation[j], " Error: ", e);
+            }
         }
     }
     if (seen.size === 0) {

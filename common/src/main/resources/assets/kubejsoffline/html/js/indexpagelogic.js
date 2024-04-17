@@ -106,10 +106,26 @@ function loadRawClass(id, typeVariableMap = {}) {
             i++;
         }
     }
-    createConstructorTable(id, typeVariableMap);
-    createFieldTable(id, typeVariableMap);
-    createMethodTable(id, typeVariableMap);
-    createRelationshipTable(id, typeVariableMap);
+    try {
+        createConstructorTable(id, typeVariableMap);
+    } catch (e) {
+        console.error("Failed to create constructor table.", e);
+    }
+    try {
+        createFieldTable(id, typeVariableMap);
+    } catch (e) {
+        console.error("Failed to create field table.", e);
+    }
+    try {
+        createMethodTable(id, typeVariableMap);
+    } catch (e) {
+        console.error("Failed to create constructor table.", e);
+    }
+    try {
+        createRelationshipTable(id, typeVariableMap);
+    } catch (e) {
+        console.error("Failed to create constructor table.", e);
+    }
 }
 
 function focusElement(elementId) {
