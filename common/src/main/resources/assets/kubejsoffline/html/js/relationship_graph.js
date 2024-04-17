@@ -136,6 +136,36 @@ async function indexClass(target) {
             [RELATIONSHIP.TYPE_VARIABLE_OF, RELATIONSHIP.REFERENCES],
             [RELATIONSHIP.COMPONENT_OF, RELATIONSHIP.REFERENCED_BY]
     );
+    markRelationship(
+            target,
+            getAsArray(classType.getRawType()),
+            [RELATIONSHIP.RAW_TYPE, RELATIONSHIP.REFERENCES],
+            [RELATIONSHIP.PARAMETERIZED_VARIANT, RELATIONSHIP.REFERENCED_BY]
+    )
+    markRelationship(
+            target,
+            getAsArray(classType.getOwnerType()),
+            [RELATIONSHIP.OWNER_TYPE, RELATIONSHIP.REFERENCES],
+            [RELATIONSHIP.REFERENCED_BY]
+    )
+    markRelationship(
+            target,
+            classType.getLowerBound(),
+            [RELATIONSHIP.LOWER_BOUND, RELATIONSHIP.REFERENCES],
+            [RELATIONSHIP.BOUNDED_WITHIN, RELATIONSHIP.REFERENCED_BY]
+    )
+    markRelationship(
+            target,
+            classType.getUpperBound(),
+            [RELATIONSHIP.UPPER_BOUND, RELATIONSHIP.REFERENCES],
+            [RELATIONSHIP.BOUNDED_WITHIN, RELATIONSHIP.REFERENCED_BY]
+    )
+    markRelationship(
+            target,
+            classType.getTypeVariableBounds(),
+            [RELATIONSHIP.TYPE_VARIABLE_BOUNDS, RELATIONSHIP.REFERENCES],
+            [RELATIONSHIP.BOUNDED_WITHIN, RELATIONSHIP.REFERENCED_BY]
+    )
 }
 
 async function optimizeDataSearch() {
@@ -222,6 +252,7 @@ function findEventClasses() {
         }
         EVENTS[keys[i]].push(eventClass.id());
         EVENTS[keys[i]].push(...getRelation(RELATIONSHIP.INHERITED_BY, eventClass.id()));
+        EVENTS[keys[i]].push(...getRelation(RELATIONSHIP.PARAMETERIZED_VARIANT, eventClass.id()));
     }
     DATA._events = EVENTS;
 }
