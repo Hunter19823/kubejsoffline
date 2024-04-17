@@ -197,6 +197,35 @@ async function optimizeDataSearch() {
     findEventClasses();
 }
 
+
+function findEventClasses() {
+    if (DATA._eventsIndexed) {
+        console.log("Events already indexed");
+        return;
+    }
+    console.log("Indexing events");
+    DATA._eventsIndexed = true;
+    const EVENTS = {
+        "dev.latvian.mods.kubejs.event.EventJS": [],
+        "net.fabricmc.fabric.api.event.Event": [],
+        "dev.architectury.event.Event": [],
+        "dev.latvian.mods.kubejs.recipe.RecipeJS": [],
+        "net.minecraftforge.eventbus.api.Event": []
+    }
+
+    const keys = Object.keys(EVENTS);
+    for (let i = 0; i < keys.length; i++) {
+        let eventClass = getClass(keys[i]);
+        if (!exists(eventClass)) {
+            console.debug("Failed to find class for ", keys[i])
+            continue;
+        }
+        EVENTS[keys[i]].push(eventClass.id());
+        EVENTS[keys[i]].push(...getRelation(RELATIONSHIP.INHERITED_BY, eventClass.id()));
+    }
+    DATA._events = EVENTS;
+}
+
 function getRelation(relationshipType, id) {
     if (!RELATIONSHIP_GRAPH.has(relationshipType)) {
         return [];

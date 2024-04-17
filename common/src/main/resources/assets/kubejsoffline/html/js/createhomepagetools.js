@@ -32,36 +32,6 @@ function wipePage() {
     }
 }
 
-function findEventClasses() {
-    if (DATA._eventsIndexed) {
-        console.log("Events already indexed");
-        return;
-    }
-    console.log("Indexing events");
-    DATA._eventsIndexed = true;
-    const EVENTS = {
-        "dev.latvian.mods.kubejs.event.EventJS": [],
-        "net.fabricmc.fabric.api.event.Event": [],
-        "dev.architectury.event.Event": [],
-        "dev.latvian.mods.kubejs.recipe.RecipeJS": [],
-        "net.minecraftforge.eventbus.api.Event": []
-    }
-
-    const keys = Object.keys(EVENTS);
-    for (let i = 0; i < keys.length; i++) {
-        let eventClass = getClass(keys[i]);
-        if (!exists(eventClass)) {
-            console.debug("Failed to find class for ", keys[i])
-            continue;
-        }
-        EVENTS[keys[i]].push(eventClass.id());
-        EVENTS[keys[i]].push(...getRelation(RELATIONSHIP.INHERITS, eventClass.id()));
-        EVENTS[keys[i]].push(...getRelation(RELATIONSHIP.TYPE_VARIABLE_OF, eventClass.id()));
-        EVENTS[keys[i]].push(...getRelation(RELATIONSHIP.COMPONENT_OF, eventClass.id()));
-    }
-    DATA._events = EVENTS;
-}
-
 function createHomePage() {
     wipePage();
     const keys = Object.keys(DATA._events);
