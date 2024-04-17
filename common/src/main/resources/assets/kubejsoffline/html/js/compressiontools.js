@@ -10,6 +10,20 @@ function cachedFunction(func) {
     };
 }
 
+
+function clearAllCaches() {
+    LOOK_UP_CACHE.clear();
+    RELATIONSHIP_GRAPH.clear();
+    for (let i = 0; i < DATA.types.length; i++) {
+        delete DATA.types[i]._name_cache;
+        delete DATA.types[i]._cachedInheritedClasses;
+        delete DATA.types[i]._cachedPackageName;
+        delete DATA.types[i]._id;
+    }
+    DATA._eventsIndexed = false;
+    DATA._optimized = false;
+}
+
 function decompressString(compressedString) {
     return DATA.names[compressedString];
 }
