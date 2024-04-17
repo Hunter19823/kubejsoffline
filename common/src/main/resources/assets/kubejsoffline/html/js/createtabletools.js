@@ -81,14 +81,13 @@ function createConstructorTable(id, typeVariableMap = {}) {
         return;
     }
     constructors = [...constructors].filter((constructor) => {
-        let c = getConstructor(constructor, typeVariableMap);
-        if (GLOBAL_SETTINGS.showPrivate === false && MODIFIER.isPrivate(c.modifiers())) {
+        if (GLOBAL_SETTINGS.showPrivate === false && MODIFIER.isPrivate(constructor.modifiers())) {
             return false;
         }
-        if (GLOBAL_SETTINGS.showProtected === false && MODIFIER.isProtected(c.modifiers())) {
+        if (GLOBAL_SETTINGS.showProtected === false && MODIFIER.isProtected(constructor.modifiers())) {
             return false;
         }
-        if (GLOBAL_SETTINGS.showConstructorsInherited === false && c.getDeclaringClass() !== id) {
+        if (GLOBAL_SETTINGS.showConstructorsInherited === false && constructor.getDeclaringClass() !== id) {
             return false;
         }
         return true;
@@ -99,9 +98,8 @@ function createConstructorTable(id, typeVariableMap = {}) {
     table = createTableWithHeaders(createSortableTable('constructors'), 'Link', 'Constructors');
     for (constructor of constructors) {
         try {
-            cons = getConstructor(constructor, typeVariableMap);
             row = addRow(table, createConstructorSignature(constructor, id, typeVariableMap));
-            appendAttributesToConstructorTableRow(row, cons.getDeclaringClass(), cons, target.id());
+            appendAttributesToConstructorTableRow(row, constructor.getDeclaringClass(), constructor, target.id());
         } catch (e) {
             console.error("Failed to create constructor table for ", target.id(), " Constructor: ", constructor, " Error: ", e);
         }

@@ -612,21 +612,21 @@ function getClass(id) {
             switch (RELATIONS[index]) {
                 case "SUPER_CLASS_OF":
                     // Find all classes that inherit from this class
-                    return [...RELATIONSHIP_GRAPH.get(RELATIONSHIP.SUPER_CLASS)]
+                    return [...getRelation(RELATIONSHIP.SUPER_CLASS, this.id())]
                 case "INNER_TYPE_OF":
-                    return [...RELATIONSHIP_GRAPH.get(RELATIONSHIP.ENCLOSING_CLASS)]
+                    return [...getRelation(RELATIONSHIP.ENCLOSING_CLASS, this.id())]
                 case "COMPONENT_OF":
-                    return [...RELATIONSHIP_GRAPH.get(RELATIONSHIP.COMPONENT_OF)]
+                    return [...getRelation(RELATIONSHIP.COMPONENT_OF, this.id())]
                 case "IMPLEMENTATION_OF":
-                    return [...RELATIONSHIP_GRAPH.get(RELATIONSHIP.INHERITS)]
+                    return [...getRelation(RELATIONSHIP.INHERITS, this.id())]
                 case "DECLARED_FIELD_TYPE_OF":
-                    return [...RELATIONSHIP_GRAPH.get(RELATIONSHIP.FIELD_TYPE)]
+                    return [...getRelation(RELATIONSHIP.FIELD_TYPE, this.id())]
                 case "DECLARED_METHOD_RETURN_TYPE_OF":
-                    return [...RELATIONSHIP_GRAPH.get(RELATIONSHIP.METHOD_RETURN_TYPE)]
+                    return [...getRelation(RELATIONSHIP.METHOD_RETURN_TYPE, this.id())]
                 case "DECLARED_METHOD_PARAMETER_TYPE_OF":
-                    return [...RELATIONSHIP_GRAPH.get(RELATIONSHIP.METHOD_PARAMETER_TYPE)]
+                    return [...getRelation(RELATIONSHIP.METHOD_PARAMETER_TYPE, this.id())]
                 case "TYPE_VARIABLE_OF":
-                    return [...RELATIONSHIP_GRAPH.get(RELATIONSHIP.TYPE_VARIABLE_OF)]
+                    return [...getRelation(RELATIONSHIP.TYPE_VARIABLE_OF, this.id())]
             }
         }
     }
