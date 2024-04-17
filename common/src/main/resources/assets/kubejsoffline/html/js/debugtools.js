@@ -18,12 +18,15 @@ function countCircularReferences() {
 
 function clearAllCaches() {
     LOOK_UP_CACHE.clear();
+    RELATIONSHIP_GRAPH.clear();
     for (let i = 0; i < DATA.types.length; i++) {
         delete DATA.types[i]._name_cache;
         delete DATA.types[i]._cachedInheritedClasses;
         delete DATA.types[i]._cachedPackageName;
         delete DATA.types[i]._id;
     }
+    DATA._eventsIndexed = false;
+    DATA._optimized = false;
 }
 
 function findBrokenClassNames() {
@@ -112,26 +115,6 @@ function findWeirdestNames() {
     return weirdNames.sort((a, b) => {
         return a[0].length - b[0].length;
     });
-}
-
-function deobfuscateData(data) {
-    if (typeof data === 'number') {
-        data = getClass(data).data;
-    }
-    let deobfuscatedData = {};
-    for (let prop of Object.entries(PROPERTY)) {
-        if (exists(data[prop[1]])) {
-            deobfuscatedData[prop[0]] = data[prop[1]];
-            if (Array.isArray(deobfuscatedData[prop[0]])) {
-                deobfuscatedData[prop[0]] = deobfuscatedData[prop[0]].map((content) => {
-                    if (typeof content === 'number')
-                        return getClass(content).data;
-                    return deobfuscateData(content);
-                });
-            }
-        }
-    }
-    return deobfuscatedData;
 }
 
 function getRawClasses() {
