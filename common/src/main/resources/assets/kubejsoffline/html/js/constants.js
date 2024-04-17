@@ -226,3 +226,30 @@ const MODIFIER = {
         return 16;
     }
 }
+
+/**
+ * This constant is used to map relationships between classes to optimize the search algorithm.
+ * This is used by relationship_graph.js
+ * Each key in the object is a relationship type, and the value is a map of ids to a set of other ids.
+ * @type {Map<string,Map<int, Set<int>>>}
+ */
+const RELATIONSHIP_GRAPH = new Map();
+
+const RELATIONSHIP = {
+    "INHERITS": "INHERITS",
+    "SUPER_CLASS": "SUPER_CLASS",
+    "INHERITED_BY": "INHERITED_BY",
+    "REFERENCES": "REFERENCES",
+    "REFERENCED_BY": "REFERENCED_BY",
+    "FIELD_TYPE": "FIELD_TYPE",
+    "METHOD_RETURN_TYPE": "METHOD_RETURN_TYPE",
+    "PARAMETER_TYPE": "PARAMETER_TYPE",
+    "CONSTRUCTOR_PARAMETER_TYPE": "CONSTRUCTOR_PARAMETER_TYPE",
+    "METHOD_PARAMETER_TYPE": "METHOD_PARAMETER_TYPE",
+    "TYPE_VARIABLE_OF": "TYPE_VARIABLE_OF",
+    "COMPONENT_OF": "COMPONENT_OF",
+    "DECLARING_CLASS": "DECLARING_CLASS",
+    "DECLARES_CLASS": "DECLARES_CLASS",
+    "ENCLOSING_CLASS": "ENCLOSING_CLASS",
+    "ENCLOSES_CLASS": "ENCLOSES_CLASS",
+}

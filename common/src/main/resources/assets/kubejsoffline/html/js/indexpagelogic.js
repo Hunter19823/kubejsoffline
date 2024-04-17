@@ -158,7 +158,7 @@ function scrollToText(text) {
     console.warn("Chrome Scroll to highlighted text is not implemented.");
 }
 
-function onHashChange() {
+async function onHashChange() {
     // If we have a hash on the URL, determine the format:
     // # - Load the index page / home page.
     // #<int|qualifiedClassName|simpleClassName> - Load a specific class
@@ -236,6 +236,11 @@ function onHashChange() {
     if (!decoded) {
         console.error("Failed to decode URL.");
         return;
+    }
+
+
+    if (!DATA._optimized) {
+        await optimizeDataSearch();
     }
 
     let hasState = false;
@@ -387,13 +392,13 @@ function DecodeURL() {
 
 addEventListener('popstate', (event) => {
     console.log("Popstate.");
-    onHashChange();
+    onHashChange().then();
 });
 
 
 window.onload = () => {
     console.log("Window Loaded.");
-    onHashChange();
+    onHashChange().then();
 }
 
 document.onload = () => {

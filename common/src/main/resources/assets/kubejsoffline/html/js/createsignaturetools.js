@@ -1,7 +1,7 @@
 function changeURL(url) {
     console.log("Changing URL to: " + url);
     history.pushState("", document.title, window.location.pathname + url);
-    onHashChange();
+    onHashChange().then();
 }
 
 function changeURLFromElement(element) {

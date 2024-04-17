@@ -53,9 +53,9 @@ function findEventClasses() {
         if (eventClass === null) {
             continue;
         }
-        EVENTS[keys[i]].push(...eventClass.relation(RELATIONS.indexOf("COMPONENT_OF")));
-        EVENTS[keys[i]].push(...eventClass.relation(RELATIONS.indexOf("IMPLEMENTATION_OF")));
-        // EVENTS[keys[i]].push(...eventClass.relation(RELATIONS.indexOf("TYPE_VARIABLE_OF")));
+        EVENTS[keys[i]].push(RELATIONSHIP_GRAPH.get("INHERITS").get(eventClass.id()))
+        EVENTS[keys[i]].push(...eventClass.relation(RELATIONS.indexOf(RELATIONSHIP.INHERITS)));
+        EVENTS[keys[i]].push(...eventClass.relation(RELATIONS.indexOf(RELATIONSHIP.COMPONENT_OF)));
     }
     DATA._events = EVENTS;
 }

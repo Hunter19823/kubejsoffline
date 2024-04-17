@@ -100,62 +100,6 @@ function getNameData(id) {
     return DATA.names[id];
 }
 
-function optimizeDataSearch() {
-    DATA._optimized = true;
-    DATA._wildcard_types = [];
-    DATA._parameterized_types = [];
-    DATA._raw_types = [];
-    DATA._type_variables = [];
-
-    for (let i = 0; i < DATA.types.length; i++) {
-        const typeData = getTypeData(i);
-        if (!exists(typeData)) {
-            console.error("Invalid type data in export: ", i);
-            continue;
-        }
-        typeData._id = i;
-        const subject = getClass(i);
-        if (subject.isWildcard()) {
-            DATA._wildcard_types.push(i);
-        } else if (subject.isParameterizedType()) {
-            DATA._parameterized_types.push(i);
-        } else if (subject.isTypeVariable()) {
-            DATA._type_variables.push(i);
-        } else {
-            DATA._raw_types.push(i);
-            const typeData = subject.data;
-            // Set declaring class on all fields, methods, and constructors
-            if (exists(typeData[PROPERTY.FIELDS])) {
-                typeData[PROPERTY.FIELDS].forEach((field) => {
-                    field._declaringClass = i;
-                });
-            }
-            if (exists(typeData[PROPERTY.METHODS])) {
-                typeData[PROPERTY.METHODS].forEach((method) => {
-                    method._declaringClass = i;
-                    // Assign the declaring class to the parameters
-                    if (exists(method[PROPERTY.PARAMETERS])) {
-                        method[PROPERTY.PARAMETERS].forEach((parameter) => {
-                            parameter._declaringClass = i;
-                        });
-                    }
-                });
-            }
-            if (exists(typeData[PROPERTY.CONSTRUCTORS])) {
-                typeData[PROPERTY.CONSTRUCTORS].forEach((constructor) => {
-                    constructor._declaringClass = i;
-                    // Assign the declaring class to the parameters
-                    if (exists(constructor[PROPERTY.PARAMETERS])) {
-                        constructor[PROPERTY.PARAMETERS].forEach((parameter) => {
-                            parameter._declaringClass = i;
-                        });
-                    }
-                });
-            }
-        }
-    }
-}
-
 function getAnnotationData(id) {
     if (!exists(id)) {
         throw new Error("Invalid annotation id: " + id);
@@ -185,53 +129,51 @@ function findClassByName(name) {
     const isWildcard = name.startsWith("?");
     const containsPackage = name.includes(".");
 
+    const shouldUseReferenceName = containsPackage && containsGeneric;
+    const shouldUseFullyQualifiedName = containsPackage && !containsGeneric;
+    const shouldUseName = !containsPackage && containsGeneric;
+    const shouldUseSimpleName = !containsPackage && !containsGeneric;
+
+    function createFilter(filterName) {
+        return function (type) {
+            if (shouldUseReferenceName && type.referenceName() === name) {
+                console.debug("Found " + filterName + " using referenceName: ", type.referenceName());
+                return type;
+            }
+            if (shouldUseFullyQualifiedName && type.fullyQualifiedName(type.getTypeVariableMap(), false) === name) {
+                console.debug("Found " + filterName + " using fully qualified name: ", type.fullyQualifiedName(type.getTypeVariableMap(), false));
+                return type;
+            }
+            if (shouldUseName && type.name() === name) {
+                console.debug("Found " + filterName + " using name: ", type.name());
+                return type;
+            }
+            if (shouldUseSimpleName && type.simplename() === name) {
+                console.debug("Found " + filterName + " using simple name: ", type.simplename());
+                return type;
+            }
+        }
+    }
+
+    const wildCardFilter = createFilter("wildcard type");
+    const parameterizedFilter = createFilter("parameterized type");
+    const rawFilter = createFilter("raw class type");
+    const typeVariableFilter = createFilter("type variable");
+
     console.debug("Searching type: ", name, "Contains package: ", containsPackage, "Contains generic: ", containsGeneric, "Contains inner class: ", containsInnerClass, "Is parameterized: ", isParameterized, "Is wildcard: ", isWildcard);
 
     if (isWildcard) {
-        return DATA._wildcard_types.map((index) => getClass(index)).find((type) => {
-            if (containsPackage && type.referenceName() === name) {
-                console.debug("Found wildcard type using reference name: ", type.referenceName());
-                return type;
-            }
-            if (type.name() === name) {
-                console.debug("Found wildcard type using name: ", type.name());
-                return type;
-            }
-        }) ?? null;
+        return DATA._wildcard_types.map((index) => getClass(index)).find(wildCardFilter) ?? null;
     }
 
     if (isParameterized) {
-        return DATA._parameterized_types.map((index) => getClass(index)).find((type) => {
-            if (containsPackage && type.referenceName() === name) {
-                console.debug("Found parameterized type using reference name: ", type.referenceName());
-                return type;
-            }
-            if (type.name() === name) {
-                console.debug("Found parameterized type using name: ", type.name());
-                return type;
-            }
-        }) ?? null;
+        return DATA._parameterized_types.map((index) => getClass(index)).find(parameterizedFilter) ?? null;
     }
 
-    return DATA._raw_types.map((index) => getClass(index)).find((type) => {
-        if (containsPackage && type.referenceName() === name) {
-            console.debug("Found raw type using reference name: ", type.referenceName());
-            return type;
-        }
-        if (type.name() === name) {
-            console.debug("Found raw type using name: ", type.name());
-            return type;
-        }
-    }) ?? DATA._type_variables.map((index) => getClass(index)).find((type) => {
-        if (containsPackage && type.referenceName() === name) {
-            console.debug("Found type variable using reference name: ", type.referenceName());
-            return type;
-        }
-        if (type.name() === name) {
-            console.debug("Found type variable using name: ", type.name());
-            return type;
-        }
-    }) ?? null;
+    const out = DATA._raw_types.map((index) => getClass(index)).find(rawFilter);
+    if (!out) {
+        return DATA._type_variables.map((index) => getClass(index)).find(typeVariableFilter) ?? null;
+    }
 }
 
 function getClass(id) {
@@ -239,9 +181,6 @@ function getClass(id) {
     if (!exists(id)) {
         console.error("Invalid class id: " + id);
         return null;
-    }
-    if (!DATA._optimized) {
-        optimizeDataSearch();
     }
     switch (typeof (id)) {
         case "number":
@@ -450,6 +389,18 @@ function getClass(id) {
         return getAsArray(this.data[PROPERTY.PARAMETERIZED_ARGUMENTS]);
     }
 
+    output.getEnclosingClass = function () {
+        return this.data[PROPERTY.ENCLOSING_CLASS];
+    }
+
+    output.getDeclaringClass = function () {
+        return this.data[PROPERTY.DECLARING_CLASS];
+    }
+
+    output.getInnerClasses = function () {
+        return getAsArray(this.data[PROPERTY.INNER_CLASSES]);
+    }
+
     output.isGeneric = function () {
         return exists(this.data[PROPERTY.PARAMETERIZED_ARGUMENTS]);
     }
@@ -644,7 +595,6 @@ function getClass(id) {
             action(DATA.types[current], current);
             unprocessed.push(getClass(current).getSuperClass());
             unprocessed.push(...getClass(current).getInterfaces());
-            unprocessed.push(getClass(current).getOwnerType());
         }
     }
 
@@ -657,85 +607,21 @@ function getClass(id) {
             switch (RELATIONS[index]) {
                 case "SUPER_CLASS_OF":
                     // Find all classes that inherit from this class
-                    if (exists(this.data._subclasses)) {
-                        return this.data._subclasses;
-                    }
-                    this.data._subclasses = [...new Set(findAllClassesThatMatch((data) => {
-                        return this.id() === data.getSuperClass();
-                    }))];
-                    return this.data._subclasses;
+                    return [...RELATIONSHIP_GRAPH.get(RELATIONSHIP.SUPER_CLASS)]
                 case "INNER_TYPE_OF":
-                    // Find all inner classes of this class
-                    if (exists(this.data._innerclasses)) {
-                        return this.data._innerclasses;
-                    }
-                    this.data._innerclasses = [...new Set(findAllClassesThatMatch((data) => {
-                        return this.id() === data.getOwnerType();
-                    }))];
-                    return this.data._innerclasses;
+                    return [...RELATIONSHIP_GRAPH.get(RELATIONSHIP.ENCLOSING_CLASS)]
                 case "COMPONENT_OF":
-                    // Find all classes that this class is a component of
-                    if (exists(this.data._components)) {
-                        return this.data._components;
-                    }
-                    this.data._components = [...new Set(findAllClassesThatMatch((data) => {
-                        return this.id() === data.getRawType();
-                    }))]
-                    return this.data._components;
+                    return [...RELATIONSHIP_GRAPH.get(RELATIONSHIP.COMPONENT_OF)]
                 case "IMPLEMENTATION_OF":
-                    // Find all classes that implement this class
-                    if (exists(this.data._implementations)) {
-                        return this.data._implementations;
-                    }
-                    this.data._implementations = [...new Set(findAllClassesThatMatch((data) => {
-                        return data.getAllInheritedClasses().has(this.id());
-                    }))];
-                    return this.data._implementations;
+                    return [...RELATIONSHIP_GRAPH.get(RELATIONSHIP.INHERITS)]
                 case "DECLARED_FIELD_TYPE_OF":
-                    // Find all classes that contain a field with this type
-                    if (exists(this.data._fields)) {
-                        return this.data._fields;
-                    }
-                    this.data._fields = [...new Set(findAllClassesThatMatch((data) => {
-                        return data.fields().some((field) => {
-                            return getClass(field.type()).id() === this.id();
-                        });
-                    }))];
-                    return this.data._fields;
+                    return [...RELATIONSHIP_GRAPH.get(RELATIONSHIP.FIELD_TYPE)]
                 case "DECLARED_METHOD_RETURN_TYPE_OF":
-                    // Find all classes that contain a method with this return type
-                    if (exists(this.data._methods)) {
-                        return this.data._methods;
-                    }
-                    this.data._methods = [...new Set(findAllClassesThatMatch((data) => {
-                        return data.methods(true).some((method) => {
-                            return getClass(method.type()).id() === this.id();
-                        });
-                    }))];
-                    return this.data._methods;
+                    return [...RELATIONSHIP_GRAPH.get(RELATIONSHIP.METHOD_RETURN_TYPE)]
                 case "DECLARED_METHOD_PARAMETER_TYPE_OF":
-                    // Find all classes that contain a method with this parameter type
-                    if (exists(this.data._methods)) {
-                        return this.data._methods;
-                    }
-                    this.data._methods = [...new Set(findAllClassesThatMatch((data) => {
-                        return data.methods(true).some((method) => {
-                            return method.parameters().some((param) => {
-                                return getClass(param.type()).id() === this.id();
-                            });
-                        });
-                    }))];
-                    return this.data._methods;
+                    return [...RELATIONSHIP_GRAPH.get(RELATIONSHIP.METHOD_PARAMETER_TYPE)]
                 case "TYPE_VARIABLE_OF":
-                    // Find all classes that use this type variable
-                    if (exists(this.data._type_variables)) {
-                        return this.data._type_variables;
-                    }
-                    this.data._type_variables = [...new Set(findAllClassesThatMatch((data) => {
-                        return data.getTypeVariables().includes(this.id());
-                    }))];
-                    return this.data._type_variables;
-
+                    return [...RELATIONSHIP_GRAPH.get(RELATIONSHIP.TYPE_VARIABLE_OF)]
             }
         }
     }

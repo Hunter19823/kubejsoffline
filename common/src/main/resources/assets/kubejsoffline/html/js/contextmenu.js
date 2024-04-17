@@ -88,10 +88,10 @@ function createBaseContextMenu() {
     }
 
     function addSettingItem(name, setting) {
-        return addToggleMenuItem(name, () => {
+        return addToggleMenuItem(name, async () => {
             GLOBAL_SETTINGS[setting] = !GLOBAL_SETTINGS[setting];
             console.log("Setting item triggered: " + GLOBAL_SETTINGS[setting]);
-            onHashChange();
+            onHashChange().then();
         }, GLOBAL_SETTINGS[setting]);
     }
 
@@ -189,9 +189,9 @@ function createBaseContextMenu() {
     addMenuItem('Forward', () => {
         history.forward();
     });
-    addMenuItem('Reload', () => {
+    addMenuItem('Reload', async () => {
         console.log("Reload Triggered...");
-        onHashChange();
+        onHashChange().then();
     });
     addMenuItem('Go To Home Page', () => {
         changeURL('');
