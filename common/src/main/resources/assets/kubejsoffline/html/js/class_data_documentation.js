@@ -123,7 +123,15 @@
  * @public
  */
 /**
- * A type that identifies something.
+ * The name of a java package.
+ * @typedef {string} PackageName
+ * @example java.lang
+ * @example net.minecraft
+ * @example com.example
+ * @public
+ */
+/**
+ * Something that uniquely identifies something else.
  * @typedef {*} Identifier
  * @public
  */
@@ -158,20 +166,45 @@
  * @public
  */
 /**
- * The data structure for all compressed data.
- * @typedef {Object} DataDump
- * @property {Array<string>} names
- * //TODO: Finish this.
- * @property {Array<?>} packages
- * @property {Array<?>} types
- * @property {Array<?>} parameters
- * @property {Array<?>} annotations
+ * The fully qualified definition of a constructor.
+ * @extends {Identifier}
+ * @typedef {string} ConstructorDefinition
+ * @public
+ */
+/**
+ * The fully qualified definition of a method.
+ * @extends {Identifier}
+ * @typedef {string} MethodDefinition
+ * @public
+ */
+/**
+ * The fully qualified definition of a field.
+ * @extends {Identifier}
+ * @typedef {string} FieldDefinition
+ * @public
+ */
+/**
+ * The fully qualified definition of a parameter.
+ * @extends {Identifier}
+ * @typedef {string} ParameterDefintion
+ * @public
+ */
+/**
+ * The fully qualified definition of a class.
+ * @extends {Identifier}
+ * @typedef {string} ClassDefinition
  * @public
  */
 
 /**
  * Used to map type variables to their actual types.
  * @typedef {{[key: TypeIdentifier]: TypeIdentifier}} TypeVariableMap
+ * @public
+ */
+/**
+ * Indexed class data.
+ * @typedef {Object} IndexedClassData
+ * @property {TypeIdentifier} _id - The id of the class.
  * @public
  */
 
@@ -253,10 +286,11 @@
  */
 /**
  * @typedef IdHolder
- * @method id - Retrieves the id of the object.
- * @method getId - Retrieves the id of the object. (Alias for id)
- * @property {function(): int} id - Retrieves the id of the object.
- * @property {function(): int} getId - Retrieves the id of the object. (Alias for id)
+ * @template {Identifier} ID
+ * @method id - Retrieves the {@link ID} of the object.
+ * @method getId - Retrieves the {@link ID} of the object. (Alias for id)
+ * @property {function(): ID} id - Retrieves the id of the object.
+ * @property {function(): ID} getId - Retrieves the id of the object. (Alias for id)
  * @public
  */
 /**
@@ -282,6 +316,76 @@
  * @public
  */
 
+
+/**
+ * @typedef MethodHolder
+ * @method methods - Retrieves an array of {@link Method} objects.
+ * @method getMethods - Retrieves an array of {@link Method} objects. (Alias for methods)
+ * @property {function(): Array<Method>} methods - Retrieves an array of {@link Method} objects.
+ * @property {function(): Array<Method>} getMethods - Retrieves an array of {@link Method} objects. (Alias for methods)
+ * @public
+ */
+/**
+ * @typedef FieldHolder
+ * @method fields - Retrieves an array of {@link Field} objects.
+ * @method getFields - Retrieves an array of {@link Field} objects. (Alias for fields)
+ * @property {function(): Array<Field>} fields - Retrieves an array of {@link Field} objects.
+ * @property {function(): Array<Field>} getFields - Retrieves an array of {@link Field} objects. (Alias for fields)
+ * @public
+ */
+/**
+ * @typedef ConstructorHolder
+ * @method constructors - Retrieves an array of {@link Constructor} objects.
+ * @method getConstructors - Retrieves an array of {@link Constructor} objects. (Alias for constructors)
+ * @property {function(): Array<Constructor>} constructors - Retrieves an array of {@link Constructor} objects.
+ * @property {function(): Array<Constructor>} getConstructors - Retrieves an array of {@link Constructor} objects. (Alias for constructors)
+ * @public
+ */
+/**
+ * @typedef InterfaceHolder
+ * @method interfaces - Retrieves an array of {@link TypeIdentifier} objects.
+ * @method getInterfaces - Retrieves an array of {@link TypeIdentifier} objects. (Alias for interfaces)
+ * @property {function(): Array<TypeIdentifier>} interfaces - Retrieves an array of {@link TypeIdentifier} objects.
+ * @property {function(): Array<TypeIdentifier>} getInterfaces - Retrieves an array of {@link TypeIdentifier} objects. (Alias for interfaces)
+ */
+/**
+ * @typedef JavaTypeNameHolder
+ *
+ * @method referenceName - Retrieves the {@link FullTypeName} with generics enabled.
+ * @method getReferenceName - Retrieves the {@link FullTypeName} with generics enabled. (Alias for referenceName)
+ *
+ * @method fullyQualifiedName - Retrieves the {@link FullTypeName} with an option for generics which is enabled by default.
+ * @method fullName - Retrieves the {@link FullTypeName} with an option for generics which is enabled by default. (Alias for fullyQualifiedName)
+ * @method getFullyQualifiedName - Retrieves the {@link FullTypeName} with an option for generics which is enabled by default. (Alias for fullyQualifiedName)'
+ * @method getFullName - Retrieves the {@link FullTypeName} with an option for generics which is enabled by default. (Alias for fullyQualifiedName)
+ *
+ * @method name - Retrieves the {@link TypeName} with an option for generics which is enabled by default.
+ * @method getName - Retrieves the {@link TypeName} with an option for generics which is enabled by default. (Alias for name)
+ *
+ * @method simpleName - Retrieves the {@link SimplifiedTypeName} which does not include generics or type-bounds.
+ * @method getSimpleName - Retrieves the {@link SimplifiedTypeName} which does not include generics or type-bounds. (Alias for simpleName)
+ *
+ * @method package - Retrieves the {@link PackageName} of the object.
+ * @method getPackageName - Retrieves the {@link PackageName} of the object. (Alias for package)
+ * @method getPacakge - Retrieves the {@link PackageName} of the object. (Alias for package)
+ *
+ * @property {function(TypeVariableMap=, boolean): FullTypeName} referenceName - Retrieves the {@link FullTypeName} with generics enabled.
+ * @property {function(TypeVariableMap=, boolean): FullTypeName} getReferenceName - Retrieves the {@link FullTypeName} with generics enabled. (Alias for referenceName)
+ * @property {function(TypeVariableMap=, boolean): FullTypeName} fullyQualifiedName - Retrieves the {@link FullTypeName} with an option for generics which is enabled by default.
+ * @property {function(TypeVariableMap=, boolean): FullTypeName} fullName - Retrieves the {@link FullTypeName} with an option for generics which is enabled by default. (Alias for fullyQualifiedName)
+ * @property {function(TypeVariableMap=, boolean): FullTypeName} getFullyQualifiedName - Retrieves the {@link FullTypeName} with an option for generics which is enabled by default. (Alias for fullyQualifiedName)
+ * @property {function(TypeVariableMap=, boolean): FullTypeName} getFullName - Retrieves the {@link FullTypeName} with an option for generics which is enabled by default. (Alias for fullyQualifiedName)
+ * @property {function(TypeVariableMap=, boolean): TypeName} name - Retrieves the {@link TypeName} with an option for generics which is enabled by default.
+ * @property {function(TypeVariableMap=, boolean): TypeName} getName - Retrieves the {@link TypeName} with an option for generics which is enabled by default. (Alias for name)
+ * @property {function(TypeVariableMap=): SimplifiedTypeName} simpleName - Retrieves the {@link SimplifiedTypeName} which does not include generics or type-bounds.
+ * @property {function(TypeVariableMap=): SimplifiedTypeName} getSimpleName - Retrieves the {@link SimplifiedTypeName} which does not include generics or type-bounds. (Alias for simpleName)
+ * @property {function(): PackageName} package - Retrieves the {@link PackageName} of the object.
+ * @property {function(): PackageName} getPackageName - Retrieves the {@link PackageName} of the object. (Alias for package)
+ * @property {function(): PackageName} getPacakge - Retrieves the {@link PackageName} of the object. (Alias for package)
+ * @public
+ */
+
+
 /**
  * @typedef {
  * NameHolder &
@@ -290,7 +394,7 @@
  * AnnotationsHolder &
  * DataIndexHolder &
  * TypeVariableMapHolder &
- * IdHolder
+ * IdHolder<ParameterDefintion>
  * } Parameter
  *
  * @public
@@ -315,7 +419,7 @@
  * DataIndexHolder &
  * DeclaringClassHolder &
  * TypeVariableMapHolder &
- * IdHolder &
+ * IdHolder<Constructor> &
  * HyperLinkable
  * } Constructor
  *
@@ -331,7 +435,7 @@
  * DataIndexHolder &
  * DeclaringClassHolder &
  * TypeVariablesHolder &
- * IdHolder &
+ * IdHolder<FieldDefinition> &
  * HyperLinkable &
  * KubeJSCodeFormattable
  * } Field
@@ -350,10 +454,33 @@
  * DataIndexHolder &
  * DeclaringClassHolder &
  * TypeVariablesHolder &
- * IdHolder &
+ * IdHolder<MethodDefinition> &
  * HyperLinkable &
  * KubeJSCodeFormattable
  * } Method
+ *
+ * @public
+ */
+
+/**
+ * @typedef {
+ * NameHolder &
+ * ModifiersHolder &
+ * AnnotationsHolder &
+ * TypeVariableMapHolder &
+ * DataIndexHolder &
+ * TypeVariablesHolder &
+ * IdHolder<TypeIdentifier> &
+ * HyperLinkable &
+ * KubeJSCodeFormattable &
+ * IndexedClassData &
+ * ConstructorHolder &
+ * MethodHolder &
+ * FieldHolder &
+ * InterfaceHolder &
+ * JavaTypeNameHolder
+ * } JavaType
+ *
  *
  * @public
  */
@@ -585,27 +712,6 @@ function setDeclaringClass(target) {
     return target;
 }
 
-/**
- * Sets the id function on the provided object based on it's type function.
- * The id function retrieves the id of the object.
- * @template {CompressedDataHolder & TypeHolder} T The source object type.
- * @param {T} target - The object to set the id for.
- * @returns {T & IdHolder} The same object with the id function added.
- */
-function setTypeBasedID(target) {
-    /**
-     * Retrieves the id of the object.
-     *
-     * @returns {int} The id of the object.
-     */
-    target.id = function () {
-        return target.type();
-    }
-
-    target.getId = target.id;
-
-    return target;
-}
 
 /**
  * Sets the getExceptions function on the provided object.

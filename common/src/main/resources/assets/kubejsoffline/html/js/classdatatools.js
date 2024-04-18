@@ -121,6 +121,11 @@ function getAnnotationData(id) {
     return DATA.annotations[id];
 }
 
+/**
+ * Returns the class with the given name, or null if the class does not exist.
+ * @param name {FullTypeName | TypeName | SimplifiedTypeName}
+ * @returns {JavaType | null}
+ */
 function findClassByName(name) {
     let isArray = name.endsWith("[]");
     if (isArray) {
@@ -194,6 +199,12 @@ function findClassByName(name) {
     return DATA._type_variables.map((index) => getClass(index)).find(typeVariableFilter) ?? null;
 }
 
+/**
+ * Looks up and wraps the class with the given id, name, or object, and returns the
+ * wrapped class. If the class is not found, then null is returned.
+ * @param id {TypeIdentifier | FullTypeName | TypeName | SimplifiedTypeName | IndexedClassData}
+ * @returns {JavaType | null}
+ */
 function getClass(id) {
     let output = {};
     if (!exists(id)) {
@@ -202,10 +213,6 @@ function getClass(id) {
     }
     switch (typeof (id)) {
         case "number":
-            if (id < 0 || id >= DATA.types.length) {
-                console.error("Invalid class id: " + id);
-                return null;
-            }
             if (!exists(getTypeData(id))) {
                 console.error("Invalid class data: " + id);
                 return null;
@@ -233,6 +240,7 @@ function getClass(id) {
             if (!isNaN(num)) {
                 return getClass(num);
             }
+            // Look up the cache to see if the class has already been found before.
             if (LOOK_UP_CACHE.has(id)) {
                 return getClass(LOOK_UP_CACHE.get(id));
             }
@@ -259,6 +267,7 @@ function getClass(id) {
 
     output = setModifiers(output);
     output = setTypeVariables(output);
+    output = setAnnotations(output);
 
     /**
      * Whether this type is a Class type.
@@ -303,17 +312,21 @@ function getClass(id) {
         return this.data._type_variable_map;
     }
 
+    /**
+     * Returns a TypeIdentifier for this class.
+     * @returns {TypeIdentifier}
+     */
     output.id = function () {
-        // TODO: Rewrite.
-        if (!exists(this.data._id)) {
-            console.error("Invalid class data: ", this.data);
-        }
         return this.data._id;
     }
+
+    output.getId = output.id;
 
     output.referenceName = function (typeVariableMap = {}) {
         return this.fullyQualifiedName(typeVariableMap, true);
     }
+
+    output.getReferenceName = output.referenceName;
 
     output.fullyQualifiedName = function (typeVariableMap = {}, includeGenerics = true) {
         if (this.isRawClass()) {
@@ -330,6 +343,10 @@ function getClass(id) {
             return getGenericDefinition(this.id(), typeVariableMap, includeGenerics) + "[]".repeat(this.getArrayDepth());
         }
     }
+
+    output.fullName = output.fullyQualifiedName;
+    output.getFullyQualifiedName = output.fullyQualifiedName;
+    output.getFullName = output.fullyQualifiedName;
 
 
     output.name = function (typeVariableMap = {}, includeGenerics = true) {
@@ -348,6 +365,8 @@ function getClass(id) {
         }
     }
 
+    output.getName = output.name;
+
     output.simplename = function (typeVariableMap = {}) {
         if (this.isWildcard()) {
             return "?" + "[]".repeat(this.getArrayDepth());
@@ -362,6 +381,10 @@ function getClass(id) {
         }
         return decompressString(this.data[PROPERTY.CLASS_NAME]) + "[]".repeat(this.getArrayDepth());
     }
+
+    output.simpleName = output.simplename;
+    output.getSimpleName = output.simplename;
+
 
     output.getTypeVariableBounds = function () {
         return getAsArray(this.data[PROPERTY.TYPE_VARIABLE_BOUNDS]);
@@ -408,6 +431,9 @@ function getClass(id) {
         return this.data._cachedPackageName;
     }
 
+    output.package = output.getPackageName;
+    output.getPackage = output.getPackageName;
+
     output.getParameterizedArgs = function () {
         return getAsArray(this.data[PROPERTY.PARAMETERIZED_ARGUMENTS]);
     }
@@ -448,21 +474,6 @@ function getClass(id) {
         return this.data[PROPERTY.RAW_PARAMETERIZED_TYPE];
     }
 
-    output.package = function () {
-        let pkg = this.data[PROPERTY.PACKAGE_NAME];
-        if (this.data._cachedPackageName) {
-            return this.data._cachedPackageName;
-        }
-
-        if (exists(pkg)) {
-            this.data._cachedPackageName = getPackageName(pkg);
-            return this.data._cachedPackageName;
-        }
-
-        this.data._cachedPackageName = "";
-        return "";
-    }
-
     output.paramargs = function () {
         let args = this.data[PROPERTY.PARAMETERIZED_ARGUMENTS];
         if (!exists(args) || args.length === 0) {
@@ -489,21 +500,6 @@ function getClass(id) {
         }
 
         return null;
-    }
-
-    output.interfaces = function () {
-        let interfaces = new Set();
-        this._follow_inheritance((data, index) => {
-            if (exists(data[PROPERTY.INTERFACES])) {
-                for (let i = 0; i < data[PROPERTY.INTERFACES].length; i++) {
-                    interfaces.add(data[PROPERTY.INTERFACES][i]);
-                }
-            }
-        });
-        if (interfaces.size === 0) {
-            return null;
-        }
-        return interfaces;
     }
 
     /**
@@ -534,11 +530,13 @@ function getClass(id) {
         }
 
         for (let i = 0; i < fields.length; i++) {
-            fields[i]._dataIndex = i;
+            fields[i].data._dataIndex = i;
         }
 
         return fields;
     }
+
+    output.getFields = output.fields;
 
     /**
      * Returns all methods of this class.
@@ -567,7 +565,7 @@ function getClass(id) {
             return [];
         }
         for (let i = 0; i < methods.length; i++) {
-            methods[i]._dataIndex = i;
+            methods[i].data._dataIndex = i;
         }
 
         return methods;
@@ -577,7 +575,6 @@ function getClass(id) {
         const constructors = [];
         if (exists(this.data[PROPERTY.CONSTRUCTORS])) {
             for (let i = 0; i < this.data[PROPERTY.CONSTRUCTORS].length; i++) {
-                this.data[PROPERTY.CONSTRUCTORS][i]._dataIndex = i;
                 constructors.push(getConstructor(this.data[PROPERTY.CONSTRUCTORS][i], output.getTypeVariableMap()));
             }
         }
@@ -585,23 +582,15 @@ function getClass(id) {
         if (constructors.length === 0) {
             return [];
         }
+
+        for (let i = 0; i < constructors.length; i++) {
+            constructors[i].data._dataIndex = i;
+        }
+
         return constructors;
     }
 
-    output.annotations = function () {
-        const annotations = [];
-        this._follow_inheritance((data) => {
-            if (exists(data[PROPERTY.ANNOTATIONS])) {
-                for (let i = 0; i < data[PROPERTY.ANNOTATIONS].length; i++) {
-                    data[PROPERTY.ANNOTATIONS][i]._dataIndex = i;
-                    annotations.push(getAnnotation(data[PROPERTY.ANNOTATIONS][i], output.getTypeVariableMap()));
-                }
-            }
-        });
-
-
-        return annotations;
-    }
+    output.getConstructors = output.constructors;
 
     output._follow_inheritance = function (action) {
         const seen = new Set();
@@ -708,8 +697,13 @@ function getParameter(parameterID, typeVariableMap = {}) {
     output = setModifiers(output);
     output = setAnnotations(output);
     output = setDataIndex(output);
-    output = setTypeBasedID(output);
     output = setTypeVariableMap(output);
+
+    output.id = function () {
+        return getClass(this.getType()).fullyQualifiedName(this.getTypeVariableMap()) + " " + this.name();
+    }
+
+    output.getId = output.id;
 
 
     return output;
