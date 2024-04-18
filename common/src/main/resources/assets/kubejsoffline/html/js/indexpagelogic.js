@@ -20,7 +20,7 @@ function loadClass(id) {
         return;
     }
     if (data.isRawClass()) {
-        loadRawClass(id, createTypeVariableMap(id));
+        loadRawClass(data, createTypeVariableMap(id));
         return;
     }
     throw new Error("Unknown class type.");
@@ -77,15 +77,14 @@ function loadParameterizedType(parameterizedType) {
     for (let i = 0; i < typeVariables.length; i++) {
         typeVariableMap[typeVariables[i]] = actualTypeArguments[i];
     }
-    loadRawClass(rawType.id(), createTypeVariableMap(rawType.id(), typeVariableMap));
+    loadRawClass(rawType, createTypeVariableMap(rawType.id(), typeVariableMap));
 }
 
-function loadRawClass(id, typeVariableMap = {}) {
-    let data = getClass(id);
-    if (!data) {
-        console.error("No class data found for id " + id);
-        return;
+function loadRawClass(data, typeVariableMap = {}) {
+    if (!exists(data)) {
+        throw new Error("No class data found for data: " + data);
     }
+    const id = [data.id(), data.getArrayDepth()];
     const superClass = data.getSuperClass();
     const interfaces = data.getInterfaces();
     let classNameTag = document.createElement('h3');

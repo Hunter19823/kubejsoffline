@@ -188,7 +188,7 @@ const SORT_FUNCTIONS = {
         return getClass(type).fullyQualifiedName();
     }),
     'declared': sortByModifiedAttribute('declared-in', (type) => {
-        return getClass(type).name();
+        return getClass(type).getDeclaringClass();
     }),
     'parameter_count': sortByModifiedAttribute('parameters', (count) => {
         return parseInt(count);

@@ -267,3 +267,25 @@ function getRelation(relationshipType, id) {
     }
     return Array.from(relationshipMap.get(id));
 }
+
+/**
+ * Get a map of all relationships for a given id.
+ * @param id {number}
+ * @returns {Map<int, string[]>}
+ */
+function getAllRelations(id) {
+    // Return a list of map of id, to list of relationship type.
+    const relations = new Map();
+    RELATIONSHIP_GRAPH.forEach((relationshipMap, relationshipType) => {
+        if (!relationshipMap.has(id)) {
+            return;
+        }
+        relationshipMap.get(id).forEach((to) => {
+            if (!relations.has(to)) {
+                relations.set(to, []);
+            }
+            relations.get(to).push(relationshipType);
+        })
+    });
+    return relations;
+}

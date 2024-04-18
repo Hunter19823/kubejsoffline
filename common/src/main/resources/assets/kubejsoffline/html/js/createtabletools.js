@@ -111,26 +111,18 @@ function createRelationshipTable(id, typeVariableMap = {}) {
     if (!GLOBAL_SETTINGS.showRelationships) {
         return;
     }
-    let table = createTableWithHeaders(createSortableTable('relations'), 'Relationships', 'RelatedClass');
-    let seen = new Set();
-    let relation = null;
+    const relationships = getAllRelations(data.id());
+    if (relationships.size === 0) {
+        return;
+    }
+    let table = createTableWithHeaders(createSortableTable('relations'), 'RelatedClass', 'Relationships');
     let row = null;
-    for (let i = 0; i < RELATIONS.length; i++) {
-        relation = data.relation(i);
-        if (!relation) {
-            continue;
+    [...relationships.entries()].forEach(([to, relations]) => {
+        try {
+            row = addRow(table, createFullSignature(to, typeVariableMap), span(relations.join(",")));
+            appendAttributesToRelationshipToTableRow(row, to, relations, data.id())
+        } catch (e) {
+            console.error("Failed to create relationship entry for ", data.id(), " To: ", to, " Relations: ", relations, " Error: ", e);
         }
-        for (let j = 0; j < relation.length; j++) {
-            try {
-                row = addRow(table, span(RELATIONS[i]), createFullSignature(relation[j], typeVariableMap));
-                appendAttributesToRelationshipToTableRow(row, relation[j], RELATIONS[i], data.id())
-                seen.add(relation[j]);
-            } catch (e) {
-                console.error("Failed to create relationship entry for ", id, " Relationship: ", relation[j], " Error: ", e);
-            }
-        }
-    }
-    if (seen.size === 0) {
-        table.parentNode.removeChild(table);
-    }
+    });
 }

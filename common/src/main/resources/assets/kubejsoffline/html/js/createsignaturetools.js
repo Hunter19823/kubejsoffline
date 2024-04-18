@@ -170,7 +170,7 @@ function createAnnotationSignature(annotation, typeVariableMap = {}) {
 function appendAttributesToClassTableRow(row, class_id) {
     let clazz = getClass(class_id);
     row.setAttribute('mod', clazz.modifiers());
-    row.setAttribute('name', clazz.name());
+    row.setAttribute('name', clazz.referenceName());
     row.setAttribute('type', class_id);
     row.setAttribute('row-type', 'class');
     row.id = clazz.id();
@@ -217,8 +217,11 @@ function appendAttributesToConstructorTableRow(row, class_id, constructor, curre
     row.id = constructor.id();
 }
 
-function appendAttributesToRelationshipToTableRow(row, relationship, relationshipName, current_class_id = null) {
-    row.setAttribute('type', relationship);
+function appendAttributesToRelationshipToTableRow(row, class_id, relationshipName, current_class_id = null) {
+    const clazz = getClass(class_id);
+    row.setAttribute('type', class_id);
+    row.setAttribute('mod', clazz.modifiers());
+    row.setAttribute('name', clazz.referenceName());
     row.setAttribute('row-type', 'relationship');
 
     if (current_class_id) {
@@ -307,6 +310,10 @@ function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, 
     type = getClass(type);
     const outputSpan = document.createElement('span');
     if (type.isTypeVariable()) {
+        if (isDefiningTypeVariable) {
+            outputSpan.append(createLink(span(type.name()), type.id()));
+            return outputSpan;
+        }
         type = exists(typeVariableMap[type.id()]) ? getClass(typeVariableMap[type.id()]) : type;
     }
     if (type.isRawClass()) {
@@ -358,8 +365,8 @@ function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, 
     }
     if (type.isWildcard()) {
         const name = "?";
-        const lowerBounds = type.getLowerBound();
         outputSpan.append(span(name));
+        const lowerBounds = type.getLowerBound();
         if (lowerBounds.length !== 0) {
             outputSpan.append(
                     tagJoiner(
@@ -368,7 +375,7 @@ function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, 
                             (bound) => createLinkableSignature(
                                     bound,
                                     typeVariableMap,
-                                    isDefiningTypeVariable,
+                                    true,
                                     appendPackageName
                             ),
                             span(" super ")
@@ -385,7 +392,7 @@ function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, 
                             (bound) => createLinkableSignature(
                                     bound,
                                     typeVariableMap,
-                                    isDefiningTypeVariable,
+                                    true,
                                     appendPackageName
                             ),
                             span(" extends ")

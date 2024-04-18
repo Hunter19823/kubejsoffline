@@ -163,14 +163,29 @@ function findClassByName(name) {
     const rawFilter = createFilter("raw class type");
     const typeVariableFilter = createFilter("type variable");
 
-    console.debug("Searching type: ", name, "Contains package: ", containsPackage, "Contains generic: ", containsGeneric, "Contains inner class: ", containsInnerClass, "Is parameterized: ", isParameterized, "Is wildcard: ", isWildcard);
+    console.debug(
+            "Searching for class: ", name,
+            "isArray: ", isArray,
+            "containsGeneric: ", containsGeneric,
+            "containsInnerClass: ", containsInnerClass,
+            "isParameterized: ", isParameterized,
+            "isWildcard: ", isWildcard,
+            "containsPackage: ", containsPackage,
+            "shouldUseReferenceName: ", shouldUseReferenceName,
+            "shouldUseFullyQualifiedName: ", shouldUseFullyQualifiedName,
+            "shouldUseName: ", shouldUseName,
+            "shouldUseSimpleName: ", shouldUseSimpleName
+    );
 
     if (isWildcard) {
         return DATA._wildcard_types.map((index) => getClass(index)).find(wildCardFilter) ?? null;
     }
 
     if (isParameterized) {
-        return DATA._parameterized_types.map((index) => getClass(index)).find(parameterizedFilter) ?? null;
+        const result = DATA._parameterized_types.map((index) => getClass(index)).find(parameterizedFilter);
+        if (exists(result))
+            return result;
+        return DATA._raw_types.map((index) => getClass(index)).find(rawFilter) ?? null;
     }
 
     const out = DATA._raw_types.map((index) => getClass(index)).find(rawFilter);
@@ -200,7 +215,7 @@ function getClass(id) {
         case "object":
             if (exists(id._id)) {
                 output.data = getTypeData(id._id);
-            } else if (exists('data')) {
+            } else if (exists(id.data)) {
                 output.data = getTypeData(id._id);
             } else if (Array.isArray(id) && id.length === 2) {
                 // If it's an array, then assume it's an array of a class.
@@ -209,7 +224,7 @@ function getClass(id) {
                 output.data._id = id[0];
                 output._array_depth = id[1];
             } else {
-
+                throw new Error("Invalid class object: " + id);
             }
             break;
         case "string":
@@ -218,9 +233,8 @@ function getClass(id) {
             if (!isNaN(num)) {
                 return getClass(num);
             }
-            let lowerID = id.toLowerCase();
-            if (LOOK_UP_CACHE.has(lowerID)) {
-                return getClass(LOOK_UP_CACHE.get(lowerID));
+            if (LOOK_UP_CACHE.has(id)) {
+                return getClass(LOOK_UP_CACHE.get(id));
             }
             // Check if the string matches the java qualified type name regex
             if (!id.match(/([a-zA-Z_$][a-zA-Z\d_$]*\.)*[a-zA-Z_$][a-zA-Z\d_$]*/)) {
@@ -228,7 +242,11 @@ function getClass(id) {
                 console.error("Invalid class id/search: " + id);
                 return null;
             }
-            return findClassByName(id);
+            const subject = findClassByName(id);
+            if (exists(subject)) {
+                LOOK_UP_CACHE.set(id, subject.id());
+            }
+            return subject;
         default:
             console.error("Unsupported class type provided to getClass: " + id + " (" + typeof (id) + ")");
             return null;

@@ -194,54 +194,64 @@ function addSortTables() {
     let tables = document.getElementsByClassName('sortable-table');
     for (let i = 0; i < tables.length; i++) {
         let table = tables[i];
-        if (table) {
-            let options = createOptions(
-                    option('default', SORT_FUNCTIONS.default, 'Default'),
-                    option('Name', () => {
-                        sortTable(table, SORT_FUNCTIONS.name);
-                    }, 'Signature'),
-                    option('Super Class', () => {
-                        sortTable(table, SORT_FUNCTIONS.super_class);
-                    }, 'Signature'),
-                    option('Return Type (Simple Name)', () => {
-                        sortTable(table, SORT_FUNCTIONS.simple_name);
-                    }, 'Signature'),
-                    option('Return Type (Full Name)', () => {
-                        sortTable(table, SORT_FUNCTIONS.type);
-                    }, 'Signature'),
-                    option('Declared In', () => {
-                        sortTable(table, SORT_FUNCTIONS.declared);
-                    }, 'Signature'),
-                    option('Parameter Count', () => {
-                        sortTable(table, SORT_FUNCTIONS.parameter_count);
-                    }, 'Signature'),
-                    option('Access', () => {
-                        sortTable(table, SORT_FUNCTIONS.public);
-                        sortTable(table, SORT_FUNCTIONS.protected);
-                        sortTable(table, SORT_FUNCTIONS.private);
-                        sortTable(table, SORT_FUNCTIONS.static);
-                    }, 'Access Modifier'),
-                    option('Public', () => {
-                        sortTable(table, SORT_FUNCTIONS.public);
-                    }, 'Access Modifier'),
-                    option('Protected', () => {
-                        sortTable(table, SORT_FUNCTIONS.protected);
-                    }, 'Access Modifier'),
-                    option('Private', () => {
-                        sortTable(table, SORT_FUNCTIONS.private);
-                    }, 'Access Modifier'),
-            );
-            let sortDiv = document.createElement('div');
-            let sortLabel = document.createElement('label');
-            sortLabel.setAttribute('for', 'sort');
-            sortLabel.textContent = 'Sort by: ';
-            sortDiv.appendChild(sortLabel);
-            sortDiv.appendChild(options);
-            table.parentNode.insertBefore(sortDiv, table);
-            if (DecodeURL().isClass())
-                sortTable(table, SORT_FUNCTIONS.default);
-            if (DecodeURL().isHome())
+        if (!table) {
+            continue;
+        }
+        let options = createOptions(
+                option('default', SORT_FUNCTIONS.default, 'Default'),
+                option('Name', () => {
+                    sortTable(table, SORT_FUNCTIONS.name);
+                }, 'Signature'),
+                option('Super Class', () => {
+                    sortTable(table, SORT_FUNCTIONS.super_class);
+                }, 'Signature'),
+                option('Return Type (Simple Name)', () => {
+                    sortTable(table, SORT_FUNCTIONS.simple_name);
+                }, 'Signature'),
+                option('Return Type (Full Name)', () => {
+                    sortTable(table, SORT_FUNCTIONS.type);
+                }, 'Signature'),
+                option('Declared In', () => {
+                    sortTable(table, SORT_FUNCTIONS.declared);
+                }, 'Signature'),
+                option('Parameter Count', () => {
+                    sortTable(table, SORT_FUNCTIONS.parameter_count);
+                }, 'Signature'),
+                option('Access', () => {
+                    sortTable(table, SORT_FUNCTIONS.public);
+                    sortTable(table, SORT_FUNCTIONS.protected);
+                    sortTable(table, SORT_FUNCTIONS.private);
+                    sortTable(table, SORT_FUNCTIONS.static);
+                }, 'Access Modifier'),
+                option('Public', () => {
+                    sortTable(table, SORT_FUNCTIONS.public);
+                }, 'Access Modifier'),
+                option('Protected', () => {
+                    sortTable(table, SORT_FUNCTIONS.protected);
+                }, 'Access Modifier'),
+                option('Private', () => {
+                    sortTable(table, SORT_FUNCTIONS.private);
+                }, 'Access Modifier'),
+        );
+        let sortDiv = document.createElement('div');
+        let sortLabel = document.createElement('label');
+        sortLabel.setAttribute('for', 'sort');
+        sortLabel.textContent = 'Sort by: ';
+        sortDiv.appendChild(sortLabel);
+        sortDiv.appendChild(options);
+        table.parentNode.insertBefore(sortDiv, table);
+        switch (table.id) {
+            case "relations":
                 sortTable(table, SORT_FUNCTIONS.name);
+                break;
+            case "constructors":
+            case "fields":
+            case "methods":
+                sortTable(table, SORT_FUNCTIONS.default);
+                break;
+            default:
+                sortTable(table, SORT_FUNCTIONS.type);
+                break;
         }
     }
 
