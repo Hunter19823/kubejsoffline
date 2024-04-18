@@ -398,6 +398,11 @@ function setModifiers(target) {
      * @returns {int} The modifiers of the object.
      */
     target.modifiers = function () {
+        if (target.data[PROPERTY.MODIFIERS] === undefined) {
+            if (target["getRawType"] !== undefined && exists(target.getRawType())) {
+                return getClass(target.getRawType()).modifiers();
+            }
+        }
         return target.data[PROPERTY.MODIFIERS];
     }
 
