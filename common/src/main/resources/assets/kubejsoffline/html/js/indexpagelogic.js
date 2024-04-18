@@ -325,14 +325,20 @@ function DecodeURL() {
         output.chromeHighlightText = split[1];
     }
     output.params = new URLSearchParams("");
-
-    if (hash.startsWith("?") && !hash.startsWith("? ")) {
-        let split = hash.split("?");
-        hash = split[0];
-        output.params = new URLSearchParams(split[1]);
+    // Regex hash to see if it has a query string.
+    if (URL_PARAMETER_REGEX.test(hash)) {
+        const regexArgs = URL_PARAMETER_REGEX.exec(hash);
+        if (regexArgs.groups.TypeDefinition) {
+            console.debug("Found the following class definition in the hash: ", regexArgs.groups.TypeDefinition);
+            output.hash = regexArgs.groups.TypeDefinition;
+        }
+        if (regexArgs.groups.QueryStringArgs) {
+            console.debug("Found the following query string in the hash: ", regexArgs.groups.QueryStringArgs);
+            output.params = new URLSearchParams(regexArgs.groups.QueryStringArgs);
+        }
+    } else {
+        output.hash = hash;
     }
-
-    output.hash = hash;
 
     output.hasFocus = function () {
         return this.params.has("focus");
