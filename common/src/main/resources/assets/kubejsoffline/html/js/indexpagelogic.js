@@ -311,6 +311,8 @@ async function onHashChange() {
 }
 
 function DecodeURL() {
+    const URL_PARAMETER_REGEX = /^(?<TypeDefinition>(\?( extends | super ))?(?<ClassDefinition>(?<package>([a-zA-Z_$0-9.])*\.)*(?<ClassName>([a-zA-Z$0-9])+)(?<Generic><.*>)?))?(?<QueryStringArgs>\?.*)/;
+
     let output = {};
     let hash = location.hash;
     if (hash?.length > 0) {
