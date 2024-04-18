@@ -600,10 +600,6 @@ function getClass(id) {
         return classes;
     }
 
-    output.rawtype = function () {
-        return this.data[PROPERTY.RAW_PARAMETERIZED_TYPE];
-    }
-
     output._follow_inheritance = function (action) {
         const seen = new Set();
         const unprocessed = [this.id()];
