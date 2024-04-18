@@ -1,5 +1,3 @@
-
-
 function dataFilter() {
     let output = {};
     output.results = {'classes': [], 'fields': [], 'methods': [], 'parameters': []};
@@ -403,48 +401,28 @@ function dataFilter() {
         if (this._classFilters.length === 0) {
             return true;
         }
-        for (let filter of this._classFilters) {
-            if (!filter(data)) {
-                return false;
-            }
-        }
-        return true;
+        return !this._classFilters.some((filter) => !filter(data));
     }
 
-    output.matchesFiled = function (data) {
+    output.matchesField = function (data) {
         if (this._fieldFilters.length === 0) {
             return true;
         }
-        for (let filter of this._fieldFilters) {
-            if (!filter(data)) {
-                return false;
-            }
-        }
-        return true;
+        return !this._fieldFilters.some((filter) => !filter(data));
     }
 
     output.matchesMethod = function (data) {
         if (this._methodFilters.length === 0) {
             return true;
         }
-        for (let filter of this._methodFilters) {
-            if (!filter(data)) {
-                return false;
-            }
-        }
-        return true;
+        return !this._methodFilters.some((filter) => !filter(data));
     }
 
     output.matchesParam = function (data) {
         if (this._paramFilters.length === 0) {
             return true;
         }
-        for (let filter of this._paramFilters) {
-            if (!filter(data)) {
-                return false;
-            }
-        }
-        return true;
+        return !this._paramFilters.some((filter) => !filter(data));
     }
 
     // Collector
@@ -459,7 +437,7 @@ function dataFilter() {
             }
             if (this._fieldFilters.length !== 0) {
                 for (let field of subject.fields(true)) {
-                    if (this.matchesFiled(field)) {
+                    if (this.matchesField(field)) {
                         this.results.fields.push(field);
                     }
                 }
@@ -468,14 +446,15 @@ function dataFilter() {
                 for (let method of subject.methods(true)) {
                     if (this.matchesMethod(method)) {
                         this.results.methods.push(method);
-                    } else {
-                        if (this._paramFilters.length !== 0) {
-                            for (let param of method.parameters()) {
-                                if (this.matchesParam(param)) {
-                                    this.results.parameters.push(method);
-                                    break;
-                                }
-                            }
+                        continue;
+                    }
+                    if (this._paramFilters.length === 0) {
+                        continue;
+                    }
+                    for (let param of method.parameters()) {
+                        if (this.matchesParam(param)) {
+                            this.results.parameters.push(method);
+                            break;
                         }
                     }
                 }
@@ -508,10 +487,6 @@ function dataFilter() {
 
     return output;
 }
-
-
-let _last_filter = null;
-let _last_search_parameters = null;
 
 function searchFromParameters(parameters) {
     wipePage();

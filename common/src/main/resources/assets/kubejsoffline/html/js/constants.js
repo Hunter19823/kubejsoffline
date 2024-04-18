@@ -260,3 +260,7 @@ const RELATIONSHIP = {
     "UPPER_BOUND": "UPPER_BOUND",
     "BOUNDED_WITHIN": "BOUNDED_WITHIN",
 }
+
+
+let _last_filter = null;
+let _last_search_parameters = null;

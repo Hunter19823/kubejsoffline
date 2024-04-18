@@ -385,6 +385,62 @@
  * @public
  */
 
+/**
+ * @typedef ParameterizedTypeHolder
+ * @method ownerType - Retrieves the owner type of the object.
+ * @method getOwnerType - Retrieves the owner type of the object. (Alias for ownerType
+ * @method getRawType - Retrieves the raw type of the object.
+ * @method getParameterizedArgs - Retrieves the parameterized arguments of the object.
+ * @property {function(): TypeIdentifier?} ownerType - Retrieves the owner type of the object.
+ * @property {function(): TypeIdentifier?} getOwnerType - Retrieves the owner type of the object. (Alias for ownerType)
+ * @property {function(): TypeIdentifier} getRawType - Retrieves the raw type of the object.
+ * @property {function(): Array<TypeIdentifier>} getParameterizedArgs - Retrieves the parameterized arguments of the object.
+ * @public
+ */
+
+/**
+ * @typedef WildcardTypeHolder
+ * @method getLowerBounds - Retrieves the lower bounds of the object.
+ * @method getUpperBounds - Retrieves the upper bounds of the object.
+ * @property {function(): Array<TypeIdentifier>} getLowerBounds - Retrieves the lower bounds of the object.
+ * @property {function(): Array<TypeIdentifier>} getUpperBounds - Retrieves the upper bounds of the object.
+ * @public
+ */
+/**
+ * @typedef TypeVariableHolder
+ * @method getTypeVariableBounds - Retrieves the bounds of the object.
+ * @property {function(): Array<TypeIdentifier>} getTypeVariableBounds - Retrieves the bounds of the object.
+ * @public
+ */
+/**
+ * @typedef {
+ *     TypeHolder &
+ *     ModifiersHolder &
+ *     AnnotationsHolder
+ * } RawClassTypeHolder
+ * @public
+ */
+/**
+ * @typedef TypeWrapper
+ * @method isRaw - Checks if the object is a raw type.
+ * @method isRawType - Checks if the object is a raw type (Alias for isRaw).
+ * @method isRawClass - Checks if the object is a raw type (Alias for isRaw).
+ * @method isParameterized - Checks if the object is a parameterized type.
+ * @method isParameterizedType - Checks if the object is a parameterized type (Alias for isParameterized).
+ * @method isWildcard - Checks if the object is a wildcard type.
+ * @method isWildcardType - Checks if the object is a wildcard type (Alias for isWildcard).
+ * @method isTypeVariable - Checks if the object is a type variable.
+ * @property {function(): boolean} isRaw - Checks if the object is a raw type.
+ * @property {function(): boolean} isRawType - Checks if the object is a raw type.
+ * @property {function(): boolean} isRawClass - Checks if the object is a raw type.
+ * @property {function(): boolean} isParameterized - Checks if the object is a parameterized type.
+ * @property {function(): boolean} isParameterizedType - Checks if the object is a parameterized type.
+ * @property {function(): boolean} isWildcard - Checks if the object is a wildcard type.
+ * @property {function(): boolean} isWildcardType - Checks if the object is a wildcard type.
+ * @property {function(): boolean} isTypeVariable - Checks if the object is a type variable.
+ * @public
+ */
+
 
 /**
  * @typedef {
@@ -478,7 +534,12 @@
  * MethodHolder &
  * FieldHolder &
  * InterfaceHolder &
- * JavaTypeNameHolder
+ * JavaTypeNameHolder &
+ * ParameterizedTypeHolder &
+ * WildcardTypeHolder &
+ * TypeVariableHolder &
+ * RawClassTypeHolder &
+ * TypeWrapper
  * } JavaType
  *
  *

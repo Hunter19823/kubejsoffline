@@ -100,7 +100,7 @@ function createTypeVariableMap(type, existingMap = {}) {
                 unprocessedTypes.push(superClassId);
             } else {
                 if (superClass.isParameterizedType()) {
-                    unprocessedTypes.push(superClass.rawtype());
+                    unprocessedTypes.push(superClass.getRawType());
                     remapTypeVariables(typeVariableMap, superClassId);
                 }
             }
@@ -113,7 +113,7 @@ function createTypeVariableMap(type, existingMap = {}) {
                 unprocessedTypes.push(interfaceId);
             } else {
                 if (interfaceClass.isParameterizedType()) {
-                    unprocessedTypes.push(interfaceClass.rawtype());
+                    unprocessedTypes.push(interfaceClass.getRawType());
                     remapTypeVariables(typeVariableMap, interfaceId);
                 }
             }
@@ -130,7 +130,7 @@ function remapTypeVariables(typeVariableMap, parameterizedType) {
         console.error("Type is not a parameterized type. Cannot remap type variables.");
         throw new Error("Invalid state has been reached.");
     }
-    const rawTypeId = classType.rawtype();
+    const rawTypeId = classType.getRawType();
     const rawType = getClass(rawTypeId);
     if (!rawType.isRawClass()) {
         console.error("Raw type is not a raw class. Cannot remap type variables.");
@@ -180,7 +180,7 @@ function getGenericName(type, typeVariableMap, includeGenerics = true) {
 
 function getParameterizedName(type, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics) {
     // Append the package name as long as the owner type does not exist and appendPackageName is true
-    const rawTypeName = cachedGenericDefinition(type.rawtype(), typeVariableMap, isDefiningTypeVariable, appendPackageName && !exists(type.getOwnerType()), includeGenerics);
+    const rawTypeName = cachedGenericDefinition(type.getRawType(), typeVariableMap, isDefiningTypeVariable, appendPackageName && !exists(type.getOwnerType()), includeGenerics);
     const ownerType = type.getOwnerType();
     const ownerPrefix = (exists(ownerType) ? cachedGenericDefinition(ownerType, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics) + "$" : "");
     const actualTypes = type.getTypeVariables();
