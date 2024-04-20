@@ -157,6 +157,25 @@ function scrollToText(text) {
     console.warn("Chrome Scroll to highlighted text is not implemented.");
 }
 
+function setToast(message) {
+    let toast = document.getElementById("toast");
+    if (toast) {
+        document.body.removeChild(toast);
+    }
+    toast = document.createElement("div");
+    toast.id = "toast";
+    toast.classList.add("toast");
+    toast.appendChild(header(message, 2));
+    document.body.append(toast);
+}
+
+function clearToast() {
+    let toast = document.getElementById("toast");
+    if (toast) {
+        document.body.removeChild(toast);
+    }
+}
+
 async function onHashChange() {
     // If we have a hash on the URL, determine the format:
     // # - Load the index page / home page.
@@ -237,9 +256,12 @@ async function onHashChange() {
         return;
     }
 
-
     if (!DATA._optimized) {
-        await optimizeDataSearch();
+        setToast("Please wait while data is being indexed. This should only take a few seconds.");
+        optimizeDataSearch().then(() => {
+            onHashChange();
+        })
+        return;
     }
 
     let hasState = false;

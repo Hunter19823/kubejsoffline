@@ -107,16 +107,16 @@ function dataFilter() {
 
     output.withClassAny = function (query, exact = false, includes = true) {
         const FULLY_QUALIFIED_NAME = attributeMatcher(CLASS_ATTRIBUTES.REFERENCE_NAME, query, exact, includes);
-        const TYPE_FILTER = attributeMatcher(CLASS_ATTRIBUTES.FULL_NAME_NON_GENERIC, query, exact, includes);
+        // const TYPE_FILTER = attributeMatcher(CLASS_ATTRIBUTES.FULL_NAME_NON_GENERIC, query, exact, includes);
         const TYPED_NAME_FILTER = attributeMatcher(CLASS_ATTRIBUTES.TYPED_NAME, query, exact, includes);
         const SIMPLE_NAME_FILTER = attributeMatcher(CLASS_ATTRIBUTES.SIMPLE_NAME, query, exact, includes);
-        const PACKAGE_FILTER = attributeMatcher(CLASS_ATTRIBUTES.PACKAGE, query, exact, includes);
+        // const PACKAGE_FILTER = attributeMatcher(CLASS_ATTRIBUTES.PACKAGE, query, exact, includes);
         // const RAW_TYPE_FILTER = classTypeAttributeMatcher(CLASS_ATTRIBUTES.RAW_TYPE);
 
 
 
         return this.withClassFilter((subject) => {
-            return FULLY_QUALIFIED_NAME(subject) || TYPE_FILTER(subject) || TYPED_NAME_FILTER(subject) || SIMPLE_NAME_FILTER(subject) || PACKAGE_FILTER(subject);
+            return FULLY_QUALIFIED_NAME(subject) || TYPED_NAME_FILTER(subject) || SIMPLE_NAME_FILTER(subject);
         });
     }
 
@@ -131,12 +131,11 @@ function dataFilter() {
     }
 
     output.withMethodAny = function (query, exact = false, includes = true) {
-        const FULLY_QUALIFIED_NAME = attributeMatcher(METHOD_ATTRIBUTES.REFERENCE_NAME, query, exact, includes);
         const NAME_FILTER = attributeMatcher(METHOD_ATTRIBUTES.NAME, query, exact, includes);
         const METHOD_TYPE_FILTER = classTypeAttributeMatcher(METHOD_ATTRIBUTES.TYPE);
 
         return this.withMethodFilter((subject) => {
-            return FULLY_QUALIFIED_NAME(subject) || NAME_FILTER(subject) || METHOD_TYPE_FILTER(subject);
+            return NAME_FILTER(subject) || METHOD_TYPE_FILTER(subject);
         });
     }
 
@@ -490,6 +489,8 @@ function dataFilter() {
 
 function searchFromParameters(parameters) {
     wipePage();
+
+    setToast("Please wait while we process your query...");
     if (!parameters.has('page')) {
         parameters.set('page', 0);
     }
@@ -575,6 +576,7 @@ function searchFromParameters(parameters) {
     }
 
     loadSearchResults(page, page_size);
+    clearToast();
 }
 
 function clearTable(table) {
