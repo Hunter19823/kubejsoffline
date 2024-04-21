@@ -579,113 +579,25 @@ function searchFromParameters(parameters) {
     clearToast();
 }
 
-function clearTable(table) {
-    let trs = table.getElementsByTagName('tr');
-    for (let i = 1; i < trs.length;) {
-        trs[i].remove();
-    }
-}
-
 function loadSearchResults(page_number, page_size) {
-    // Remove existing table entries
-    wipePage();
 
     let results = _last_filter.getResults();
 
-    function createResultTable(title, table_id, list, addRowAction, ...headers) {
-        if (list.length === 0) {
-            return;
-        }
-
-        // Add the search details
-        document.body.append(addSearchDetails(title, list, table_id + '-header', page_number, page_size));
-
-        // Create a class table
-        let classTable = createTableWithHeaders(createSortableTable(table_id), ...headers);
-
-        // Determine the start and end of the page
-        let start = Math.max(0, Math.min(page_number * page_size, list.length - page_size));
-        let end = Math.min(start + page_size, list.length);
-        for (let i = start; i < end; i++) {
-            let data = list[i];
-            addRowAction(classTable, data);
-        }
-    }
-
-    createResultTable("Matching Classes", 'class-table', results.classes, (table, classData) => {
+    createPagedTable("Matching Classes", 'class-table', results.classes, (table, classData) => {
         addClassToTable(table, classData.id());
     }, 'Link', 'ID', 'Class Name', 'Package', 'Qualified Name');
 
-    createResultTable("Matching Fields", 'field-table', results.fields, (table, fieldData) => {
+    createPagedTable("Matching Fields", 'field-table', results.fields, (table, fieldData) => {
         addFieldToTable(table, fieldData.getDeclaringClass(), fieldData, fieldData.type());
     }, 'Link', 'Declared In', 'Field Signature', 'Declaration Class');
 
-    createResultTable("Matching Methods", 'method-table', results.methods, (table, methodData) => {
+    createPagedTable("Matching Methods", 'method-table', results.methods, (table, methodData) => {
         addMethodToTable(table, methodData.getDeclaringClass(), methodData);
     }, 'Link', 'Declared In', 'Method Signature', 'Declaration Class');
 
-    createResultTable("Matching Parameters", 'parameter-table', results.parameters, (table, methodData) => {
+    createPagedTable("Matching Parameters", 'parameter-table', results.parameters, (table, methodData) => {
         addMethodToTable(table, methodData.getDeclaringClass(), methodData);
     }, 'Link', 'Declared In', 'Method Signature', 'Declaration Class');
-}
-
-function addSearchDetails(title, list, focus, page_number, page_size) {
-    // console.log("Adding search details for "+title+" with focus "+focus+" and page number "+page_number+" and page size "+page_size);
-    let div = document.createElement('h2');
-
-    let headerTitle = document.createElement('h1');
-    headerTitle.innerText = title;
-    headerTitle.id = focus;
-    headerTitle.style.fontSize = 'revert';
-    div.append(headerTitle);
-
-    function linkify(tag) {
-        tag.classList.add('link');
-    }
-
-    let lastPage = Math.ceil(list.length / page_size) - 1;
-    let currentPage = Math.min(page_number, lastPage);
-
-    // console.log("Last page: " + lastPage);
-    // console.log("Current page: " + currentPage);
-
-
-    // Add a previous button, if needed
-    div.classList.add('search-pagination');
-    div.classList.add('stick-able');
-    if (currentPage > 0) {
-        let prev = span("Previous");
-        div.append(prev);
-        div.append(span("    "));
-        // The Previous button should go to the minimum of the last page and the previous page
-        _last_search_parameters.set('page', Math.min(currentPage - 1, lastPage));
-        _last_search_parameters.set('size', page_size);
-        _last_search_parameters.set('focus', focus);
-        const PREV_PAGE = _last_search_parameters.toString();
-        prev.setAttribute('href', `#?${PREV_PAGE}`)
-        prev.setAttribute('onclick', 'changeURLFromElement(this);');
-        linkify(prev);
-    }
-
-    // Add the number of results and how many total results there are
-    div.append(span(`Page ${currentPage + 1} of ${lastPage + 1} (${list.length} total results)`));
-
-    // Add a next button, if needed
-    if (list.length > (currentPage + 1) * page_size) {
-        div.append(span("    "));
-        let next = span("Next");
-        div.append(next);
-        // The Previous button should go to the minimum of the last page and the previous page
-        _last_search_parameters.set('page', currentPage + 1);
-        _last_search_parameters.set('size', page_size);
-        _last_search_parameters.set('focus', focus);
-        const NEXT_PAGE = _last_search_parameters.toString();
-        next.setAttribute('href', `#?${NEXT_PAGE}`)
-        next.setAttribute('onclick', 'changeURLFromElement(this);');
-        linkify(next);
-    }
-
-    return div;
 }
 
 function createSearchBar() {

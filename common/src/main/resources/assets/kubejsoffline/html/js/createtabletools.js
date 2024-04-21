@@ -1,10 +1,6 @@
 function createMethodTable(id, typeVariableMap = {}) {
     let target = getClass(id);
     let methods = target.methods();
-    let table = null;
-    let method = null;
-    let meth = null;
-    let row = null;
     if (!(methods && GLOBAL_SETTINGS.showMethods)) {
         return;
     }
@@ -23,24 +19,24 @@ function createMethodTable(id, typeVariableMap = {}) {
     if (methods.length === 0) {
         return;
     }
-    table = createTableWithHeaders(createSortableTable('methods'), 'Link', 'Methods', 'Return Type');
-    for (method of methods) {
+    const addToTable = (table, method) => {
         try {
-            row = addRow(table, createMethodSignature(method, typeVariableMap), createFullSignature(method.type()));
-            appendAttributesToMethodTableRow(row, method.getDeclaringClass(), method, target.id());
+            appendAttributesToMethodTableRow(
+                    addRow(table, createMethodSignature(method, typeVariableMap), createFullSignature(method.type())),
+                    method.getDeclaringClass(),
+                    method,
+                    target.id()
+            );
         } catch (e) {
             console.error("Failed to create method entry for ", id, " method: ", method, " Error: ", e);
         }
     }
+    createPagedTable('Methods', 'methods', methods, addToTable, 'Link', 'Methods');
 }
 
 function createFieldTable(id, typeVariableMap = {}) {
     let target = getClass(id);
     let fields = target.fields();
-    let table = null;
-    let data = null;
-    let row = null;
-    let field = null;
     if (!(fields && GLOBAL_SETTINGS.showFields)) {
         return;
     }
@@ -59,24 +55,24 @@ function createFieldTable(id, typeVariableMap = {}) {
     if (fields.length === 0) {
         return;
     }
-    table = createTableWithHeaders(createSortableTable('fields'), 'Link', 'Fields', 'Type');
-    for (field of fields) {
+    const addToTable = (table, field) => {
         try {
-            row = addRow(table, createFieldSignature(field, typeVariableMap), createFullSignature(field.type()));
-            appendAttributesToFieldTableRow(row, field.getDeclaringClass(), field, target.id());
+            appendAttributesToFieldTableRow(
+                    addRow(table, createFieldSignature(field, typeVariableMap), createFullSignature(field.type())),
+                    field.getDeclaringClass(),
+                    field,
+                    target.id()
+            );
         } catch (e) {
             console.error("Failed to create field entry for ", id, " field: ", field, " Error: ", e);
         }
     }
+    createPagedTable('Fields', 'fields', fields, addToTable, 'Link', 'Fields');
 }
 
 function createConstructorTable(id, typeVariableMap = {}) {
     let target = getClass(id);
     let constructors = target.constructors();
-    let table = null;
-    let constructor = null;
-    let row = null;
-    let cons = null;
     if (!(constructors && GLOBAL_SETTINGS.showConstructors)) {
         return;
     }
@@ -95,15 +91,19 @@ function createConstructorTable(id, typeVariableMap = {}) {
     if (constructors.length === 0) {
         return;
     }
-    table = createTableWithHeaders(createSortableTable('constructors'), 'Link', 'Constructors');
-    for (constructor of constructors) {
+    const addToTable = (table, constructor) => {
         try {
-            row = addRow(table, createConstructorSignature(constructor, id, typeVariableMap));
-            appendAttributesToConstructorTableRow(row, constructor.getDeclaringClass(), constructor, target.id());
+            appendAttributesToConstructorTableRow(
+                    addRow(table, createConstructorSignature(constructor, id, typeVariableMap)),
+                    constructor.getDeclaringClass(),
+                    constructor,
+                    target.id()
+            );
         } catch (e) {
             console.error("Failed to create constructor table for ", target.id(), " Constructor: ", constructor, " Error: ", e);
         }
     }
+    createPagedTable('Constructors', 'constructors', constructors, addToTable, 'Link', 'Constructors');
 }
 
 function createRelationshipTable(id, typeVariableMap = {}) {
@@ -115,14 +115,13 @@ function createRelationshipTable(id, typeVariableMap = {}) {
     if (relationships.size === 0) {
         return;
     }
-    let table = createTableWithHeaders(createSortableTable('relations'), 'RelatedClass', 'Relationships');
-    let row = null;
-    [...relationships.entries()].forEach(([to, relations]) => {
+    const addToTable = (table, [to, relations]) => {
         try {
-            row = addRow(table, createFullSignature(to, typeVariableMap), span(relations.join(",")));
+            let row = addRow(table, createFullSignature(to, typeVariableMap), span(relations.join(",")));
             appendAttributesToRelationshipToTableRow(row, to, relations, data.id())
         } catch (e) {
             console.error("Failed to create relationship entry for ", data.id(), " To: ", to, " Relations: ", relations, " Error: ", e);
         }
-    });
+    };
+    createPagedTable('Relationships', 'relations', [...relationships.entries()], addToTable, 'RelatedClass', 'Relationships');
 }

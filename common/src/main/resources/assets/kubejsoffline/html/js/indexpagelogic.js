@@ -333,7 +333,8 @@ async function onHashChange() {
 }
 
 function DecodeURL() {
-    const URL_PARAMETER_REGEX = /^(?<TypeDefinition>(\?( extends | super ))?(?<ClassDefinition>(?<package>([a-zA-Z_$0-9.])*\.)*(?<ClassName>([a-zA-Z$0-9])+)(?<Generic><.*>)?))?(?<QueryStringArgs>\?.*)/;
+    // TODO: Fix focus and URL parameters
+    const URL_PARAMETER_REGEX = /^((\?|([a-zA-Z_0-9]+))<TypeDefinition>(\?( extends | super ))?(?<ClassDefinition>(?<package>([a-zA-Z_$0-9.])*\.)*(?<ClassName>([a-zA-Z$0-9])+)(?<Generic><.*>)?))?(?<QueryStringArgs>\?.*)/;
 
     let output = {};
     let hash = location.hash;
@@ -355,6 +356,8 @@ function DecodeURL() {
         if (regexArgs.groups.TypeDefinition) {
             console.debug("Found the following class definition in the hash: ", regexArgs.groups.TypeDefinition);
             output.hash = regexArgs.groups.TypeDefinition;
+        }else {
+            output.hash = "";
         }
         if (regexArgs.groups.QueryStringArgs) {
             console.debug("Found the following query string in the hash: ", regexArgs.groups.QueryStringArgs);
@@ -414,6 +417,10 @@ function DecodeURL() {
 
     output.href = function () {
         return `${window.location.origin}${window.location.pathname}#${this.hash}?${this.params.toString()}`;
+    }
+
+    output.hrefHash = function () {
+        return `#${this.hash}?${this.params.toString()}`;
     }
 
     return output;
