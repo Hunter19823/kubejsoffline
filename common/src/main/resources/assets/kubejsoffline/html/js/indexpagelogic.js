@@ -128,27 +128,22 @@ function loadRawClass(data, typeVariableMap = {}) {
 }
 
 function focusElement(elementId) {
-    console.log("Focusing element " + elementId);
     if (!elementId) {
         elementId = "page-header";
     }
     let element = document.getElementById(elementId);
     if (element) {
         for (const e of document.getElementsByClassName("focused")) {
-            console.log("UnFocused element " + e.id);
             e.classList.remove("focused");
         }
         element.classList.add("focused");
-        console.log("Focused element " + elementId);
-        if (element.tagName === "H1" || element.tagName === "H2") {
+        if (element.tagName === "H1" || element.tagName === "H2" || element.tagName === "H3") {
             element.scrollIntoView();
-            console.log("Brought Search element into view: " + elementId);
         } else {
             const elementRect = element.getBoundingClientRect();
             const absoluteElementTop = elementRect.top + window.scrollY;
             const middle = absoluteElementTop - (window.innerHeight / 2);
             window.scrollTo(0, middle);
-            console.log("Scrolled to middle of element " + elementId);
         }
     }
 }
@@ -333,7 +328,6 @@ async function onHashChange() {
 }
 
 function DecodeURL() {
-    // TODO: Fix focus jumping to center
     const URL_PARAMETER_REGEX = /^(?<TypeDefinition>((\?|[a-zA-Z_0-9]+)( extends | super ))?(?<ClassDefinition>(?<package>([a-zA-Z_$0-9.])*\.)*(?<ClassName>([a-zA-Z$0-9])+)(?<Generic><.*>)?))?(?<QueryStringArgs>\?.*)/;
 
     let output = {};
