@@ -3,7 +3,6 @@ package pie.ilikepiefoo.kubejsoffline;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,6 +11,7 @@ import pie.ilikepiefoo.kubejsoffline.html.page.IndexPage;
 import pie.ilikepiefoo.kubejsoffline.html.tag.Tag;
 import pie.ilikepiefoo.kubejsoffline.util.ClassFinder;
 import pie.ilikepiefoo.kubejsoffline.util.ComponentUtils;
+import pie.ilikepiefoo.kubejsoffline.util.DocumentationBridge;
 import pie.ilikepiefoo.kubejsoffline.util.json.ClassJSON;
 import pie.ilikepiefoo.kubejsoffline.util.json.ClassJSONManager;
 import pie.ilikepiefoo.kubejsoffline.util.json.RelationsJSON;
@@ -28,9 +28,11 @@ public class DocumentationThread extends Thread {
 
 	private static final Gson GSON = new GsonBuilder().create();
 	private String outputFile;
+	private final DocumentationBridge bridge;
 
-	public DocumentationThread() {
+	public DocumentationThread(DocumentationBridge documentationBridge) {
 		super("KJSOffline DocThread");
+		this.bridge = documentationBridge;
 	}
 
     @Override
@@ -113,7 +115,7 @@ public class DocumentationThread extends Thread {
 
 	@Nullable
 	private File createIndexPage() {
-		IndexPage page = new IndexPage(GSON);
+		IndexPage page = new IndexPage(GSON, bridge);
 		return writeHTMLPage(page);
 	}
 
@@ -132,12 +134,12 @@ public class DocumentationThread extends Thread {
 		});
 	}
 
-	private static void sendMessage(String message) {
-		Minecraft.getInstance().gui.getChat().addMessage(ComponentUtils.create(message));
+	private void sendMessage(String message) {
+		this.bridge.sendMessage(ComponentUtils.create(message));
 	}
 
-	private static void sendLink(final String message, final String linkText, final String link) {
-		Minecraft.getInstance().gui.getChat().addMessage(ComponentUtils.create(message).append(ComponentUtils.create(linkText).withStyle((style) -> {
+	private void sendLink(final String message, final String linkText, final String link) {
+		this.bridge.sendMessage(ComponentUtils.create(message).append(ComponentUtils.create(linkText).withStyle((style) -> {
 			return style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, link)).withUnderlined(true).withColor(ChatFormatting.AQUA);
 		})));
 	}
