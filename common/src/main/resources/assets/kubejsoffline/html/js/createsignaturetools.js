@@ -408,7 +408,7 @@ function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, 
         if (exists(ownerType)) {
             const ownerPrefix = createLinkableSignature(ownerType, typeVariableMap, isDefiningTypeVariable, appendPackageName);
             outputSpan.append(ownerPrefix);
-            outputSpan.append(span('.'));
+            outputSpan.append(span('$'));
         }
         outputSpan.append(rawTypeName);
         const actualTypes = type.getTypeVariables();
