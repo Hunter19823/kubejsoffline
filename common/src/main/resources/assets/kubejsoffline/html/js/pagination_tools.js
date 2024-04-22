@@ -2,7 +2,6 @@ function createPagedTable(title, table_id, data, addRowAction, ...headers) {
     if (data.length === 0) {
         return;
     }
-    console.log("Creating paged table for " + title + " with table id " + table_id + " and data length " + data.length + " and headers " + headers.join(", "));
 
     const decodeURL = DecodeURL();
 
