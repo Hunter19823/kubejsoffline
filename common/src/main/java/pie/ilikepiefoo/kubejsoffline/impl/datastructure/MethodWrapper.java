@@ -34,6 +34,50 @@ public class MethodWrapper implements MethodData {
         this.method = method;
     }
 
+    @Override
+    public JsonElement toJSON() {
+        var json = new JsonObject();
+        json.add(JSONProperty.METHOD_NAME.jsName, getName().toJSON());
+
+        if (getModifiers() != 0) {
+            json.addProperty(JSONProperty.MODIFIERS.jsName, method.getModifiers());
+        }
+        json.add(JSONProperty.METHOD_RETURN_TYPE.jsName, getType().toJSON());
+        if (!getAnnotations().isEmpty()) {
+            json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
+        }
+        if (!getParameters().isEmpty()) {
+            json.add(JSONProperty.PARAMETERS.jsName, JSONSerializable.of(getParameters()));
+        }
+        if (!getTypeParameters().isEmpty()) {
+            json.add(JSONProperty.TYPE_VARIABLES.jsName, JSONSerializable.of(getTypeParameters()));
+        }
+        if (!getExceptions().isEmpty()) {
+            json.add(JSONProperty.EXCEPTIONS.jsName, JSONSerializable.of(getExceptions()));
+        }
+        return json;
+    }
+
+    @Override
+    public NameID getName() {
+        if (name != null) {
+            return name;
+        }
+        return this.name = collectionGroup.names().addName(SafeOperations.safeRemap(method));
+    }
+
+    @Override
+    public int getModifiers() {
+        return method.getModifiers();
+    }
+
+    @Override
+    public TypeOrTypeVariableID getType() {
+        if (type != null) {
+            return type;
+        }
+        return this.type = collectionGroup.of(method.getGenericReturnType());
+    }
 
     @Override
     public List<AnnotationID> getAnnotations() {
@@ -65,51 +109,6 @@ public class MethodWrapper implements MethodData {
             return parameters;
         }
         return this.parameters = collectionGroup.of(method.getParameters(), SafeOperations.tryGet(method::getGenericParameterTypes).orElse(new Type[0]));
-    }
-
-    @Override
-    public TypeOrTypeVariableID getType() {
-        if (type != null) {
-            return type;
-        }
-        return this.type = collectionGroup.of(method.getGenericReturnType());
-    }
-
-    @Override
-    public NameID getName() {
-        if (name != null) {
-            return name;
-        }
-        return this.name = collectionGroup.names().addName(SafeOperations.safeRemap(method));
-    }
-
-    @Override
-    public int getModifiers() {
-        return method.getModifiers();
-    }
-
-    @Override
-    public JsonElement toJSON() {
-        var json = new JsonObject();
-        json.add(JSONProperty.METHOD_NAME.jsName, getName().toJSON());
-
-        if (getModifiers() != 0) {
-            json.addProperty(JSONProperty.MODIFIERS.jsName, method.getModifiers());
-        }
-        json.add(JSONProperty.METHOD_RETURN_TYPE.jsName, getType().toJSON());
-        if (!getAnnotations().isEmpty()) {
-            json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
-        }
-        if (!getParameters().isEmpty()) {
-            json.add(JSONProperty.PARAMETERS.jsName, JSONSerializable.of(getParameters()));
-        }
-        if (!getTypeParameters().isEmpty()) {
-            json.add(JSONProperty.TYPE_VARIABLES.jsName, JSONSerializable.of(getTypeParameters()));
-        }
-        if (!getExceptions().isEmpty()) {
-            json.add(JSONProperty.EXCEPTIONS.jsName, JSONSerializable.of(getExceptions()));
-        }
-        return json;
     }
 
     @Override

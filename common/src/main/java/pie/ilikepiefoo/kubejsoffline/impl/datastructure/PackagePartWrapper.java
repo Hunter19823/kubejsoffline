@@ -26,16 +26,6 @@ public class PackagePartWrapper implements PackagePart {
     }
 
     @Override
-    public String getName() {
-        return this.name;
-    }
-
-    @Override
-    public @Nullable PackageID getPrefix() {
-        return this.prefix;
-    }
-
-    @Override
     public PackageID getIndex() {
         return this.index;
     }
@@ -54,6 +44,16 @@ public class PackagePartWrapper implements PackagePart {
             json.add(getPrefix().toJSON());
         }
         return json;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
+    public @Nullable PackageID getPrefix() {
+        return this.prefix;
     }
 
     @Override

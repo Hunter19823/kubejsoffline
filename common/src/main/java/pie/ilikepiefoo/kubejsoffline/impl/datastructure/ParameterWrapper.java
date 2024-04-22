@@ -31,15 +31,6 @@ public class ParameterWrapper implements ParameterData {
         this.genericType = genericType;
     }
 
-
-    @Override
-    public List<AnnotationID> getAnnotations() {
-        if (annotations != null) {
-            return annotations;
-        }
-        return annotations = collectionGroup.of(parameter.getAnnotations());
-    }
-
     @Override
     public ParameterID getIndex() {
         return parameterID;
@@ -52,8 +43,19 @@ public class ParameterWrapper implements ParameterData {
     }
 
     @Override
-    public int getModifiers() {
-        return parameter.getModifiers();
+    public JsonElement toJSON() {
+        var json = new JsonObject();
+        json.add(JSONProperty.PARAMETER_NAME.jsName, getName().toJSON());
+        json.add(JSONProperty.PARAMETER_TYPE.jsName, getType().toJSON());
+
+        if (getModifiers() != 0) {
+            json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
+        }
+        if (!getAnnotations().isEmpty()) {
+            json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
+        }
+
+        return json;
     }
 
     @Override
@@ -73,19 +75,16 @@ public class ParameterWrapper implements ParameterData {
     }
 
     @Override
-    public JsonElement toJSON() {
-        var json = new JsonObject();
-        json.add(JSONProperty.PARAMETER_NAME.jsName, getName().toJSON());
-        json.add(JSONProperty.PARAMETER_TYPE.jsName, getType().toJSON());
+    public int getModifiers() {
+        return parameter.getModifiers();
+    }
 
-        if (getModifiers() != 0) {
-            json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
+    @Override
+    public List<AnnotationID> getAnnotations() {
+        if (annotations != null) {
+            return annotations;
         }
-        if (!getAnnotations().isEmpty()) {
-            json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
-        }
-
-        return json;
+        return annotations = collectionGroup.of(parameter.getAnnotations());
     }
 
     @Override

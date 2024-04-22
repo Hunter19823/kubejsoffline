@@ -41,18 +41,59 @@ public class RawClassWrapper implements RawClassData {
         this.clazz = clazz;
     }
 
-
     @Override
-    public List<AnnotationID> getAnnotations() {
-        if (annotations != null) {
-            return annotations;
-        }
-        return this.annotations = collectionGroup.of(clazz.getAnnotations());
+    public TypeID getIndex() {
+        return index;
     }
 
     @Override
-    public int getModifiers() {
-        return this.clazz.getModifiers();
+    public RawClassData setIndex(TypeOrTypeVariableID index) {
+        this.index = index.asType();
+        return this;
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        var json = new JsonObject();
+        json.add(JSONProperty.CLASS_NAME.jsName, getName().toJSON());
+        if (!getAnnotations().isEmpty()) {
+            json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
+        }
+
+        if (getModifiers() != 0) {
+            json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
+        }
+        if (!getTypeParameters().isEmpty()) {
+            json.add(JSONProperty.TYPE_VARIABLES.jsName, JSONSerializable.of(getTypeParameters()));
+        }
+        if (getPackage() != null) {
+            json.add(JSONProperty.PACKAGE_NAME.jsName, getPackage().toJSON());
+        }
+        if (getSuperClass() != null) {
+            json.add(JSONProperty.SUPER_CLASS.jsName, getSuperClass().toJSON());
+        }
+        if (!getInterfaces().isEmpty()) {
+            json.add(JSONProperty.INTERFACES.jsName, JSONSerializable.of(getInterfaces()));
+        }
+        if (!getInnerClasses().isEmpty()) {
+            json.add(JSONProperty.INNER_CLASSES.jsName, JSONSerializable.of(getInnerClasses()));
+        }
+        if (getEnclosingClass() != null) {
+            json.add(JSONProperty.ENCLOSING_CLASS.jsName, getEnclosingClass().toJSON());
+        }
+        if (getDeclaringClass() != null) {
+            json.add(JSONProperty.DECLARING_CLASS.jsName, getDeclaringClass().toJSON());
+        }
+        if (!getFields().isEmpty()) {
+            json.add(JSONProperty.FIELDS.jsName, JSONSerializable.of(getFields()));
+        }
+        if (!getConstructors().isEmpty()) {
+            json.add(JSONProperty.CONSTRUCTORS.jsName, JSONSerializable.of(getConstructors()));
+        }
+        if (!getMethods().isEmpty()) {
+            json.add(JSONProperty.METHODS.jsName, JSONSerializable.of(getMethods()));
+        }
+        return json;
     }
 
     @Override
@@ -71,6 +112,19 @@ public class RawClassWrapper implements RawClassData {
             throw new IllegalStateException("Name of %s is blank!".formatted(clazz));
         }
         return this.name = collectionGroup.names().addName(name);
+    }
+
+    @Override
+    public List<AnnotationID> getAnnotations() {
+        if (annotations != null) {
+            return annotations;
+        }
+        return this.annotations = collectionGroup.of(clazz.getAnnotations());
+    }
+
+    @Override
+    public int getModifiers() {
+        return this.clazz.getModifiers();
     }
 
     @Override
@@ -160,61 +214,6 @@ public class RawClassWrapper implements RawClassData {
             return methods;
         }
         return this.methods = SafeOperations.tryGet(() -> collectionGroup.of(clazz.getDeclaredMethods())).orElse(List.of());
-    }
-
-    @Override
-    public TypeID getIndex() {
-        return index;
-    }
-
-    @Override
-    public RawClassData setIndex(TypeOrTypeVariableID index) {
-        this.index = index.asType();
-        return this;
-    }
-
-    @Override
-    public JsonElement toJSON() {
-        var json = new JsonObject();
-        json.add(JSONProperty.CLASS_NAME.jsName, getName().toJSON());
-        if (!getAnnotations().isEmpty()) {
-            json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
-        }
-
-        if (getModifiers() != 0) {
-            json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
-        }
-        if (!getTypeParameters().isEmpty()) {
-            json.add(JSONProperty.TYPE_VARIABLES.jsName, JSONSerializable.of(getTypeParameters()));
-        }
-        if (getPackage() != null) {
-            json.add(JSONProperty.PACKAGE_NAME.jsName, getPackage().toJSON());
-        }
-        if (getSuperClass() != null) {
-            json.add(JSONProperty.SUPER_CLASS.jsName, getSuperClass().toJSON());
-        }
-        if (!getInterfaces().isEmpty()) {
-            json.add(JSONProperty.INTERFACES.jsName, JSONSerializable.of(getInterfaces()));
-        }
-        if (!getInnerClasses().isEmpty()) {
-            json.add(JSONProperty.INNER_CLASSES.jsName, JSONSerializable.of(getInnerClasses()));
-        }
-        if (getEnclosingClass() != null) {
-            json.add(JSONProperty.ENCLOSING_CLASS.jsName, getEnclosingClass().toJSON());
-        }
-        if (getDeclaringClass() != null) {
-            json.add(JSONProperty.DECLARING_CLASS.jsName, getDeclaringClass().toJSON());
-        }
-        if (!getFields().isEmpty()) {
-            json.add(JSONProperty.FIELDS.jsName, JSONSerializable.of(getFields()));
-        }
-        if (!getConstructors().isEmpty()) {
-            json.add(JSONProperty.CONSTRUCTORS.jsName, JSONSerializable.of(getConstructors()));
-        }
-        if (!getMethods().isEmpty()) {
-            json.add(JSONProperty.METHODS.jsName, JSONSerializable.of(getMethods()));
-        }
-        return json;
     }
 
     @Override

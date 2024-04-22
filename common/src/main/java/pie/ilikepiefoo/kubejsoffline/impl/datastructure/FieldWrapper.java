@@ -28,11 +28,26 @@ public class FieldWrapper implements FieldData {
     }
 
     @Override
-    public List<AnnotationID> getAnnotations() {
-        if (annotations != null) {
-            return annotations;
+    public JsonElement toJSON() {
+        JsonObject json = new JsonObject();
+        json.add(JSONProperty.FIELD_NAME.jsName, getName().toJSON());
+        json.add(JSONProperty.FIELD_TYPE.jsName, getType().toJSON());
+
+        if (getModifiers() != 0) {
+            json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
         }
-        return this.annotations = collectionGroup.of(field.getAnnotations());
+        if (!getAnnotations().isEmpty()) {
+            json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
+        }
+        return json;
+    }
+
+    @Override
+    public NameID getName() {
+        if (name != null) {
+            return name;
+        }
+        return this.name = collectionGroup.names().addName(SafeOperations.safeRemap(field));
     }
 
     @Override
@@ -49,26 +64,11 @@ public class FieldWrapper implements FieldData {
     }
 
     @Override
-    public NameID getName() {
-        if (name != null) {
-            return name;
+    public List<AnnotationID> getAnnotations() {
+        if (annotations != null) {
+            return annotations;
         }
-        return this.name = collectionGroup.names().addName(SafeOperations.safeRemap(field));
-    }
-
-    @Override
-    public JsonElement toJSON() {
-        JsonObject json = new JsonObject();
-        json.add(JSONProperty.FIELD_NAME.jsName, getName().toJSON());
-        json.add(JSONProperty.FIELD_TYPE.jsName, getType().toJSON());
-
-        if (getModifiers() != 0) {
-            json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
-        }
-        if (!getAnnotations().isEmpty()) {
-            json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
-        }
-        return json;
+        return this.annotations = collectionGroup.of(field.getAnnotations());
     }
 
     @Override

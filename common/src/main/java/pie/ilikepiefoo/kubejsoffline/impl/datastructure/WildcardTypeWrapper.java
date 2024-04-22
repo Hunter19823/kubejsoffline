@@ -39,6 +39,21 @@ public class WildcardTypeWrapper implements WildcardTypeData {
     }
 
     @Override
+    public JsonElement toJSON() {
+        var json = new JsonObject();
+        if (getSuper().isEmpty() && getExtends().isEmpty()) {
+            return json;
+        }
+        if (!getSuper().isEmpty()) {
+            json.add(JSONProperty.WILDCARD_LOWER_BOUNDS.jsName, JSONSerializable.of(getSuper()));
+        }
+        if (!getExtends().isEmpty()) {
+            json.add(JSONProperty.WILDCARD_UPPER_BOUNDS.jsName, JSONSerializable.of(getExtends()));
+        }
+        return json;
+    }
+
+    @Override
     public synchronized List<TypeOrTypeVariableID> getExtends() {
         if (extendsBounds != null) {
             return extendsBounds;
@@ -52,21 +67,6 @@ public class WildcardTypeWrapper implements WildcardTypeData {
             return superBounds;
         }
         return this.superBounds = collectionGroup.of(wildcardType.getLowerBounds(), (Type type) -> type == Object.class);
-    }
-
-    @Override
-    public JsonElement toJSON() {
-        var json = new JsonObject();
-        if (getSuper().isEmpty() && getExtends().isEmpty()) {
-            return json;
-        }
-        if (!getSuper().isEmpty()) {
-            json.add(JSONProperty.WILDCARD_LOWER_BOUNDS.jsName, JSONSerializable.of(getSuper()));
-        }
-        if (!getExtends().isEmpty()) {
-            json.add(JSONProperty.WILDCARD_UPPER_BOUNDS.jsName, JSONSerializable.of(getExtends()));
-        }
-        return json;
     }
 
     @Override

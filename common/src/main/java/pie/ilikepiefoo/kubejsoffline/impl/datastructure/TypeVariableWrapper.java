@@ -29,6 +29,23 @@ public class TypeVariableWrapper implements TypeVariableData {
     }
 
     @Override
+    public TypeVariableData setIndex(TypeOrTypeVariableID index) {
+        this.index = index.asTypeVariable();
+        return this;
+    }
+
+    @Override
+    public JsonElement toJSON() {
+        var json = new JsonObject();
+        json.add(JSONProperty.TYPE_VARIABLE_NAME.jsName, getName().toJSON());
+        if (getBounds().isEmpty()) {
+            return json;
+        }
+        json.add(JSONProperty.TYPE_VARIABLE_BOUNDS.jsName, JSONSerializable.of(getBounds()));
+        return json;
+    }
+
+    @Override
     public synchronized NameID getName() {
         if (name != null) {
             return name;
@@ -47,23 +64,6 @@ public class TypeVariableWrapper implements TypeVariableData {
     @Override
     public TypeVariableID getIndex() {
         return index;
-    }
-
-    @Override
-    public TypeVariableData setIndex(TypeOrTypeVariableID index) {
-        this.index = index.asTypeVariable();
-        return this;
-    }
-
-    @Override
-    public JsonElement toJSON() {
-        var json = new JsonObject();
-        json.add(JSONProperty.TYPE_VARIABLE_NAME.jsName, getName().toJSON());
-        if (getBounds().isEmpty()) {
-            return json;
-        }
-        json.add(JSONProperty.TYPE_VARIABLE_BOUNDS.jsName, JSONSerializable.of(getBounds()));
-        return json;
     }
 
     @Override

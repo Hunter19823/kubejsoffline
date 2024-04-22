@@ -8,7 +8,8 @@ import pie.ilikepiefoo.kubejsoffline.api.identifier.PackageID;
 public interface PackagePart extends IndexedData<PackageID> {
     String getName();
 
-    @Nullable PackageID getPrefix();
+    @Nullable
+    PackageID getPrefix();
 
     default String getFullName(Packages packages) {
         if (getPrefix() != null) {

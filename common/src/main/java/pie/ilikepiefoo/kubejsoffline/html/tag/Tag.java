@@ -100,7 +100,7 @@ public interface Tag<TYPE extends Tag<TYPE>> {
         Set<Tag<?>> tagSet = new HashSet<>();
         hierarchy.addAll(getChildren());
         int counter = 0;
-        while (hierarchy.size() > 0) {
+        while (!hierarchy.isEmpty()) {
             counter++;
             Tag<?> tag = hierarchy.pop();
             if (!tagSet.contains(tag)) {
@@ -113,7 +113,7 @@ public interface Tag<TYPE extends Tag<TYPE>> {
                 continue;
             }
 
-            if (tag.getChildren().size() > 0) {
+            if (!tag.getChildren().isEmpty()) {
                 for (int i = tag.getChildren().size() - 1; i >= 0; i--) {
                     hierarchy.push(tag.getChildren().get(i));
                 }

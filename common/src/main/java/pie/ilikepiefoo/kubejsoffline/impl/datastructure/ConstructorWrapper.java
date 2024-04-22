@@ -30,6 +30,32 @@ public class ConstructorWrapper implements ConstructorData {
     }
 
     @Override
+    public JsonElement toJSON() {
+        var json = new JsonObject();
+        if (getModifiers() != 0) {
+            json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
+        }
+        if (!getAnnotations().isEmpty()) {
+            json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
+        }
+        if (!getTypeParameters().isEmpty()) {
+            json.add(JSONProperty.TYPE_VARIABLES.jsName, JSONSerializable.of(getTypeParameters()));
+        }
+        if (!getParameters().isEmpty()) {
+            json.add(JSONProperty.PARAMETERS.jsName, JSONSerializable.of(getParameters()));
+        }
+        if (!getExceptions().isEmpty()) {
+            json.add(JSONProperty.EXCEPTIONS.jsName, JSONSerializable.of(getExceptions()));
+        }
+        return json;
+    }
+
+    @Override
+    public int getModifiers() {
+        return constructor.getModifiers();
+    }
+
+    @Override
     public List<AnnotationID> getAnnotations() {
         if (annotations != null) {
             return annotations;
@@ -59,32 +85,6 @@ public class ConstructorWrapper implements ConstructorData {
             return parameters;
         }
         return this.parameters = collectionGroup.of(constructor.getParameters(), SafeOperations.tryGet(constructor::getGenericParameterTypes).orElse(new Type[0]));
-    }
-
-    @Override
-    public int getModifiers() {
-        return constructor.getModifiers();
-    }
-
-    @Override
-    public JsonElement toJSON() {
-        var json = new JsonObject();
-        if (getModifiers() != 0) {
-            json.addProperty(JSONProperty.MODIFIERS.jsName, getModifiers());
-        }
-        if (!getAnnotations().isEmpty()) {
-            json.add(JSONProperty.ANNOTATIONS.jsName, JSONSerializable.of(getAnnotations()));
-        }
-        if (!getTypeParameters().isEmpty()) {
-            json.add(JSONProperty.TYPE_VARIABLES.jsName, JSONSerializable.of(getTypeParameters()));
-        }
-        if (!getParameters().isEmpty()) {
-            json.add(JSONProperty.PARAMETERS.jsName, JSONSerializable.of(getParameters()));
-        }
-        if (!getExceptions().isEmpty()) {
-            json.add(JSONProperty.EXCEPTIONS.jsName, JSONSerializable.of(getExceptions()));
-        }
-        return json;
     }
 
     @Override

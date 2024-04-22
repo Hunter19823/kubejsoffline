@@ -12,7 +12,7 @@ public interface Packages extends JSONSerializable {
 
     PackageID addPackage(String packageName);
 
-    boolean contains( String packageName );
+    boolean contains(String packageName);
 
     PackageID getID(String packageName);
 

@@ -9,6 +9,7 @@ import java.util.Collection;
 
 public interface JSONSerializable {
     Logger LOG = LogManager.getLogger();
+
     static <S extends JSONSerializable> JsonArray of(Collection<S> jsonSerializableList) {
         JsonArray jsonArray = new JsonArray();
         for (JSONSerializable jsonSerializable : jsonSerializableList) {

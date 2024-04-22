@@ -8,7 +8,7 @@ import java.util.NavigableMap;
 public interface Names extends JSONSerializable {
     NavigableMap<NameID, String> getAllNames();
 
-    boolean contains( String name );
+    boolean contains(String name);
 
     NameID addName(String name);
 

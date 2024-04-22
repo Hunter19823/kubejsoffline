@@ -24,26 +24,6 @@ public class AnnotationWrapper implements AnnotationData {
     }
 
     @Override
-    public TypeID getAnnotationType() {
-        if (annotationType != null) {
-            return annotationType;
-        }
-        return annotationType = collectionGroup.of(annotation.annotationType()).asType();
-    }
-
-    @Override
-    public String getAnnotationValue() {
-        var value = annotation.toString();
-        // Substring from first and last parenthesis.
-        int start = value.indexOf('(');
-        int end = value.lastIndexOf(')');
-        if (start != -1 && end != -1) {
-            return value.substring(start + 1, end);
-        }
-        return value;
-    }
-
-    @Override
     public AnnotationID getIndex() {
         return index;
     }
@@ -62,6 +42,26 @@ public class AnnotationWrapper implements AnnotationData {
             json.addProperty(JSONProperty.ANNOTATION_STRING.jsName, getAnnotationValue());
         }
         return json;
+    }
+
+    @Override
+    public TypeID getAnnotationType() {
+        if (annotationType != null) {
+            return annotationType;
+        }
+        return annotationType = collectionGroup.of(annotation.annotationType()).asType();
+    }
+
+    @Override
+    public String getAnnotationValue() {
+        var value = annotation.toString();
+        // Substring from first and last parenthesis.
+        int start = value.indexOf('(');
+        int end = value.lastIndexOf(')');
+        if (start != -1 && end != -1) {
+            return value.substring(start + 1, end);
+        }
+        return value;
     }
 
     @Override

@@ -203,6 +203,19 @@ public class SafeOperations {
         return remap;
     }
 
+    // tryGet(Object::toString) -> Optional<String>
+    // tryGet(Method::getFields) -> Optional<Field[]>
+    public static <T> Optional<T> tryGet(final Supplier<T> supplier) {
+        if (null == supplier) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.of(supplier.get());
+        } catch (final Throwable e) {
+            return Optional.empty();
+        }
+    }
+
     public static String getRemappedClassName(Class<?> clazz, boolean simple) {
         var name = simple ?
                 tryGet(clazz::getSimpleName).orElse(null)
@@ -215,19 +228,6 @@ public class SafeOperations {
             }
         }
         return name;
-    }
-
-    // tryGet(Object::toString) -> Optional<String>
-    // tryGet(Method::getFields) -> Optional<Field[]>
-    public static <T> Optional<T> tryGet(final Supplier<T> supplier) {
-        if (null == supplier) {
-            return Optional.empty();
-        }
-        try {
-            return Optional.of(supplier.get());
-        } catch (final Throwable e) {
-            return Optional.empty();
-        }
     }
 
     public static String safeRemap(final Field field) {
