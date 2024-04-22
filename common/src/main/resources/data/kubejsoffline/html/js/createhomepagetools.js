@@ -43,6 +43,8 @@ function createHomePage() {
         span = document.createElement('span');
         span.innerHTML = key;
         let period = key?.lastIndexOf('.');
+        if (DATA._events[key].length === 0)
+            continue;
         table = createTableWithHeaders(createSortableTable(period === -1 ? key : key.substring(period + 1)), 'Link', span);
         for (let j = 0; j < DATA._events[key].length; j++) {
             try {
