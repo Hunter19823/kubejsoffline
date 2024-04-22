@@ -253,6 +253,8 @@ function findEventClasses() {
         EVENTS[keys[i]].push(eventClass.id());
         EVENTS[keys[i]].push(...getRelation(RELATIONSHIP.INHERITED_BY, eventClass.id()));
         EVENTS[keys[i]].push(...getRelation(RELATIONSHIP.PARAMETERIZED_VARIANT, eventClass.id()));
+
+        EVENTS[keys[i]] = [...new Set(EVENTS[keys[i]])]
     }
     DATA._events = EVENTS;
 }
