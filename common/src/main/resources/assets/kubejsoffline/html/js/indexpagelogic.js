@@ -333,8 +333,8 @@ async function onHashChange() {
 }
 
 function DecodeURL() {
-    // TODO: Fix focus and URL parameters
-    const URL_PARAMETER_REGEX = /^((\?|([a-zA-Z_0-9]+))<TypeDefinition>(\?( extends | super ))?(?<ClassDefinition>(?<package>([a-zA-Z_$0-9.])*\.)*(?<ClassName>([a-zA-Z$0-9])+)(?<Generic><.*>)?))?(?<QueryStringArgs>\?.*)/;
+    // TODO: Fix focus jumping to center
+    const URL_PARAMETER_REGEX = /^(?<TypeDefinition>((\?|[a-zA-Z_0-9]+)( extends | super ))?(?<ClassDefinition>(?<package>([a-zA-Z_$0-9.])*\.)*(?<ClassName>([a-zA-Z$0-9])+)(?<Generic><.*>)?))?(?<QueryStringArgs>\?.*)/;
 
     let output = {};
     let hash = location.hash;
@@ -365,6 +365,7 @@ function DecodeURL() {
         }
     } else {
         output.hash = hash;
+        console.debug("Query did not match the URL Parameter Regex. Using the hash as the class definition.");
     }
 
     output.hasFocus = function () {
@@ -391,14 +392,8 @@ function DecodeURL() {
     }
 
     output.isSearch = function () {
-        if (this.getParamSizeSafe() === 0) {
-            return false;
-        }
-        if (this.getParamSizeSafe() !== 1) {
-            return true;
-        }
         // If thee is no focus, then it's a search as the only parameter must be the search term.
-        return !this.hasFocus();
+        return !this.hash && this.getParamSizeSafe() > 0;
     }
 
     output.isClass = function () {
