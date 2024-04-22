@@ -35,6 +35,6 @@ You can find the standard installation instructions below:
 
 #### Fabric 1.18.2: https://hunter19823.github.io/kubejsoffline/1.18.2/fabric/
 
-### Fabric (Experimental) 1.18.2: https://hunter19823.github.io/kubejsoffline/exp/1.18.2/fabric
+#### Forge (Experimental) 1.18.2: https://hunter19823.github.io/kubejsoffline/exp/1.18.2/forge
 
-### Forge (Experimental) 1.18.2: https://hunter19823.github.io/kubejsoffline/exp/1.18.2/forge
+#### Fabric (Experimental) 1.18.2: https://hunter19823.github.io/kubejsoffline/exp/1.18.2/fabric
