@@ -22,7 +22,7 @@ public class CustomAssetTag extends CustomTag {
 
 	@Override
 	public void writeContent(Writer writer) {
-		if (this.bridge.hasResource(file)) {
+		if (!this.bridge.hasResource(file)) {
 			LOG.error("Could not find {} tag from file: {}\n THIS WILL CAUSE SEVERE PROBLEMS WITH THE RESULTING DOCUMENTATION FILE!", this.name, file.toDebugFileName());
 			return;
 		}
