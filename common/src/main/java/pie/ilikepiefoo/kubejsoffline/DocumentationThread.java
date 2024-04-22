@@ -3,8 +3,8 @@ package pie.ilikepiefoo.kubejsoffline;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,6 +13,7 @@ import pie.ilikepiefoo.kubejsoffline.html.page.IndexPage;
 import pie.ilikepiefoo.kubejsoffline.html.tag.Tag;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
 import pie.ilikepiefoo.kubejsoffline.impl.TypeManager;
+import pie.ilikepiefoo.kubejsoffline.util.DocumentationBridge;
 import pie.ilikepiefoo.kubejsoffline.util.SafeOperations;
 
 import java.io.File;
@@ -28,19 +29,11 @@ public class DocumentationThread extends Thread {
 
     private static final Gson GSON = new GsonBuilder().create();
     private String outputFile;
+    private final DocumentationBridge bridge;
 
-    public DocumentationThread() {
+    public DocumentationThread(DocumentationBridge bridge) {
         super("KJSOffline DocThread");
-    }
-
-    private static void sendMessage(final String message) {
-        Minecraft.getInstance().gui.getChat().addMessage(new TextComponent(message));
-    }
-
-    private static void sendLink(final String message, final String linkText, final String link) {
-        Minecraft.getInstance().gui.getChat().addMessage(new TextComponent(message).append(new TextComponent(linkText).withStyle((style) -> {
-            return style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, link)).withUnderlined(true).withColor(ChatFormatting.AQUA);
-        })));
+        this.bridge = bridge;
     }
 
     private static Path getOutputPath() {
@@ -55,7 +48,7 @@ public class DocumentationThread extends Thread {
             content.writeHTML(writer);
             writer.flush();
         } catch (final IOException e) {
-            LOG.error("Failed to write file: " + "index.html" + " to " + output.getPath(), e);
+            LOG.error("Failed to write file: index.html to {}", output.getPath(), e);
             return null;
         }
         return output;
@@ -69,6 +62,20 @@ public class DocumentationThread extends Thread {
         }
 
         return outputPath.resolve("index.html").toFile();
+    }
+
+    private void sendMessage(final Component message) {
+        this.bridge.sendMessage(message);
+    }
+
+    private void sendMessage(final String message) {
+        sendMessage(new TextComponent(message));
+    }
+
+    private void sendLink(final String message, final String linkText, final String link) {
+        sendMessage(new TextComponent(message).append(new TextComponent(linkText).withStyle((style) -> {
+            return style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, link)).withUnderlined(true).withColor(ChatFormatting.AQUA);
+        })));
     }
 
     @Override
@@ -156,7 +163,7 @@ public class DocumentationThread extends Thread {
 
     @Nullable
     private File createIndexPage() {
-        final IndexPage page = new IndexPage(GSON);
+        final IndexPage page = new IndexPage(GSON, this.bridge);
         return writeHTMLPage(page);
     }
 }

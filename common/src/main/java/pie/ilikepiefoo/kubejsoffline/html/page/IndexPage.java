@@ -4,36 +4,36 @@ import com.google.gson.Gson;
 import pie.ilikepiefoo.kubejsoffline.html.tag.CustomAssetTag;
 import pie.ilikepiefoo.kubejsoffline.html.tag.collection.JSONDataTag;
 import pie.ilikepiefoo.kubejsoffline.impl.CollectionGroup;
+import pie.ilikepiefoo.kubejsoffline.util.DocumentationBridge;
 import pie.ilikepiefoo.kubejsoffline.util.RelationType;
 import pie.ilikepiefoo.kubejsoffline.util.json.BindingsJSON;
 import pie.ilikepiefoo.kubejsoffline.util.json.JSONProperty;
 
 public class IndexPage extends HTMLFile {
 
-    public IndexPage(final Gson gson) {
-        this.HEADER_TAG.add(new CustomAssetTag("title", "html/title.txt"));
-        this.HEADER_TAG.add(new CustomAssetTag("style", "html/css/styling.css"));
+    public IndexPage(final Gson gson, final DocumentationBridge documentationBridge) {
+        this.HEADER_TAG.add(new CustomAssetTag("title", "html/title.txt", documentationBridge));
+        this.HEADER_TAG.add(new CustomAssetTag("style", "html/css/styling.css", documentationBridge));
         this.HEADER_TAG.add(new JSONDataTag("DATA", CollectionGroup.INSTANCE.toJSON(), gson));
         this.HEADER_TAG.add(new JSONDataTag("BINDINGS", BindingsJSON.get(), gson));
         this.HEADER_TAG.add(new JSONDataTag("RELATIONS", RelationType.getRelationTypeData(), gson));
         this.HEADER_TAG.add(new JSONDataTag("PROPERTY", JSONProperty.createTranslation(), gson));
-        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/constants.js"));
-        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/class_data_documentation.js"));
-        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/relationship_graph.js"));
-        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/stickytools.js"));
-        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/pagination_tools.js"));
-//		HEADER_TAG.add(new CustomAssetTag("script","html/js/debugtools.js"));
-        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/compressiontools.js"));
-        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/packagetools.js"));
-        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/classdatatools.js"));
-        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/createhtmltools.js"));
-        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/createsignaturetools.js"));
-        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/createhomepagetools.js"));
-        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/createtabletools.js"));
-        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/sortingtools.js"));
-        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/searchingtools.js"));
-        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/searching_and_sorting_constants.js"));
-        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/indexpagelogic.js"));
-        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/contextmenu.js"));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/constants.js", documentationBridge));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/class_data_documentation.js", documentationBridge));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/relationship_graph.js", documentationBridge));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/stickytools.js", documentationBridge));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/pagination_tools.js", documentationBridge));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/compressiontools.js", documentationBridge));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/packagetools.js", documentationBridge));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/classdatatools.js", documentationBridge));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/createhtmltools.js", documentationBridge));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/createsignaturetools.js", documentationBridge));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/createhomepagetools.js", documentationBridge));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/createtabletools.js", documentationBridge));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/sortingtools.js", documentationBridge));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/searchingtools.js", documentationBridge));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/searching_and_sorting_constants.js", documentationBridge));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/indexpagelogic.js", documentationBridge));
+        this.HEADER_TAG.add(new CustomAssetTag("script", "html/js/contextmenu.js", documentationBridge));
     }
 }

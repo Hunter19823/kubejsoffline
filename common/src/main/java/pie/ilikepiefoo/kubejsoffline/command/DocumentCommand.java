@@ -7,6 +7,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.TextComponent;
 import pie.ilikepiefoo.kubejsoffline.DocumentationThread;
 import pie.ilikepiefoo.kubejsoffline.KubeJSOffline;
+import pie.ilikepiefoo.kubejsoffline.util.DocumentationBridge;
 
 public class DocumentCommand implements CommandRegistrationEvent {
     /**
@@ -21,8 +22,12 @@ public class DocumentCommand implements CommandRegistrationEvent {
         dispatcher.register(Commands.literal(KubeJSOffline.MOD_ID)
                 .requires((source) -> source.hasPermission(2))
                 .executes((context) -> {
-                    context.getSource().sendSuccess(new TextComponent("KubeJS Offline has started... Please wait..."), false);
-                    DocumentationThread thread = new DocumentationThread();
+                    DocumentationBridge bridge = new DocumentationBridge(
+                            context.getSource().getLevel().getServer()::getResourceManager,
+                            (message) -> context.getSource().sendSuccess(message, true)
+                    );
+                    bridge.sendMessage(new TextComponent("KubeJS Offline has started... Please wait..."));
+                    DocumentationThread thread = new DocumentationThread(bridge);
                     thread.start();
                     return 1;
                 }));
