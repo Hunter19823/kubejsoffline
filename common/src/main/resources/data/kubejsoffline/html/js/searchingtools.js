@@ -1,4 +1,5 @@
 function dataFilter() {
+    // TODO: Fix the datafilter
     let output = {};
     output.results = {'classes': [], 'fields': [], 'methods': [], 'parameters': []};
 
@@ -7,6 +8,16 @@ function dataFilter() {
     output._methodFilters = [];
     output._paramFilters = [];
 
+    /**
+     * Matches an attribute of an object.
+     * @template T
+     * @param {string} attribute
+     * @param {string} query
+     * @param {boolean} exact
+     * @param {boolean}includes
+     * @param {(function(*): T)}transformer
+     * @returns {(function(*): (boolean))}
+     */
     function attributeMatcher(attribute, query, exact = false, includes = true, transformer = (p) => p) {
         console.log(`attributeMatcher(${attribute}, ${query}, ${exact}, ${includes})`);
         let modifier = (p) => p;
@@ -35,18 +46,30 @@ function dataFilter() {
         }
     }
 
-    function classTypeAttributeMatcher(attribute) {
+    function classTypeAttributeMatcher(attribute, mutator = (p) => p) {
         return (subject) => {
             if (typeof (subject[attribute]) === 'function') {
                 let subject_attribute = subject[attribute]();
-                if (subject_attribute) {
-                    return output.matchesClass(subject);
-                }
+                if (!exists(subject_attribute))
+                    return false;
+                subject_attribute = mutator(subject_attribute);
+                if (!exists(subject_attribute))
+                    return false;
+
+                return output.matchesClass(subject_attribute);
             }
             return false;
         }
     }
 
+    /**
+     * Creates a field type attribute matcher
+     * @param {string} attribute
+     * @param {string} query
+     * @param {boolean} exact
+     * @param {boolean} includes
+     * @returns {function(Field): boolean}
+     */
     function fieldTypeAttributeMatcher(attribute, query, exact = false, includes = true) {
         const MATCHER = attributeMatcher(attribute, query, exact, includes);
 
@@ -55,14 +78,34 @@ function dataFilter() {
         }
     }
 
+    /**
+     * Creates a method type attribute matcher
+     * @param {string} attribute
+     * @param {string} query
+     * @param {boolean} exact
+     * @param {boolean} includes
+     * @returns {function(Method): boolean}
+     */
     function methodTypeAttributeMatcher(attribute, query, exact = false, includes = true) {
         const MATCHER = attributeMatcher(attribute, query, exact, includes);
 
+        /**
+         * @param {Method} method
+         * @returns {boolean}
+         */
         return (method) => {
-            return MATCHER(getClass(method.t()));
+            return MATCHER(getClass(method.type()));
         }
     }
 
+    /**
+     * Creates a parameter type attribute matcher
+     * @param {string} attribute
+     * @param {string} query
+     * @param {boolean} exact
+     * @param {boolean} includes
+     * @returns {function(Parameter): boolean}
+     */
     function parameterTypeAttributeMatcher(attribute, query, exact = false, includes = true) {
         const MATCHER = attributeMatcher(attribute, query, exact, includes);
 
@@ -106,46 +149,37 @@ function dataFilter() {
     // Any
 
     output.withClassAny = function (query, exact = false, includes = true) {
-        const FULLY_QUALIFIED_NAME = attributeMatcher(CLASS_ATTRIBUTES.REFERENCE_NAME, query, exact, includes);
-        // const TYPE_FILTER = attributeMatcher(CLASS_ATTRIBUTES.FULL_NAME_NON_GENERIC, query, exact, includes);
-        const TYPED_NAME_FILTER = attributeMatcher(CLASS_ATTRIBUTES.TYPED_NAME, query, exact, includes);
-        const SIMPLE_NAME_FILTER = attributeMatcher(CLASS_ATTRIBUTES.SIMPLE_NAME, query, exact, includes);
-        // const PACKAGE_FILTER = attributeMatcher(CLASS_ATTRIBUTES.PACKAGE, query, exact, includes);
-        // const RAW_TYPE_FILTER = classTypeAttributeMatcher(CLASS_ATTRIBUTES.RAW_TYPE);
-
-
-
-        return this.withClassFilter((subject) => {
-            return FULLY_QUALIFIED_NAME(subject) || TYPED_NAME_FILTER(subject) || SIMPLE_NAME_FILTER(subject);
-        });
+        this.withClassReferenceName(query, exact, includes);
+        this.withClassName(query, exact, includes);
+        this.withClassSimpleName(query, exact, includes);
+        this.withClassPackage(query, exact, includes);
+        return this;
     }
 
     output.withFieldAny = function (query, exact = false, includes = true) {
-        const FULLY_QUALIFIED_NAME = attributeMatcher(FIELD_ATTRIBUTES.REFERENCE_NAME, query, exact, includes);
-        const TYPE_FILTER = classTypeAttributeMatcher(FIELD_ATTRIBUTES.TYPE);
-        const FIELD_NAME_FILTER = attributeMatcher(FIELD_ATTRIBUTES.NAME, query, exact, includes);
+        this.withFieldReferenceName(query, exact, includes);
+        this.withFieldName(query, exact, includes);
+        this.withFieldTypeName(query, exact, includes);
+        this.withFieldTypeSimpleName(query, exact, includes);
 
-        return this.withFieldFilter((subject) => {
-            return FULLY_QUALIFIED_NAME(subject) || TYPE_FILTER(subject) || FIELD_NAME_FILTER(subject);
-        });
+        return this;
     }
 
     output.withMethodAny = function (query, exact = false, includes = true) {
-        const NAME_FILTER = attributeMatcher(METHOD_ATTRIBUTES.NAME, query, exact, includes);
-        const METHOD_TYPE_FILTER = classTypeAttributeMatcher(METHOD_ATTRIBUTES.TYPE);
+        this.withMethodReferenceName(query, exact, includes);
+        this.withMethodName(query, exact, includes);
+        this.withMethodReturnTypeName(query, exact, includes);
+        this.withMethodReturnTypeSimpleName(query, exact, includes);
 
-        return this.withMethodFilter((subject) => {
-            return NAME_FILTER(subject) || METHOD_TYPE_FILTER(subject);
-        });
+        return this;
     }
 
     output.withMethodParameterAny = function (query, exact = false, includes = true) {
-        const NAME_FILTER = attributeMatcher(PARAMETER_ATTRIBUTES.NAME, query, exact, includes);
-        const PARAMETER_TYPE_FILTER = classTypeAttributeMatcher(PARAMETER_ATTRIBUTES.TYPE);
-
-        return this.withParamFilter((subject) => {
-            return NAME_FILTER(subject) || PARAMETER_TYPE_FILTER(subject);
-        });
+        this.withMethodParameterReferenceName(query, exact, includes);
+        this.withMethodParameterName(query, exact, includes);
+        this.withMethodParameterTypeName(query, exact, includes);
+        this.withMethodParameterTypeSimpleName(query, exact, includes);
+        return this;
     }
 
     // Attribute
@@ -166,51 +200,44 @@ function dataFilter() {
         return this.withParamFilter(attributeMatcher(attribute, query, exact, includes));
     }
 
-    // Id
+    // Id / ReferenceName
 
-    output.withId = function (query) {
+    output.withClassId = function (query) {
         return this.withClassFilter((subject) => subject.id() == query);
     }
 
-    output.withFieldTypeId = function (query, exact = false, includes = true) {
-        return this.withFieldFilter(fieldTypeAttributeMatcher('id', query, exact, includes));
+    output.withClassReferenceName = function (query, exact = false, includes = true) {
+        return this.withClassFilter(attributeMatcher(CLASS_ATTRIBUTES.REFERENCE_NAME, query, exact, includes));
     }
+
+    output.withFieldTypeId = function (query, exact = false, includes = true) {
+        return this.withFieldFilter(fieldTypeAttributeMatcher(CLASS_ATTRIBUTES.REFERENCE_NAME, query, exact, includes));
+    }
+
+    output.withFieldReferenceName = output.withFieldTypeId;
 
     output.withMethodReturnTypeId = function (query, exact = false, includes = true) {
-        return this.withMethodFilter(methodTypeAttributeMatcher('id', query, exact, includes));
+        return this.withMethodFilter(methodTypeAttributeMatcher(CLASS_ATTRIBUTES.REFERENCE_NAME, query, exact, includes));
     }
 
+    output.withMethodReferenceName = output.withMethodReturnTypeId;
+
     output.withMethodParameterTypeId = function (query, exact = false, includes = true) {
-        return this.withParamFilter(parameterTypeAttributeMatcher('id', query, exact, includes));
+        return this.withParamFilter(parameterTypeAttributeMatcher(CLASS_ATTRIBUTES.REFERENCE_NAME, query, exact, includes));
     }
+
+    output.withMethodParameterReferenceName = output.withMethodParameterTypeId;
 
     // Name
 
     output.withName = function (query, exact = false, includes = true) {
-        let CLASS_NAME_FILTER = attributeMatcher(CLASS_ATTRIBUTES.TYPED_NAME, query, exact, includes);
-        let FIELD_TYPE_NAME_FILTER = fieldTypeAttributeMatcher(CLASS_ATTRIBUTES.TYPED_NAME, query, exact, includes);
-        let FIELD_NAME_FILTER = attributeMatcher(FIELD_ATTRIBUTES.NAME, query, exact, includes);
-        let METHOD_TYPE_NAME_FILTER = methodTypeAttributeMatcher(CLASS_ATTRIBUTES.TYPED_NAME, query, exact, includes);
-        let METHOD_NAME_FILTER = attributeMatcher(METHOD_ATTRIBUTES.NAME, query, exact, includes);
-        let PARAMETER_TYPE_NAME_FILTER = parameterTypeAttributeMatcher(CLASS_ATTRIBUTES.TYPED_NAME, query, exact, includes);
-        let PARAMETER_NAME_FILTER = attributeMatcher(PARAMETER_ATTRIBUTES.NAME, query, exact, includes);
-
-        this.withClassFilter((subject) => {
-            return CLASS_NAME_FILTER(subject);
-        });
-
-        this.withFieldFilter((subject) => {
-            return FIELD_TYPE_NAME_FILTER(subject) || FIELD_NAME_FILTER(subject);
-        })
-
-        this.withMethodFilter((subject) => {
-            return METHOD_TYPE_NAME_FILTER(subject) || METHOD_NAME_FILTER(subject);
-        });
-
-        this.withParamFilter((subject) => {
-            return PARAMETER_TYPE_NAME_FILTER(subject) || PARAMETER_NAME_FILTER(subject);
-        });
-
+        this.withClassName(query, exact, includes);
+        this.withFieldName(query, exact, includes);
+        this.withMethodName(query, exact, includes);
+        this.withMethodParameterName(query, exact, includes);
+        this.withFieldTypeName(query, exact, includes);
+        this.withMethodReturnTypeName(query, exact, includes);
+        this.withMethodParameterTypeName(query, exact, includes);
         return this;
     }
 
@@ -245,30 +272,12 @@ function dataFilter() {
     // Simple Name
 
     output.withSimpleName = function (query, exact = false, includes = true) {
-        let CLASS_SIMPLE_NAME_FILTER = attributeMatcher(CLASS_ATTRIBUTES.SIMPLE_NAME, query, exact, includes);
-        let FIELD_NAME_FILTER = fieldTypeAttributeMatcher(FIELD_ATTRIBUTES.NAME, query, exact, includes);
-        let FIELD_TYPE_SIMPLE_NAME_FILTER = fieldTypeAttributeMatcher(CLASS_ATTRIBUTES.SIMPLE_NAME, query, exact, includes);
-        let METHOD_NAME_FILTER = methodTypeAttributeMatcher(METHOD_ATTRIBUTES.NAME, query, exact, includes);
-        let METHOD_TYPE_SIMPLE_NAME_FILTER = methodTypeAttributeMatcher(CLASS_ATTRIBUTES.SIMPLE_NAME, query, exact, includes);
-        let PARAMETER_NAME_FILTER = parameterTypeAttributeMatcher(PARAMETER_ATTRIBUTES.NAME, query, exact, includes);
-        let PARAMETER_TYPE_SIMPLE_NAME_FILTER = parameterTypeAttributeMatcher(CLASS_ATTRIBUTES.SIMPLE_NAME, query, exact, includes);
-
-        this.withClassFilter((subject) => {
-            return CLASS_SIMPLE_NAME_FILTER(subject);
-        });
-
-        this.withFieldFilter((subject) => {
-            return FIELD_NAME_FILTER(subject) || FIELD_TYPE_SIMPLE_NAME_FILTER(subject);
-        });
-
-        this.withMethodFilter((subject) => {
-            return METHOD_NAME_FILTER(subject) || METHOD_TYPE_SIMPLE_NAME_FILTER(subject);
-        });
-
-        this.withParamFilter((subject) => {
-            return PARAMETER_NAME_FILTER(subject) || PARAMETER_TYPE_SIMPLE_NAME_FILTER(subject);
-        });
-
+        this.withClassSimpleName(query, exact, includes);
+        this.withFieldTypeSimpleName(query, exact, includes);
+        this.withMethodReturnTypeSimpleName(query, exact, includes);
+        this.withMethodParameterTypeSimpleName(query, exact, includes);
+        this.withFieldName(query, exact, includes);
+        this.withMethodParameterName(query, exact, includes);
         return this;
     }
 
@@ -291,13 +300,11 @@ function dataFilter() {
     // Raw Type
 
     output.withRawType = function (query, exact = false, includes = true) {
-        let CLASS_RAW_TYPE_FILTER = classTypeAttributeMatcher(CLASS_ATTRIBUTES.RAW_TYPE);
+        const CLASS_RAW_TYPE_FILTER = classTypeAttributeMatcher(CLASS_ATTRIBUTES.RAW_TYPE, getClass);
 
-        this.withClassFilter((subject) => {
+        return this.withClassFilter((subject) => {
             return CLASS_RAW_TYPE_FILTER(subject);
         });
-
-        return this;
     }
 
     output.withClassRawType = function (query, exact = false, includes = true) {
@@ -307,26 +314,10 @@ function dataFilter() {
     // Package
 
     output.withPackage = function (query, exact = false, includes = true) {
-        let CLASS_PACKAGE_FILTER = attributeMatcher(CLASS_ATTRIBUTES.PACKAGE, query, exact, includes);
-        let FIELD_PACKAGE_FILTER = fieldTypeAttributeMatcher(CLASS_ATTRIBUTES.PACKAGE, query, exact, includes);
-        let METHOD_PACKAGE_FILTER = methodTypeAttributeMatcher(CLASS_ATTRIBUTES.PACKAGE, query, exact, includes);
-        let PARAMETER_PACKAGE_FILTER = parameterTypeAttributeMatcher(CLASS_ATTRIBUTES.PACKAGE, query, exact, includes);
-
-        this.withClassFilter((subject) => {
-            return CLASS_PACKAGE_FILTER(subject);
-        });
-
-        this.withFieldFilter((subject) => {
-            return FIELD_PACKAGE_FILTER(subject);
-        });
-
-        this.withMethodFilter((subject) => {
-            return METHOD_PACKAGE_FILTER(subject);
-        });
-
-        this.withParamFilter((subject) => {
-            return PARAMETER_PACKAGE_FILTER(subject);
-        });
+        this.withClassPackage(query, exact, includes);
+        this.withFieldTypePackage(query, exact, includes);
+        this.withMethodReturnTypePackage(query, exact, includes);
+        this.withMethodParameterTypePackage(query, exact, includes);
 
         return this;
     }
@@ -348,7 +339,6 @@ function dataFilter() {
     }
 
     // Parameter Count
-
     output.withMethodParameterCount = function (count, exact = false, includes = true) {
         return this.withMethodFilter((method) => method.parameters().length === count);
     }
@@ -427,13 +417,17 @@ function dataFilter() {
     // Collector
 
     output.findAllThatMatch = function () {
+        console.debug(`Performing search with ${this._classFilters.length} class filters, ${this._fieldFilters.length} field filters, ${this._methodFilters.length} method filters, and ${this._paramFilters.length} param filters.`);
         applyToAllClasses((subject) => {
             if (!subject) {
                 console.error("subject is null!");
             }
-            if (this.matchesClass(subject)) {
-                this.results.classes.push(subject);
+            if (this._classFilters.length !== 0) {
+                if (this.matchesClass(subject)) {
+                    this.results.classes.push(subject);
+                }
             }
+            // TODO: Constructor Support.
             if (this._fieldFilters.length !== 0) {
                 for (let field of subject.fields(true)) {
                     if (this.matchesField(field)) {
@@ -441,19 +435,30 @@ function dataFilter() {
                     }
                 }
             }
-            if (this._methodFilters.length !== 0) {
-                for (let method of subject.methods(true)) {
-                    if (this.matchesMethod(method)) {
-                        this.results.methods.push(method);
-                        continue;
+            if (this._methodFilters.length !== 0 || this._paramFilters.length !== 0) {
+                if (this._methodFilters.length === 0) {
+                    for (let method of subject.methods(true)) {
+                        for (let param of method.parameters()) {
+                            if (this.matchesParam(param)) {
+                                this.results.parameters.push(method);
+                                break;
+                            }
+                        }
                     }
-                    if (this._paramFilters.length === 0) {
-                        continue;
-                    }
-                    for (let param of method.parameters()) {
-                        if (this.matchesParam(param)) {
-                            this.results.parameters.push(method);
-                            break;
+                } else {
+                    for (let method of subject.methods(true)) {
+                        if (this._paramFilters.length === 0) {
+                            if (this.matchesMethod(method)) {
+                                this.results.methods.push(method);
+                            }
+                            continue;
+                        }
+                        for (let param of method.parameters()) {
+                            if (this.matchesParam(param) && this.matchesMethod(method)) {
+                                this.results.methods.push(method);
+                                this.results.parameters.push(method);
+                                break;
+                            }
                         }
                     }
                 }

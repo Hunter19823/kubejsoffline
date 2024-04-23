@@ -91,7 +91,7 @@ const NEW_QUERY_TERMS = {
     'parameter-any': 'withMethodParameterAny',
 
 
-    'class-id': 'withId',
+    'class-id': 'withClassId',
     'field-id': 'withFieldTypeId',
     'method-id': 'withMethodReturnTypeId',
     'parameter-id': 'withMethodParameterTypeId',
