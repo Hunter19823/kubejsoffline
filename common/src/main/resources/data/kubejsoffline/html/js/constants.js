@@ -261,6 +261,10 @@ const RELATIONSHIP = {
     "BOUNDED_WITHIN": "BOUNDED_WITHIN",
 }
 
+const TASKS = {
+    "OPTIMIZE": "optimize",
+    "SEARCH": "search"
+};
 
 let _last_filter = null;
 let _last_search_parameters = null;

@@ -171,7 +171,7 @@ function clearToast() {
     }
 }
 
-async function onHashChange() {
+function onHashChange() {
     // If we have a hash on the URL, determine the format:
     // # - Load the index page / home page.
     // #<int|qualifiedClassName|simpleClassName> - Load a specific class
@@ -252,11 +252,7 @@ async function onHashChange() {
     }
 
     if (!DATA._optimized) {
-        setToast("Please wait while data is being indexed. This should only take a few seconds.");
-        optimizeDataSearch().then(() => {
-            onHashChange();
-        })
-        return;
+        throw new Error("Data is not optimized. Please optimize the data before using the page.");
     }
 
     let hasState = false;
@@ -348,18 +344,18 @@ function DecodeURL() {
     if (URL_PARAMETER_REGEX.test(hash)) {
         const regexArgs = URL_PARAMETER_REGEX.exec(hash);
         if (regexArgs.groups.TypeDefinition) {
-            console.debug("Found the following class definition in the hash: ", regexArgs.groups.TypeDefinition);
+            // console.debug("Found the following class definition in the hash: ", regexArgs.groups.TypeDefinition);
             output.hash = regexArgs.groups.TypeDefinition;
         }else {
             output.hash = "";
         }
         if (regexArgs.groups.QueryStringArgs) {
-            console.debug("Found the following query string in the hash: ", regexArgs.groups.QueryStringArgs);
+            // console.debug("Found the following query string in the hash: ", regexArgs.groups.QueryStringArgs);
             output.params = new URLSearchParams(regexArgs.groups.QueryStringArgs);
         }
     } else {
         output.hash = hash;
-        console.debug("Query did not match the URL Parameter Regex. Using the hash as the class definition.");
+        // console.debug("Query did not match the URL Parameter Regex. Using the hash as the class definition.");
     }
 
     output.hasFocus = function () {
@@ -415,15 +411,56 @@ function DecodeURL() {
     return output;
 }
 
-addEventListener('popstate', (event) => {
-    console.log("Popstate.");
-    onHashChange().then();
-});
+function createOptimizationWorkerThread() {
+    const parts = [];
+
+    parts.push(document.getElementById('data').innerText);
+    parts.push(document.getElementById('bindings').innerText);
+    parts.push(document.getElementById('properties').innerText);
+    parts.push(document.getElementById('constants').innerText);
+    parts.push(document.getElementById('class-documentation-tools').innerText);
+    parts.push(document.getElementById('compression-tools').innerText);
+    parts.push(document.getElementById('relationship-graphs').innerText);
+    parts.push(document.getElementById('class-data-tools').innerText);
+    parts.push(document.getElementById('worker-script').innerText);
+    console.log(parts);
+    return new Worker(URL.createObjectURL(new Blob(parts, {type: 'application/javascript'})));
+}
+
+function onWindowLoad() {
+    console.log("Window Loaded.");
+    setToast("Please wait while data is being indexed. This should only take a few seconds.");
+    const WORKER = createOptimizationWorkerThread();
+    WORKER.onmessage = (e) => {
+        const OPTIMIZED_DATA = e.data.data;
+        Object.entries(OPTIMIZED_DATA).forEach(([key, value]) => {
+            DATA[key] = value;
+        });
+        const NEW_CACHE = e.data.cache;
+        Object.entries(NEW_CACHE).forEach(([key, value]) => {
+            LOOK_UP_CACHE.set(key, value);
+        });
+        WORKER.terminate();
+        clearToast();
+        onHashChange();
+
+        addEventListener('popstate', (event) => {
+            console.debug("Popstate changed");
+            onHashChange();
+        });
+        console.debug("Hash Change Complete.");
+    }
+    WORKER.onError = (e) => {
+        console.error("Error occurred optimizing data: ", e);
+        setToast("An error occurred while optimizing data. Please refresh the page to try again. Please report this issue if it persists.");
+    }
+    WORKER.postMessage({task: TASKS.OPTIMIZE})
+    console.log("This shouldn't have to wait for data to be indexed.");
+}
 
 
 window.onload = () => {
-    console.log("Window Loaded.");
-    onHashChange().then();
+    onWindowLoad();
 }
 
 document.onload = () => {
