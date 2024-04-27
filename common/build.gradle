@@ -34,6 +34,7 @@ shadowJar {
     exclude "org/opentest4j/"
     exclude "org/junit/"
     exclude "org/apiguardian/"
+    exclude "javassist/tools/"
     configurations = [
             project.configurations.shadowImplementation
     ]
