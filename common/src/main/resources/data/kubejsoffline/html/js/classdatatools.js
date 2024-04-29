@@ -323,15 +323,15 @@ function getClass(id) {
         const fields = [];
 
         function addFields(data, declaringClass) {
-            if (exists(data[PROPERTY.FIELDS])) {
-                for (let i = 0; i < data[PROPERTY.FIELDS].length; i++) {
-                    fields.push(getField(data[PROPERTY.FIELDS][i], output.getTypeVariableMap()));
+            if (exists(data.data[PROPERTY.FIELDS])) {
+                for (let i = 0; i < data.data[PROPERTY.FIELDS].length; i++) {
+                    fields.push(getField(data.data[PROPERTY.FIELDS][i], output.getTypeVariableMap()));
                 }
             }
         }
 
         if (shallow) {
-            addFields(this.data, this.id());
+            addFields(this, this.id());
         } else {
             this._follow_inheritance((data, index) => {
                 addFields(data, index);
@@ -359,15 +359,15 @@ function getClass(id) {
         const methods = [];
 
         function addMethods(data, index) {
-            if (exists(data[PROPERTY.METHODS])) {
-                for (let i = 0; i < data[PROPERTY.METHODS].length; i++) {
-                    methods.push(getMethod(data[PROPERTY.METHODS][i], output.getTypeVariableMap()));
+            if (exists(data.data[PROPERTY.METHODS])) {
+                for (let i = 0; i < data.data[PROPERTY.METHODS].length; i++) {
+                    methods.push(getMethod(data.data[PROPERTY.METHODS][i], output.getTypeVariableMap()));
                 }
             }
         }
 
         if (shallow) {
-            addMethods(this.data, this.id());
+            addMethods(this, this.id());
         } else {
             this._follow_inheritance((data, index) => {
                 addMethods(data, index);
@@ -611,10 +611,14 @@ function getClass(id) {
             if (seen.has(current)) {
                 continue;
             }
-            seen.add(current);
-            action(DATA.types[current], current);
-            unprocessed.push(getClass(current).getSuperClass());
-            unprocessed.push(...getClass(current).getInterfaces());
+            const currentClass = getClass(current);
+            seen.add(currentClass.id());
+            action(currentClass, current);
+            unprocessed.push(currentClass.getSuperClass());
+            unprocessed.push(...currentClass.getInterfaces());
+            if (currentClass.isParameterized()) {
+                unprocessed.push(currentClass.getRawType());
+            }
         }
     }
 
