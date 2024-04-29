@@ -40,11 +40,10 @@ function handleStickyElements() {
 function addLinkIcons() {
     // Get all elements with an id, excluding tables and divs
     const elementsWithIds = document.querySelectorAll('[id]:not(table):not(div)');
+    let url = DecodeURL();
 
-    // Iterate over each element
-    elementsWithIds.forEach(element => {
+    function CreateLinkIcon(element) {
         // Create linkIcon
-        let url = DecodeURL();
         url.params.set("focus", element.id);
         const linkIcon = copyLinkToClipboard(url.href(), element.id);
         linkIcon.classList.add('link-container');
@@ -82,5 +81,8 @@ function addLinkIcons() {
             // Replace the original element with the new div
             element.parentNode.replaceChild(div, element);
         }
-    });
+    }
+
+    // Iterate over each element
+    elementsWithIds.forEach(CreateLinkIcon);
 }

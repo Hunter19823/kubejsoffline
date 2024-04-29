@@ -234,8 +234,7 @@ function handleClickLink(element) {
 }
 
 function createLinkSpan(action) {
-    let clipboard = span('');
-    clipboard.innerHTML = '&#128279;'
+    let clipboard = span('🔗');
     clipboard.setAttribute('class', 'clickable');
     clipboard.setAttribute('title', 'Copy Link to clipboard');
     clipboard.setAttribute('onclick', 'handleClickLink(this)');
@@ -251,7 +250,7 @@ function createLinkSpan(action) {
         // Wait 2 seconds
         setTimeout(() => {
             // Change the innerHTML back to a clipboard
-            clipboard.innerHTML = '&#128279;';
+            clipboard.innerText = '🔗';
         }, 2000);
     };
     return clipboard;
