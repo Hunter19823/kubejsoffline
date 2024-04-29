@@ -46,3 +46,10 @@ function addLinkToTableRow(tr, id) {
     td.appendChild(linkIcon);
     tr.insertBefore(td, tr.firstChild);
 }
+
+function addLinkToElement(element, id) {
+    const url = DecodeURL();
+    url.params.set("focus", id);
+    const linkIcon = copyLinkToClipboard(url.href(), element.id);
+    element.appendChild(linkIcon);
+}

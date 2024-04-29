@@ -33,7 +33,10 @@ function createPagedTable(title, table_id, data, addRowAction, ...headers) {
         headerTitle.innerText = title;
         headerTitle.id = TABLE_HEADER;
         headerTitle.style.fontSize = 'revert';
+
+        addLinkToElement(headerTitle, TABLE_HEADER);
         div.append(headerTitle);
+
 
         function linkify(tag) {
             tag.classList.add('link');
