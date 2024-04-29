@@ -466,6 +466,17 @@ function onWindowLoad() {
             console.debug("Popstate changed");
             onHashChange();
         });
+        window.addEventListener('scroll', (e) => {
+            if (GLOBAL_DATA['handleScroll']) {
+                GLOBAL_DATA['handleScroll']();
+            }
+        });
+        window.addEventListener('resize', (e) => {
+            if (GLOBAL_DATA['handleResize']) {
+                GLOBAL_DATA['handleResize']();
+            }
+        });
+
         console.debug("Hash Change Complete.");
     }
     WORKER.onError = (e) => {
