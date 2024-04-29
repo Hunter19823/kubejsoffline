@@ -174,6 +174,8 @@ function appendAttributesToClassTableRow(row, class_id) {
     row.setAttribute('type', class_id);
     row.setAttribute('row-type', 'class');
     row.id = clazz.id();
+    // Add a link td to the row
+    addLinkToTableRow(row, class_id);
     // row.setAttribute('declared-in', clazz);
 }
 
@@ -190,6 +192,7 @@ function appendAttributesToMethodTableRow(row, class_id, method, current_class_i
     }
 
     row.id = method.id();
+    addLinkToTableRow(row, method.id());
 }
 
 function appendAttributesToFieldTableRow(row, class_id, field, current_class_id = null) {
@@ -203,6 +206,7 @@ function appendAttributesToFieldTableRow(row, class_id, field, current_class_id 
         row.setAttribute('current-class', current_class_id);
     }
     row.id = field.id();
+    addLinkToTableRow(row, field.id());
 }
 
 function appendAttributesToConstructorTableRow(row, class_id, constructor, current_class_id = null) {
@@ -215,6 +219,7 @@ function appendAttributesToConstructorTableRow(row, class_id, constructor, curre
         row.setAttribute('current-class', current_class_id);
     }
     row.id = constructor.id();
+    addLinkToTableRow(row, constructor.id());
 }
 
 function appendAttributesToRelationshipToTableRow(row, class_id, relationshipName, current_class_id = null) {
@@ -227,6 +232,8 @@ function appendAttributesToRelationshipToTableRow(row, class_id, relationshipNam
     if (current_class_id) {
         row.setAttribute('current-class', current_class_id);
     }
+    row.id = clazz.id();
+    addLinkToTableRow(row, class_id);
 }
 
 function handleClickLink(element) {
@@ -234,7 +241,7 @@ function handleClickLink(element) {
 }
 
 function createLinkSpan(action) {
-    let clipboard = span('🔗');
+    let clipboard = span('\u{1F517}');
     clipboard.setAttribute('class', 'clickable');
     clipboard.setAttribute('title', 'Copy Link to clipboard');
     clipboard.setAttribute('onclick', 'handleClickLink(this)');
@@ -246,11 +253,11 @@ function createLinkSpan(action) {
         clipboard = document.getElementById(clipboard.id);
         action();
         // Change the innerHTML to a checkmark
-        clipboard.innerHTML = '&#10003;';
+        clipboard.innerText = '\u{2714}';
         // Wait 2 seconds
         setTimeout(() => {
             // Change the innerHTML back to a clipboard
-            clipboard.innerText = '🔗';
+            clipboard.innerText = '\u{1F517}';
         }, 2000);
     };
     return clipboard;

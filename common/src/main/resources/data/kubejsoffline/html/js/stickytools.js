@@ -37,52 +37,12 @@ function handleStickyElements() {
     handleScroll();
 }
 
-function addLinkIcons() {
-    // Get all elements with an id, excluding tables and divs
-    const elementsWithIds = document.querySelectorAll('[id]:not(table):not(div)');
-    let url = DecodeURL();
-
-    function CreateLinkIcon(element) {
-        // Create linkIcon
-        url.params.set("focus", element.id);
-        const linkIcon = copyLinkToClipboard(url.href(), element.id);
-        linkIcon.classList.add('link-container');
-
-        // Check if the element is a table row
-        if (element.tagName.toLowerCase() === 'tr') {
-            // Create a new table cell
-            const td = document.createElement('td');
-            td.classList.add('link-container');
-
-            // Clone the existing content of the table row
-            const rowContent = Array.from(element.children);
-
-            // Clear the existing content of the table row
-            while (element.lastChild) {
-                element.removeChild(element.lastChild);
-            }
-
-            // Append the link icon and the cloned content to the table cell
-            td.appendChild(linkIcon);
-
-            // Append the table cell to the table row
-            element.appendChild(td);
-            rowContent.forEach(child => element.appendChild(child.cloneNode(true)));
-        } else {
-            // For other elements, create a new div
-            const div = document.createElement('div');
-            div.classList.add('link-container');
-
-            // Clone the element and append it to the new div
-            const elementClone = element.cloneNode(true);
-            div.appendChild(linkIcon);
-            div.appendChild(elementClone);
-
-            // Replace the original element with the new div
-            element.parentNode.replaceChild(div, element);
-        }
-    }
-
-    // Iterate over each element
-    elementsWithIds.forEach(CreateLinkIcon);
+function addLinkToTableRow(tr, id) {
+    const url = DecodeURL();
+    url.params.set("focus", id);
+    const linkIcon = copyLinkToClipboard(url.href(), tr.id);
+    const td = document.createElement('td');
+    td.classList.add('link-container');
+    td.appendChild(linkIcon);
+    tr.insertBefore(td, tr.firstChild);
 }

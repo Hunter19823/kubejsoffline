@@ -304,9 +304,6 @@ function onHashChange() {
         // Add sort tables.
         addSortTables();
 
-        // Add link icons.
-        addLinkIcons();
-
         // Focus the element.
         focusElement(decoded.getFocusOrDefaultHeader());
 
