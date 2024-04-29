@@ -1,5 +1,4 @@
 function dataFilter() {
-    // TODO: Fix the data-filter
     let output = {};
     output.results = {'classes': [], 'fields': [], 'methods': [], 'parameters': []};
 
@@ -19,7 +18,6 @@ function dataFilter() {
      * @returns {(function(*): (boolean))}
      */
     function attributeMatcher(attribute, query, exact = false, includes = true, transformer = (p) => p) {
-        console.log(`attributeMatcher(${attribute}, ${query}, ${exact}, ${includes})`);
         let modifier = (p) => p;
         let comparator = (a, b) => (a == b);
         if (!exact) {
@@ -115,25 +113,21 @@ function dataFilter() {
     }
 
     output.withClassFilter = function (filter) {
-        console.log(`Added class filter: ${filter.toString()}`);
         this._classFilters.push(filter);
         return this;
     }
 
     output.withFieldFilter = function (filter) {
-        console.log(`Added field filter: ${filter.toString()}`);
         this._fieldFilters.push(filter);
         return this;
     }
 
     output.withMethodFilter = function (filter) {
-        console.log(`Added method filter: ${filter.toString()}`);
         this._methodFilters.push(filter);
         return this;
     }
 
     output.withParamFilter = function (filter) {
-        console.log(`Added param filter: ${filter.toString()}`);
         this._paramFilters.push(filter);
         return this;
     }
@@ -149,37 +143,39 @@ function dataFilter() {
     // Any
 
     output.withClassAny = function (query, exact = false, includes = true) {
-        this.withClassReferenceName(query, exact, includes);
-        this.withClassName(query, exact, includes);
-        this.withClassSimpleName(query, exact, includes);
-        this.withClassPackage(query, exact, includes);
-        return this;
+        const filters = [];
+        filters.push(dataFilter().withClassReferenceName(query, exact, includes));
+        filters.push(dataFilter().withClassName(query, exact, includes));
+        filters.push(dataFilter().withClassSimpleName(query, exact, includes));
+        filters.push(dataFilter().withClassPackage(query, exact, includes));
+        return this.withClassFilter((subject) => filters.some((filter) => filter.matchesClass(subject)));
     }
 
     output.withFieldAny = function (query, exact = false, includes = true) {
-        this.withFieldReferenceName(query, exact, includes);
-        this.withFieldName(query, exact, includes);
-        this.withFieldTypeName(query, exact, includes);
-        this.withFieldTypeSimpleName(query, exact, includes);
-
-        return this;
+        const filters = [];
+        filters.push(dataFilter().withFieldReferenceName(query, exact, includes));
+        filters.push(dataFilter().withFieldName(query, exact, includes));
+        filters.push(dataFilter().withFieldTypeSimpleName(query, exact, includes));
+        filters.push(dataFilter().withFieldTypePackage(query, exact, includes));
+        return this.withFieldFilter((subject) => filters.some((filter) => filter.matchesField(subject)));
     }
 
     output.withMethodAny = function (query, exact = false, includes = true) {
-        this.withMethodReferenceName(query, exact, includes);
-        this.withMethodName(query, exact, includes);
-        this.withMethodReturnTypeName(query, exact, includes);
-        this.withMethodReturnTypeSimpleName(query, exact, includes);
-
-        return this;
+        const filters = [];
+        filters.push(dataFilter().withMethodReferenceName(query, exact, includes));
+        filters.push(dataFilter().withMethodName(query, exact, includes));
+        filters.push(dataFilter().withMethodReturnTypeSimpleName(query, exact, includes));
+        filters.push(dataFilter().withMethodReturnTypePackage(query, exact, includes));
+        return this.withMethodFilter((subject) => filters.some((filter) => filter.matchesMethod(subject)));
     }
 
     output.withMethodParameterAny = function (query, exact = false, includes = true) {
-        this.withMethodParameterReferenceName(query, exact, includes);
-        this.withMethodParameterName(query, exact, includes);
-        this.withMethodParameterTypeName(query, exact, includes);
-        this.withMethodParameterTypeSimpleName(query, exact, includes);
-        return this;
+        const filters = [];
+        filters.push(dataFilter().withMethodParameterReferenceName(query, exact, includes));
+        filters.push(dataFilter().withMethodParameterName(query, exact, includes));
+        filters.push(dataFilter().withMethodParameterTypeSimpleName(query, exact, includes));
+        filters.push(dataFilter().withMethodParameterTypePackage(query, exact, includes));
+        return this.withParamFilter((subject) => filters.some((filter) => filter.matchesParam(subject)));
     }
 
     // Attribute
@@ -231,14 +227,21 @@ function dataFilter() {
     // Name
 
     output.withName = function (query, exact = false, includes = true) {
-        this.withClassName(query, exact, includes);
-        this.withFieldName(query, exact, includes);
-        this.withMethodName(query, exact, includes);
-        this.withMethodParameterName(query, exact, includes);
-        this.withFieldTypeName(query, exact, includes);
-        this.withMethodReturnTypeName(query, exact, includes);
-        this.withMethodParameterTypeName(query, exact, includes);
-        return this;
+        const classFilters = [];
+        const fieldFilters = [];
+        const methodFilters = [];
+        const paramFilters = [];
+        classFilters.push(dataFilter().withClassName(query, exact, includes));
+        fieldFilters.push(dataFilter().withFieldName(query, exact, includes));
+        methodFilters.push(dataFilter().withMethodName(query, exact, includes));
+        paramFilters.push(dataFilter().withMethodParameterName(query, exact, includes));
+        fieldFilters.push(dataFilter().withFieldTypeName(query, exact, includes));
+        methodFilters.push(dataFilter().withMethodReturnTypeName(query, exact, includes));
+        paramFilters.push(dataFilter().withMethodParameterTypeName(query, exact, includes));
+        return this.withClassFilter((subject) => classFilters.some((filter) => filter.matchesClass(subject)))
+                .withFieldFilter((subject) => fieldFilters.some((filter) => filter.matchesField(subject)))
+                .withMethodFilter((subject) => methodFilters.some((filter) => filter.matchesMethod(subject)))
+                .withParamFilter((subject) => paramFilters.some((filter) => filter.matchesParam(subject)));
     }
 
     output.withClassName = function (query, exact = false, includes = true) {
@@ -272,13 +275,20 @@ function dataFilter() {
     // Simple Name
 
     output.withSimpleName = function (query, exact = false, includes = true) {
-        this.withClassSimpleName(query, exact, includes);
-        this.withFieldTypeSimpleName(query, exact, includes);
-        this.withMethodReturnTypeSimpleName(query, exact, includes);
-        this.withMethodParameterTypeSimpleName(query, exact, includes);
-        this.withFieldName(query, exact, includes);
-        this.withMethodParameterName(query, exact, includes);
-        return this;
+        const classFilters = [];
+        const fieldFilters = [];
+        const methodFilters = [];
+        const paramFilters = [];
+        classFilters.push(dataFilter().withClassSimpleName(query, exact, includes));
+        fieldFilters.push(dataFilter().withFieldTypeSimpleName(query, exact, includes));
+        methodFilters.push(dataFilter().withMethodReturnTypeSimpleName(query, exact, includes));
+        paramFilters.push(dataFilter().withMethodParameterTypeSimpleName(query, exact, includes));
+        fieldFilters.push(dataFilter().withFieldName(query, exact, includes));
+        paramFilters.push(dataFilter().withMethodParameterName(query, exact, includes));
+        return this.withClassFilter((subject) => classFilters.some((filter) => filter.matchesClass(subject)))
+                .withFieldFilter((subject) => fieldFilters.some((filter) => filter.matchesField(subject)))
+                .withMethodFilter((subject) => methodFilters.some((filter) => filter.matchesMethod(subject)))
+                .withParamFilter((subject) => paramFilters.some((filter) => filter.matchesParam(subject)));
     }
 
     output.withClassSimpleName = function (query, exact = false, includes = true) {
