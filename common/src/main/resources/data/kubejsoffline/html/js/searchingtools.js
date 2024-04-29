@@ -1,5 +1,5 @@
 function dataFilter() {
-    // TODO: Fix the datafilter
+    // TODO: Fix the data-filter
     let output = {};
     output.results = {'classes': [], 'fields': [], 'methods': [], 'parameters': []};
 
@@ -390,6 +390,7 @@ function dataFilter() {
         if (this._classFilters.length === 0) {
             return true;
         }
+        // Only accept the data if it passes all the filters
         return !this._classFilters.some((filter) => !filter(data));
     }
 
@@ -397,6 +398,7 @@ function dataFilter() {
         if (this._fieldFilters.length === 0) {
             return true;
         }
+        // Only accept the data if it passes all the filters
         return !this._fieldFilters.some((filter) => !filter(data));
     }
 
@@ -404,6 +406,7 @@ function dataFilter() {
         if (this._methodFilters.length === 0) {
             return true;
         }
+        // Only accept the data if it passes all the filters
         return !this._methodFilters.some((filter) => !filter(data));
     }
 
@@ -411,6 +414,7 @@ function dataFilter() {
         if (this._paramFilters.length === 0) {
             return true;
         }
+        // Only accept the data if it passes all the filters
         return !this._paramFilters.some((filter) => !filter(data));
     }
 
