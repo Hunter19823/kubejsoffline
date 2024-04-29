@@ -40,19 +40,18 @@ function createHomePage() {
     let table = null;
     for (let i = 0; i < keys.length; i++) {
         const key = keys[i];
-        span = document.createElement('span');
-        span.innerHTML = key;
-        let period = key?.lastIndexOf('.');
+        const period = key.lastIndexOf('.');
+        const title = period === -1 ? key : `${key.substring(period + 1)} (${key.substring(0, period)})`;
         if (DATA._events[key].length === 0)
             continue;
-        table = createTableWithHeaders(createSortableTable(period === -1 ? key : key.substring(period + 1)), 'Link', span);
-        for (let j = 0; j < DATA._events[key].length; j++) {
+        const addToTable = (table, event) => {
             try {
-                let row = addRow(table, createFullSignature(DATA._events[key][j]));
-                appendAttributesToClassTableRow(row, DATA._events[key][j]);
+                let row = addRow(table, createFullSignature(event));
+                appendAttributesToClassTableRow(row, event)
             } catch (e) {
-                console.error("Failed to create homepage entry for ", key, " Class: ", DATA._events[key][j], " Error: ", e);
+                console.error("Failed to create homepage entry for ", key, " Class: ", event, " Error: ", e);
             }
-        }
+        };
+        createPagedTable(title, key, DATA._events[key], addToTable, 'Link', 'Class');
     }
 }

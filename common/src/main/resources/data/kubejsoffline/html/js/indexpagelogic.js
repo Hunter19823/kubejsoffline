@@ -245,7 +245,7 @@ function onHashChange() {
     // Now that we have our re-routing logic out of the way, we can rely on the page decoder to do the rest.
     let decoded = DecodeURL();
 
-    console.log(`Decoded URL created in hash change. Raw Hash: '${window.location.hash}' Decoded Hash: '${decoded.hash}' Params: '${decoded.params.toString()}' Href: '${decoded.href()}' Is Homepage: '${decoded.isHome()}' Is Class: '${decoded.isClass()}' Is Search: '${decoded.isSearch()}' Has Focus: '${decoded.hasFocus()}' Focus: '${decoded.getFocusOrDefaultHeader()}' Parameter Size: '${decoded.getParamSize()}' Safe Parameter Size: '${decoded.getParamSizeSafe()}'`);
+    console.log(`Decoded URL created in hash change. Raw Hash: '${window.location.hash}' Decoded Hash: '${decoded.hash}' Hash Length: '${decoded.hash.length}' Params: '${decoded.params.toString()}' Href: '${decoded.href()}' Is Homepage: '${decoded.isHome()}' Is Class: '${decoded.isClass()}' Is Search: '${decoded.isSearch()}' Has Focus: '${decoded.hasFocus()}' Focus: '${decoded.getFocusOrDefaultHeader()}' Parameter Size: '${decoded.getParamSize()}' Safe Parameter Size: '${decoded.getParamSizeSafe()}'`);
     if (!decoded) {
         console.error("Failed to decode URL.");
         return;
@@ -380,7 +380,28 @@ function DecodeURL() {
 
     output.isSearch = function () {
         // If thee is no focus, then it's a search as the only parameter must be the search term.
-        return !this.hash && this.getParamSizeSafe() > 0;
+        if (this.hash?.length !== 0)
+            return false;
+        if (this.getParamSizeSafe() === 0)
+            return false;
+        // Check if the parameters contain any search terms.
+        // Check if params is shorter than NEW_QUERY_TERMS.
+        if (this.getParamSizeSafe() < Object.keys(NEW_QUERY_TERMS).length) {
+            // Check if the parameters contain any of the search terms.
+            for (let key of this.params.keys()) {
+                if (Object.keys(NEW_QUERY_TERMS).includes(key)) {
+                    return true;
+                }
+            }
+        } else {
+            // Check if new query terms contain any of the parameters.
+            for (let key of Object.keys(NEW_QUERY_TERMS)) {
+                if (this.params.has(key)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     output.isClass = function () {
