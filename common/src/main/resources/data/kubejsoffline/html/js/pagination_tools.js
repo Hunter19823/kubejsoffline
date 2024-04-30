@@ -2,12 +2,25 @@ function createPagedTable(title, table_id, data, addRowAction, ...headers) {
     if (data.length === 0) {
         return;
     }
-
-    return new PageableSortableTable(
+    if (exists(GLOBAL_DATA[table_id])) {
+        /**
+         * @type{PageableSortableTable}
+         */
+        const table = GLOBAL_DATA[table_id];
+        table.setURL(CURRENT_URL.clone());
+        table.setRowAction(addRowAction);
+        table.setHeaders(...headers);
+        if (table.data.length !== data.length) {
+            table.setData(data);
+        }
+        return table;
+    }
+    GLOBAL_DATA[table_id] = new PageableSortableTable(
         title,
         table_id,
         ...headers
     ).setRowAction(addRowAction).setData(data);
+    return GLOBAL_DATA[table_id];
 }
 
 function hasAttribute(element, attribute) {
@@ -142,9 +155,9 @@ PageableSortableTable = class {
         this.PARAMETER_SORT_DIRECTION = `${this.table_id}-sort-direction`;
 
         this.data = [];
-        this.page = (this.url.params.has(this.PARAMETER_PAGE_NUMBER)) ? parseInt(this.url.params.get(this.PARAMETER_PAGE_NUMBER)) : 0;
-        this.page_size = (this.url.params.has(this.PARAMETER_PAGE_SIZE)) ? parseInt(this.url.params.get(this.PARAMETER_PAGE_SIZE)) : GLOBAL_SETTINGS.defaultSearchPageSize;
-        this.expand = (this.url.params.has(this.PARAMETER_EXPANDED)) ? this.url.params.get(this.PARAMETER_EXPANDED) === 'true' : false;
+        this.page = 0;
+        this.page_size = 25;
+        this.expand = false;
         this.sort_by = (this.url.params.has(this.PARAMETER_SORT_BY)) ? this.url.params.get(this.PARAMETER_SORT_BY) : 'default';
         this.sort = (a, b) => 0;
         this.sort_order = (this.url.params.has(this.PARAMETER_SORT_DIRECTION)) ? parseInt(this.url.params.get(this.PARAMETER_SORT_DIRECTION)) : 1;
@@ -156,10 +169,21 @@ PageableSortableTable = class {
         this.table_element = null;
         this.table_header_row = null;
         this.table_body = null;
+        this._sort_changed = true;
+    }
+
+    setHeaders(...headers) {
+        this.headers = headers;
+        return this;
     }
 
     setRowAction(rowAction) {
         this.rowAction = rowAction;
+        return this;
+    }
+
+    setURL(url) {
+        this.url = url;
         return this;
     }
 
@@ -198,9 +222,31 @@ PageableSortableTable = class {
         return this;
     }
 
+    hasSortChanged() {
+        if (this.url.params.has(this.PARAMETER_SORT_BY)) {
+            if (this.sort_by !== this.url.params.get(this.PARAMETER_SORT_BY)) {
+                this.sort_by = this.url.params.get(this.PARAMETER_SORT_BY);
+                this._sort_changed = true;
+            }
+        }
+        if (this.url.params.has(this.PARAMETER_SORT_DIRECTION)) {
+            if (this.sort_order !== parseInt(this.url.params.get(this.PARAMETER_SORT_DIRECTION))) {
+                this.sort_order = parseInt(this.url.params.get(this.PARAMETER_SORT_DIRECTION));
+                this._sort_changed = true;
+            }
+        }
+    }
+
+    updatePageData() {
+        this.page = (this.url.params.has(this.PARAMETER_PAGE_NUMBER)) ? parseInt(this.url.params.get(this.PARAMETER_PAGE_NUMBER)) : 0;
+        this.page_size = (this.url.params.has(this.PARAMETER_PAGE_SIZE)) ? parseInt(this.url.params.get(this.PARAMETER_PAGE_SIZE)) : GLOBAL_SETTINGS.defaultSearchPageSize;
+        this.expand = (this.url.params.has(this.PARAMETER_EXPANDED)) ? this.url.params.get(this.PARAMETER_EXPANDED) === 'true' : false;
+        return this;
+    }
+
     getCurrentSort() {
+        this.hasSortChanged();
         if (this.sort_options.hasOwnProperty(this.sort_by)) {
-            console.log(this.table_id, "Sorting by", this.sort_by, "with", this.sort_options[this.sort_by]);
             this.setSort(this.sort_options[this.sort_by]);
         }
 
@@ -210,12 +256,13 @@ PageableSortableTable = class {
     getCurrentData() {
         let data = this.data;
         let sort = this.getCurrentSort();
-        if (exists(sort)) {
+        if (exists(sort) && this._sort_changed) {
             data.sort(sort);
         }
-        if (this.sort_order < 0) {
+        if (this.sort_order < 0 && this._sort_changed) {
             data.reverse();
         }
+        this._sort_changed = false;
         if (this.expand) {
             return data;
         }
@@ -269,6 +316,7 @@ PageableSortableTable = class {
     }
 
     createTableHeader() {
+        let HEADER_URL = this.url.clone();
         // Create the pagination header
         this.table_header_element = document.createElement('h2');
         this.table_header_pages_div = document.createElement('div');
@@ -285,13 +333,14 @@ PageableSortableTable = class {
 
         this.table_header_element.classList.add('search-pagination');
         this.table_header_element.classList.add('stick-able');
-        this.url.params.set(this.PARAMETER_FOCUS, this.TABLE_HEADER);
+
+        HEADER_URL.params.set(this.PARAMETER_FOCUS, this.TABLE_HEADER);
         let count = span(`${this.data.length} Items`);
         this.table_header_pages_div.append(count);
 
 
         if (max_page_count <= 1) return this;
-        this.url.params.set(this.PARAMETER_EXPANDED, 'false');
+        HEADER_URL.params.set(this.PARAMETER_EXPANDED, 'false');
 
         // Add a previous button, if needed
         let lastPage = max_page_count - 1;
@@ -299,11 +348,12 @@ PageableSortableTable = class {
         let prev = span("<");
         this.table_header_pages_div.append(prev);
         if (currentPage > 0 && !this.expand) {
+            const PREV_PAGE_URL = HEADER_URL.clone();
             // The Previous button should go to the minimum of the last page and the previous page
-            this.url.params.set(this.PARAMETER_PAGE_NUMBER, `${Math.min(currentPage - 1, lastPage)}`);
-            this.url.params.set(this.PARAMETER_PAGE_SIZE, `${this.page_size}`);
-            this.url.params.set(this.PARAMETER_FOCUS, this.TABLE_HEADER);
-            const PREV_PAGE = this.url.hrefHash();
+            PREV_PAGE_URL.params.set(this.PARAMETER_PAGE_NUMBER, `${Math.min(currentPage - 1, lastPage)}`);
+            PREV_PAGE_URL.params.set(this.PARAMETER_PAGE_SIZE, `${this.page_size}`);
+            PREV_PAGE_URL.params.set(this.PARAMETER_FOCUS, this.TABLE_HEADER);
+            const PREV_PAGE = PREV_PAGE_URL.hrefHash();
             prev.setAttribute('href', `${PREV_PAGE}`)
             prev.setAttribute('onclick', 'changeURLFromElement(this);');
             prev.classList.add('link-but-no-underline');
@@ -337,10 +387,11 @@ PageableSortableTable = class {
             let page = span(text);
             self.table_header_pages_div.append(page);
             if (self.expand) return;
-            self.url.params.set(self.PARAMETER_PAGE_NUMBER, `${i}`);
-            self.url.params.set(self.PARAMETER_PAGE_SIZE, `${self.page_size}`);
-            self.url.params.set(self.PARAMETER_FOCUS, self.TABLE_HEADER);
-            const PAGE = self.url.hrefHash();
+            const clonedURL = HEADER_URL.clone();
+            clonedURL.params.set(self.PARAMETER_PAGE_NUMBER, `${i}`);
+            clonedURL.params.set(self.PARAMETER_PAGE_SIZE, `${self.page_size}`);
+            clonedURL.params.set(self.PARAMETER_FOCUS, self.TABLE_HEADER);
+            const PAGE = clonedURL.hrefHash();
             page.setAttribute('href', `${PAGE}`);
             page.setAttribute('onclick', 'changeURLFromElement(this);');
             page.classList.add('link');
@@ -390,35 +441,34 @@ PageableSortableTable = class {
                 page.classList.add('ellipsis');
             }
             if (!on_left_side && extra_space > 0 && i <= extra_space) {
-                console.log(i, extra_space);
                 addPageNumber(i, this);
                 continue;
             }
             if (on_left_side && extra_space > 0 && i >= max_page_index - extra_space) {
                 addPageNumber(i, this);
-
             }
         }
         let next = span(">");
         this.table_header_pages_div.append(next);
         // Add a next button, if needed
         if (this.data.length > (currentPage + 1) * this.page_size && !this.expand) {
+            const NEXT_PAGE_URL = HEADER_URL.clone();
             // The Previous button should go to the minimum of the last page and the previous page
-            this.url.params.set(this.PARAMETER_PAGE_NUMBER, `${currentPage + 1}`);
-            this.url.params.set(this.PARAMETER_PAGE_SIZE, `${this.page_size}`);
-            this.url.params.set(this.PARAMETER_FOCUS, this.TABLE_HEADER);
-            const NEXT_PAGE = this.url.hrefHash();
+            NEXT_PAGE_URL.params.set(this.PARAMETER_PAGE_NUMBER, `${currentPage + 1}`);
+            NEXT_PAGE_URL.params.set(this.PARAMETER_PAGE_SIZE, `${this.page_size}`);
+            NEXT_PAGE_URL.params.set(this.PARAMETER_FOCUS, this.TABLE_HEADER);
+            const NEXT_PAGE = NEXT_PAGE_URL.hrefHash();
             next.setAttribute('href', `${NEXT_PAGE}`)
             next.setAttribute('onclick', 'changeURLFromElement(this);');
             next.classList.add('link-but-no-underline');
         }
 
 
-        this.url.params.set(this.PARAMETER_PAGE_NUMBER, `${currentPage}`);
         // If the url has `expand-{table_id}` then add a link to collapse the table
         if (this.expand) {
-            this.url.params.set(this.PARAMETER_EXPANDED, 'false');
-            const COLLAPSE_TABLE = this.url.hrefHash();
+            const COLLAPSE_TABLE_URL = HEADER_URL.clone();
+            COLLAPSE_TABLE_URL.params.set(this.PARAMETER_EXPANDED, 'false');
+            const COLLAPSE_TABLE = COLLAPSE_TABLE_URL.hrefHash();
             let collapse = span("\u{21B4}");
             this.table_header_pages_div.append(collapse);
             collapse.setAttribute('href', `${COLLAPSE_TABLE}`)
@@ -428,8 +478,9 @@ PageableSortableTable = class {
             collapse.style.rotate = '90deg';
             return this;
         } else if (!(this.page_size >= this.data.length)) {
-            this.url.params.set(this.PARAMETER_EXPANDED, 'true');
-            const EXPAND_TABLE = this.url.hrefHash();
+            const EXPAND_TABLE_URL = HEADER_URL.clone();
+            EXPAND_TABLE_URL.params.set(this.PARAMETER_EXPANDED, 'true');
+            const EXPAND_TABLE = EXPAND_TABLE_URL.hrefHash();
             let expand = span("\u{21B4}");
             this.table_header_pages_div.append(expand);
             expand.setAttribute('href', `${EXPAND_TABLE}`)
@@ -488,6 +539,8 @@ PageableSortableTable = class {
     }
 
     create() {
+        this.updatePageData();
+        console.log("Now loading ", this.title, " with ", this.data.length, " items on page ", this.page, " with page size ", this.page_size, " and sort by ", this.sort_by, " and sort order ", this.sort_order, " and expanded ", this.expand, " with sort options ", this.sort_options, " and sort direction ", this.sort_order);
         this.createTableHeader().createTable().createDiv().addToDocument();
         GLOBAL_DATA[this.table_id] = this;
         return this;
