@@ -302,7 +302,7 @@ function onHashChange() {
     }
     if (hasState) {
         // Add sort tables.
-        addSortTables();
+        // addSortTables();
 
         // Focus the element.
         focusElement(decoded.getFocusOrDefaultHeader());

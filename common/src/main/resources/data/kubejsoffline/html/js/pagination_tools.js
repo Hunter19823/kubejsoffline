@@ -7,7 +7,7 @@ function createPagedTable(title, table_id, data, addRowAction, ...headers) {
             title,
             table_id,
             ...headers
-    ).setRowAction(addRowAction).setData(data).create();
+    ).setRowAction(addRowAction).setData(data);
 }
 
 function hasAttribute(element, attribute) {
@@ -149,6 +149,7 @@ class PageableSortableTable {
         this.table_element = null;
         this.table_header_row = null;
         this.table_body = null;
+        console.log(`Created Table ${this.table_id}`);
     }
 
     setRowAction(rowAction) {
@@ -194,6 +195,9 @@ class PageableSortableTable {
     getCurrentSort() {
         if (this.sort_options.hasOwnProperty(this.sort_by)) {
             this.setSort(this.sort_options[this.sort_by]);
+            console.log(`${this.table_id}: Sorted By ${this.sort_by}`);
+        } else {
+            console.log(`${this.table_id}: Sort By ${this.sort_by} Not Found`);
         }
         return this.sort;
     }

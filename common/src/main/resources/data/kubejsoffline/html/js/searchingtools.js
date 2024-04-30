@@ -605,22 +605,26 @@ function loadSearchResults(page_number, page_size) {
     createPagedTable("Matching Classes", 'class-table', results.classes, (table, classData) => {
         addClassToTable(table, classData.id());
     }, 'Link', 'ID', 'Class Name', 'Package', 'Qualified Name')
-            .sortableByClass();
+            .sortableByClass()
+            .create();
 
     createPagedTable("Matching Fields", 'field-table', results.fields, (table, fieldData) => {
         addFieldToTable(table, fieldData.getDeclaringClass(), fieldData, fieldData.type());
     }, 'Link', 'Declared In', 'Field Signature', 'Declaration Class')
-            .sortableByField();
+            .sortableByField()
+            .create();
 
     createPagedTable("Matching Methods", 'method-table', results.methods, (table, methodData) => {
         addMethodToTable(table, methodData.getDeclaringClass(), methodData);
     }, 'Link', 'Declared In', 'Method Signature', 'Declaration Class')
-            .sortableByMethod();
+            .sortableByMethod()
+            .create();
 
     createPagedTable("Matching Parameters", 'parameter-table', results.parameters, (table, methodData) => {
         addMethodToTable(table, methodData.getDeclaringClass(), methodData);
     }, 'Link', 'Declared In', 'Method Signature', 'Declaration Class')
-            .sortableByParameter();
+            .sortableByParameter()
+            .create();
 }
 
 function createSearchBar() {

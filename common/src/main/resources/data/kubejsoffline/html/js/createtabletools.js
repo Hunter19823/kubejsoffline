@@ -32,7 +32,8 @@ function createMethodTable(id, typeVariableMap = {}) {
         }
     }
     createPagedTable('Methods', 'methods', methods, addToTable, 'Link', 'Methods')
-            .sortableByMethod();
+            .sortableByMethod()
+            .create();
 }
 
 function createFieldTable(id, typeVariableMap = {}) {
@@ -69,7 +70,8 @@ function createFieldTable(id, typeVariableMap = {}) {
         }
     }
     createPagedTable('Fields', 'fields', fields, addToTable, 'Link', 'Fields')
-            .sortableByField();
+            .sortableByField()
+            .create();
 }
 
 function createConstructorTable(id, typeVariableMap = {}) {
@@ -105,7 +107,8 @@ function createConstructorTable(id, typeVariableMap = {}) {
             console.error("Failed to create constructor table for ", target.id(), " Constructor: ", constructor, " Error: ", e);
         }
     }
-    createPagedTable('Constructors', 'constructors', constructors, addToTable, 'Link', 'Constructors');
+    createPagedTable('Constructors', 'constructors', constructors, addToTable, 'Link', 'Constructors')
+            .create();
 }
 
 function createRelationshipTable(id, typeVariableMap = {}) {
@@ -125,5 +128,6 @@ function createRelationshipTable(id, typeVariableMap = {}) {
             console.error("Failed to create relationship entry for ", data.id(), " To: ", to, " Relations: ", relations, " Error: ", e);
         }
     };
-    createPagedTable('Relationships', 'relations', [...relationships.entries()], addToTable, 'RelatedClass', 'Relationships');
+    createPagedTable('Relationships', 'relations', [...relationships.entries()], addToTable, 'RelatedClass', 'Relationships')
+            .create();
 }
