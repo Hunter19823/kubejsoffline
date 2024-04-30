@@ -375,6 +375,8 @@ PageableSortableTable = class {
             (left_window_index - 1 > 0 ? 1 : 0) +
             (right_window_index + 1 < max_page_count ? 1 : 0);
         let extra_space = 11 - total_seen_count - ellipsis_count;
+        const PADDING_WIDTH = Math.max((max_page_count < 10) ? 1 : 2, max_page_count.toString().length)
+        // TODO: implement spans being identical widths.
 
         // Add the number of results and how many total results there are
         function addPageNumber(i, self) {
