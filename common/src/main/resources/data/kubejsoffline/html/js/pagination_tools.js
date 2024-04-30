@@ -379,7 +379,14 @@ PageableSortableTable = class {
                 }
 
             }
-            page = span(`${i + 1}`);
+            let text = `${i + 1}`;
+            // Pad the text based on the maximum page count width using spaces.
+            // This is to prevent the pagination from jumping around when the page number changes.
+            let pad = max_page_count.toString().length - text.length;
+            if (pad > 0) {
+                text = "0".repeat(pad) + text;
+            }
+            page = span(text);
             this.table_header_pages_div.append(page);
             if (this.expand) continue;
             this.url.params.set(this.PARAMETER_PAGE_NUMBER, `${i}`);
