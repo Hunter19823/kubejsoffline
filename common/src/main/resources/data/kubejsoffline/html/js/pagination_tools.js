@@ -108,12 +108,18 @@ function defaultSort(a, b) {
     return sortByName(a.getName(), b.getName());
 }
 
+function wrapComparator(comparator, wrapper) {
+    return (a, b) => {
+        return comparator(wrapper(a), wrapper(b));
+    };
+}
+
 class PageableSortableTable {
     static SORTABLE_DEFAULT = ['default', defaultSort];
-    static SORTABLE_BY_NAME = ['name', attributeComparator('name', sortByName, (a) => a.toLowerCase())];
-    static SORTABLE_BY_MOD = ['mod', attributeComparator('mod', sortByModifier)];
-    static SORTABLE_BY_TYPE = ['type', attributeComparator('type', sortByName, (a) => getClass(a).name().toLowerCase())];
-    static SORTABLE_BY_DECLARING_CLASS = ['declaring-class', attributeComparator('declaring-class', sortByName, (a) => getClass(a).name().toLowerCase())];
+    static SORTABLE_BY_NAME = ['name', attributeComparator('getName', sortByName, (a) => a.toLowerCase())];
+    static SORTABLE_BY_MOD = ['mod', attributeComparator('getModifier', sortByModifier)];
+    static SORTABLE_BY_TYPE = ['type', attributeComparator('getType', sortByName, (a) => getClass(a).name().toLowerCase())];
+    static SORTABLE_BY_DECLARING_CLASS = ['declaring-class', attributeComparator('getDeclaringClass', sortByName, (a) => getClass(a).name().toLowerCase())];
 
 
     /**
@@ -149,7 +155,6 @@ class PageableSortableTable {
         this.table_element = null;
         this.table_header_row = null;
         this.table_body = null;
-        console.log(`Created Table ${this.table_id}`);
     }
 
     setRowAction(rowAction) {
@@ -193,12 +198,8 @@ class PageableSortableTable {
     }
 
     getCurrentSort() {
-        if (this.sort_options.hasOwnProperty(this.sort_by)) {
-            this.setSort(this.sort_options[this.sort_by]);
-            console.log(`${this.table_id}: Sorted By ${this.sort_by}`);
-        } else {
-            console.log(`${this.table_id}: Sort By ${this.sort_by} Not Found`);
-        }
+        if (this.sort_options.hasOwnProperty(this.sort_by)) this.setSort(this.sort_options[this.sort_by]);
+
         return this.sort;
     }
 
@@ -236,7 +237,10 @@ class PageableSortableTable {
         return this;
     }
 
-    addSortOptionPair([option, sort]) {
+    addSortOptionPair([option, sort], wrapper=undefined) {
+        if (exists(wrapper)) {
+            sort = wrapComparator(sort, wrapper);
+        }
         return this.addSortOption(option, sort);
     }
 
@@ -392,35 +396,35 @@ class PageableSortableTable {
 
     sortableByClass() {
         return this
-                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS);
+                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, getClass)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, getClass)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, getClass)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, getClass)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, getClass);
     }
 
     sortableByMethod() {
         return this
-                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS);
+                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, getMethod)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, getMethod)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, getMethod)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, getMethod)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, getMethod);
     }
 
     sortableByField() {
         return this
-                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS);
+                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, getField)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, getField)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, getField)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, getField)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, getField);
     }
 
     sortableByParameter() {
         return this
-                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE);
+                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, getParameter)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, getParameter)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, getParameter);
     }
 }

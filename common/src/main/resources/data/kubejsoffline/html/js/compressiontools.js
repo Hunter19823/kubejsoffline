@@ -247,6 +247,9 @@ function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable
         type = exists(typeVariableMap[type]) ? getClass(typeVariableMap[type]) : type;
     }
     if (type.isRawClass()) {
+        if (exists(type.getDeclaringClass())) {
+            return cachedGenericDefinition(type.getDeclaringClass(), typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics) + "$" + getRawClassName(type, false);
+        }
         return getRawClassName(type, appendPackageName);
     }
     if (type.isTypeVariable()) {
