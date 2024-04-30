@@ -343,7 +343,7 @@ function DecodeURL() {
         if (regexArgs.groups.TypeDefinition) {
             // console.debug("Found the following class definition in the hash: ", regexArgs.groups.TypeDefinition);
             output.hash = regexArgs.groups.TypeDefinition;
-        }else {
+        } else {
             output.hash = "";
         }
         if (regexArgs.groups.QueryStringArgs) {

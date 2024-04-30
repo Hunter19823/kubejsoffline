@@ -139,35 +139,35 @@ function remapTypeVariables(typeVariableMap, parameterizedType) {
     const typeVariables = rawType.getTypeVariables();
     const actualTypes = classType.getTypeVariables();
     TYPE_LOOP:
-            for (let i = 0; i < typeVariables.length; i++) {
-                if (exists(typeVariableMap[typeVariables[i]])) {
-                    continue;
-                }
-                let actualTypeId = actualTypes[i];
-                let actualType = getClass(actualTypeId);
-                if (!actualType.isTypeVariable()) {
-                    typeVariableMap[typeVariables[i]] = actualTypes[i];
-                    continue;
-                }
-                let iterationCounter = 0;
-                while (exists(typeVariableMap[actualTypeId]) && iterationCounter < 10) {
-                    const remappedTypeId = typeVariableMap[actualTypeId];
-                    const remappedType = getClass(remappedTypeId);
-                    iterationCounter++;
-                    if (remappedType.isTypeVariable()) {
-                        actualTypeId = remappedTypeId;
-                        actualType = remappedType;
-                    } else {
-                        typeVariableMap[typeVariables[i]] = remappedTypeId;
-                        continue TYPE_LOOP;
-                    }
-                }
-                if (iterationCounter >= 1000) {
-                    throw new Error("Infinite Loop Detected. Cannot remap type variables.");
-                }
-
-                typeVariableMap[typeVariables[i]] = actualTypeId;
+        for (let i = 0; i < typeVariables.length; i++) {
+            if (exists(typeVariableMap[typeVariables[i]])) {
+                continue;
             }
+            let actualTypeId = actualTypes[i];
+            let actualType = getClass(actualTypeId);
+            if (!actualType.isTypeVariable()) {
+                typeVariableMap[typeVariables[i]] = actualTypes[i];
+                continue;
+            }
+            let iterationCounter = 0;
+            while (exists(typeVariableMap[actualTypeId]) && iterationCounter < 10) {
+                const remappedTypeId = typeVariableMap[actualTypeId];
+                const remappedType = getClass(remappedTypeId);
+                iterationCounter++;
+                if (remappedType.isTypeVariable()) {
+                    actualTypeId = remappedTypeId;
+                    actualType = remappedType;
+                } else {
+                    typeVariableMap[typeVariables[i]] = remappedTypeId;
+                    continue TYPE_LOOP;
+                }
+            }
+            if (iterationCounter >= 1000) {
+                throw new Error("Infinite Loop Detected. Cannot remap type variables.");
+            }
+
+            typeVariableMap[typeVariables[i]] = actualTypeId;
+        }
 }
 
 function getGenericDefinition(type, typeVariableMap, includeGenerics = true) {
@@ -188,11 +188,11 @@ function getParameterizedName(type, typeVariableMap, isDefiningTypeVariable, app
         return ownerPrefix + rawTypeName;
     }
     const genericArguments = joiner(
-            actualTypes,
-            ", ",
-            (actualType) => cachedGenericDefinition(actualType, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics),
-            "<",
-            ">"
+        actualTypes,
+        ", ",
+        (actualType) => cachedGenericDefinition(actualType, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics),
+        "<",
+        ">"
     );
     return ownerPrefix + rawTypeName + genericArguments;
 }
@@ -202,19 +202,19 @@ function getWildcardName(type, typeVariableMap, isDefiningTypeVariable, appendPa
     const lowerBounds = type.getLowerBound();
     if (lowerBounds.length !== 0) {
         return name + joiner(
-                lowerBounds,
-                " & ",
-                (bound) => cachedGenericDefinition(bound, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics),
-                " super "
+            lowerBounds,
+            " & ",
+            (bound) => cachedGenericDefinition(bound, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics),
+            " super "
         );
     }
     const upperBounds = type.getUpperBound();
     if (upperBounds.length !== 0) {
         return name + joiner(
-                upperBounds,
-                " & ",
-                (bound) => cachedGenericDefinition(bound, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics),
-                " extends "
+            upperBounds,
+            " & ",
+            (bound) => cachedGenericDefinition(bound, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics),
+            " extends "
         );
     }
     return name;

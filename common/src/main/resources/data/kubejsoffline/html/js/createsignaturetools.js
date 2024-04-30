@@ -41,18 +41,18 @@ function createShortLink(id, typeVariableMap = {}) {
             return shortSignature;
         }
         shortSignature.append(
-                tagJoiner(
-                        typeVariables,
-                        ", ",
-                        (actualType) => createLinkableSignature(
-                                actualType,
-                                typeVariableMap,
-                                false,
-                                false
-                        ),
-                        span("<"),
-                        span(">")
-                )
+            tagJoiner(
+                typeVariables,
+                ", ",
+                (actualType) => createLinkableSignature(
+                    actualType,
+                    typeVariableMap,
+                    false,
+                    false
+                ),
+                span("<"),
+                span(">")
+            )
         )
     }
     return shortSignature;
@@ -67,18 +67,18 @@ function createFullSignature(id, typeVariableMap = {}) {
             return fullSignature;
         }
         fullSignature.append(
-                tagJoiner(
-                        typeVariables,
-                        ", ",
-                        (actualType) => createLinkableSignature(
-                                actualType,
-                                typeVariableMap,
-                                false,
-                                true
-                        ),
-                        span("<"),
-                        span(">")
-                )
+            tagJoiner(
+                typeVariables,
+                ", ",
+                (actualType) => createLinkableSignature(
+                    actualType,
+                    typeVariableMap,
+                    false,
+                    true
+                ),
+                span("<"),
+                span(">")
+            )
         )
     }
     return fullSignature;
@@ -360,17 +360,17 @@ function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, 
         }
         outputSpan.append(createLink(span(typeVariableName), type.id()));
         outputSpan.append(
-                tagJoiner(
-                        bounds,
-                        " & ",
-                        (bound) => createLinkableSignature(
-                                bound,
-                                typeVariableMap,
-                                true,
-                                appendPackageName
-                        ),
-                        span(" extends ")
-                )
+            tagJoiner(
+                bounds,
+                " & ",
+                (bound) => createLinkableSignature(
+                    bound,
+                    typeVariableMap,
+                    true,
+                    appendPackageName
+                ),
+                span(" extends ")
+            )
         );
         return outputSpan;
     }
@@ -380,34 +380,34 @@ function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, 
         const lowerBounds = type.getLowerBound();
         if (lowerBounds.length !== 0) {
             outputSpan.append(
-                    tagJoiner(
-                            lowerBounds,
-                            " & ",
-                            (bound) => createLinkableSignature(
-                                    bound,
-                                    typeVariableMap,
-                                    true,
-                                    appendPackageName
-                            ),
-                            span(" super ")
-                    )
+                tagJoiner(
+                    lowerBounds,
+                    " & ",
+                    (bound) => createLinkableSignature(
+                        bound,
+                        typeVariableMap,
+                        true,
+                        appendPackageName
+                    ),
+                    span(" super ")
+                )
             );
             return outputSpan;
         }
         const upperBounds = type.getUpperBound();
         if (upperBounds.length !== 0) {
             outputSpan.append(
-                    tagJoiner(
-                            upperBounds,
-                            " & ",
-                            (bound) => createLinkableSignature(
-                                    bound,
-                                    typeVariableMap,
-                                    true,
-                                    appendPackageName
-                            ),
-                            span(" extends ")
-                    )
+                tagJoiner(
+                    upperBounds,
+                    " & ",
+                    (bound) => createLinkableSignature(
+                        bound,
+                        typeVariableMap,
+                        true,
+                        appendPackageName
+                    ),
+                    span(" extends ")
+                )
             );
             return outputSpan;
         }
@@ -428,18 +428,18 @@ function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, 
             return outputSpan;
         }
         outputSpan.append(
-                tagJoiner(
-                        actualTypes,
-                        ", ",
-                        (actualType) => createLinkableSignature(
-                                actualType,
-                                typeVariableMap,
-                                isDefiningTypeVariable,
-                                appendPackageName
-                        ),
-                        span("<"),
-                        span(">")
-                )
+            tagJoiner(
+                actualTypes,
+                ", ",
+                (actualType) => createLinkableSignature(
+                    actualType,
+                    typeVariableMap,
+                    isDefiningTypeVariable,
+                    appendPackageName
+                ),
+                span("<"),
+                span(">")
+            )
         );
         return outputSpan;
     }

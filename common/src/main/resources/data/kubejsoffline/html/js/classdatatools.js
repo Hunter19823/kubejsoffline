@@ -169,17 +169,17 @@ function findClassByName(name) {
     const typeVariableFilter = createFilter("type variable");
 
     console.debug(
-            "Searching for class: ", name,
-            "isArray: ", isArray,
-            "containsGeneric: ", containsGeneric,
-            "containsInnerClass: ", containsInnerClass,
-            "isParameterized: ", isParameterized,
-            "isWildcard: ", isWildcard,
-            "containsPackage: ", containsPackage,
-            "shouldUseReferenceName: ", shouldUseReferenceName,
-            "shouldUseFullyQualifiedName: ", shouldUseFullyQualifiedName,
-            "shouldUseName: ", shouldUseName,
-            "shouldUseSimpleName: ", shouldUseSimpleName
+        "Searching for class: ", name,
+        "isArray: ", isArray,
+        "containsGeneric: ", containsGeneric,
+        "containsInnerClass: ", containsInnerClass,
+        "isParameterized: ", isParameterized,
+        "isWildcard: ", isWildcard,
+        "containsPackage: ", containsPackage,
+        "shouldUseReferenceName: ", shouldUseReferenceName,
+        "shouldUseFullyQualifiedName: ", shouldUseFullyQualifiedName,
+        "shouldUseName: ", shouldUseName,
+        "shouldUseSimpleName: ", shouldUseSimpleName
     );
 
     if (isWildcard) {

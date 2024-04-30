@@ -26,7 +26,7 @@ function handleStickyElements() {
                     // then the previous sticky element should be moved up by the difference
                     const difference = currentStickyElement.top - (currentStickyElement.element.offsetHeight + window.scrollY);
                     stickyElement.element.style.top = `${difference}px`;
-                }else {
+                } else {
                     stickyElement.element.style.top = `0`;
                 }
                 currentStickyElement = stickyElement;
@@ -48,6 +48,7 @@ function handleStickyElements() {
     updateStickyElementPositions();
     handleScroll();
 }
+
 function addLinkToTableRow(tr, id) {
     const url = DecodeURL();
     url.params.set("focus", id);

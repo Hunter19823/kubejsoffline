@@ -76,95 +76,95 @@ async function indexClass(target) {
             return;
         }
         markRelationship(
-                target,
-                [getClass(index).id()],
-                [RELATIONSHIP.INHERITS, RELATIONSHIP.REFERENCES],
-                [RELATIONSHIP.INHERITED_BY, RELATIONSHIP.REFERENCES]
+            target,
+            [getClass(index).id()],
+            [RELATIONSHIP.INHERITS, RELATIONSHIP.REFERENCES],
+            [RELATIONSHIP.INHERITED_BY, RELATIONSHIP.REFERENCES]
         );
     })
     markRelationship(
-            target,
-            getAsArray(classType.getSuperClass()),
-            [RELATIONSHIP.SUPER_CLASS],
-            []
+        target,
+        getAsArray(classType.getSuperClass()),
+        [RELATIONSHIP.SUPER_CLASS],
+        []
     );
     markRelationship(
-            target,
-            classType.constructors(true).flatMap((constructorData) => constructorData.getParameters().map((parameterData) => parameterData.getType())),
-            [RELATIONSHIP.CONSTRUCTOR_PARAMETER_TYPE, RELATIONSHIP.PARAMETER_TYPE, RELATIONSHIP.REFERENCES],
-            [RELATIONSHIP.REFERENCED_BY]
+        target,
+        classType.constructors(true).flatMap((constructorData) => constructorData.getParameters().map((parameterData) => parameterData.getType())),
+        [RELATIONSHIP.CONSTRUCTOR_PARAMETER_TYPE, RELATIONSHIP.PARAMETER_TYPE, RELATIONSHIP.REFERENCES],
+        [RELATIONSHIP.REFERENCED_BY]
     );
     markRelationship(
-            target,
-            classType.fields(true).map((fieldData) => fieldData.getType()),
-            [RELATIONSHIP.FIELD_TYPE, RELATIONSHIP.REFERENCES],
-            [RELATIONSHIP.REFERENCED_BY]
+        target,
+        classType.fields(true).map((fieldData) => fieldData.getType()),
+        [RELATIONSHIP.FIELD_TYPE, RELATIONSHIP.REFERENCES],
+        [RELATIONSHIP.REFERENCED_BY]
     );
     markRelationship(
-            target,
-            classType.methods(true).map((methodData) => methodData.getType()),
-            [RELATIONSHIP.METHOD_RETURN_TYPE, RELATIONSHIP.REFERENCES],
-            [RELATIONSHIP.REFERENCED_BY]
+        target,
+        classType.methods(true).map((methodData) => methodData.getType()),
+        [RELATIONSHIP.METHOD_RETURN_TYPE, RELATIONSHIP.REFERENCES],
+        [RELATIONSHIP.REFERENCED_BY]
     );
     markRelationship(
-            target,
-            classType.methods(true).flatMap((methodData) => methodData.getParameters().map((parameterData) => parameterData.getType())),
-            [RELATIONSHIP.METHOD_PARAMETER_TYPE, RELATIONSHIP.REFERENCES],
-            [RELATIONSHIP.REFERENCED_BY]
+        target,
+        classType.methods(true).flatMap((methodData) => methodData.getParameters().map((parameterData) => parameterData.getType())),
+        [RELATIONSHIP.METHOD_PARAMETER_TYPE, RELATIONSHIP.REFERENCES],
+        [RELATIONSHIP.REFERENCED_BY]
     );
     markRelationship(
-            target,
-            getAsArray(classType.getDeclaringClass()),
-            [RELATIONSHIP.DECLARING_CLASS, RELATIONSHIP.REFERENCES],
-            [RELATIONSHIP.DECLARES_CLASS, RELATIONSHIP.REFERENCED_BY]
+        target,
+        getAsArray(classType.getDeclaringClass()),
+        [RELATIONSHIP.DECLARING_CLASS, RELATIONSHIP.REFERENCES],
+        [RELATIONSHIP.DECLARES_CLASS, RELATIONSHIP.REFERENCED_BY]
     );
     markRelationship(
-            target,
-            getAsArray(classType.getEnclosingClass()),
-            [RELATIONSHIP.ENCLOSING_CLASS, RELATIONSHIP.REFERENCES],
-            [RELATIONSHIP.ENCLOSES_CLASS, RELATIONSHIP.REFERENCED_BY]
+        target,
+        getAsArray(classType.getEnclosingClass()),
+        [RELATIONSHIP.ENCLOSING_CLASS, RELATIONSHIP.REFERENCES],
+        [RELATIONSHIP.ENCLOSES_CLASS, RELATIONSHIP.REFERENCED_BY]
     );
     markRelationship(
-            target,
-            classType.getInnerClasses(),
-            [RELATIONSHIP.ENCLOSES_CLASS, RELATIONSHIP.REFERENCES],
-            [RELATIONSHIP.ENCLOSING_CLASS, RELATIONSHIP.REFERENCED_BY]
+        target,
+        classType.getInnerClasses(),
+        [RELATIONSHIP.ENCLOSES_CLASS, RELATIONSHIP.REFERENCES],
+        [RELATIONSHIP.ENCLOSING_CLASS, RELATIONSHIP.REFERENCED_BY]
     );
     markRelationship(
-            target,
-            classType.getTypeVariables().map((typeVariableData) => getClass(typeVariableData)).map((typeVariable) => typeVariable.id()),
-            [RELATIONSHIP.TYPE_VARIABLE_OF, RELATIONSHIP.REFERENCES],
-            [RELATIONSHIP.COMPONENT_OF, RELATIONSHIP.REFERENCED_BY]
+        target,
+        classType.getTypeVariables().map((typeVariableData) => getClass(typeVariableData)).map((typeVariable) => typeVariable.id()),
+        [RELATIONSHIP.TYPE_VARIABLE_OF, RELATIONSHIP.REFERENCES],
+        [RELATIONSHIP.COMPONENT_OF, RELATIONSHIP.REFERENCED_BY]
     );
     markRelationship(
-            target,
-            getAsArray(classType.getRawType()),
-            [RELATIONSHIP.RAW_TYPE, RELATIONSHIP.REFERENCES],
-            [RELATIONSHIP.PARAMETERIZED_VARIANT, RELATIONSHIP.REFERENCED_BY]
+        target,
+        getAsArray(classType.getRawType()),
+        [RELATIONSHIP.RAW_TYPE, RELATIONSHIP.REFERENCES],
+        [RELATIONSHIP.PARAMETERIZED_VARIANT, RELATIONSHIP.REFERENCED_BY]
     )
     markRelationship(
-            target,
-            getAsArray(classType.getOwnerType()),
-            [RELATIONSHIP.OWNER_TYPE, RELATIONSHIP.REFERENCES],
-            [RELATIONSHIP.REFERENCED_BY]
+        target,
+        getAsArray(classType.getOwnerType()),
+        [RELATIONSHIP.OWNER_TYPE, RELATIONSHIP.REFERENCES],
+        [RELATIONSHIP.REFERENCED_BY]
     )
     markRelationship(
-            target,
-            classType.getLowerBound(),
-            [RELATIONSHIP.LOWER_BOUND, RELATIONSHIP.REFERENCES],
-            [RELATIONSHIP.BOUNDED_WITHIN, RELATIONSHIP.REFERENCED_BY]
+        target,
+        classType.getLowerBound(),
+        [RELATIONSHIP.LOWER_BOUND, RELATIONSHIP.REFERENCES],
+        [RELATIONSHIP.BOUNDED_WITHIN, RELATIONSHIP.REFERENCED_BY]
     )
     markRelationship(
-            target,
-            classType.getUpperBound(),
-            [RELATIONSHIP.UPPER_BOUND, RELATIONSHIP.REFERENCES],
-            [RELATIONSHIP.BOUNDED_WITHIN, RELATIONSHIP.REFERENCED_BY]
+        target,
+        classType.getUpperBound(),
+        [RELATIONSHIP.UPPER_BOUND, RELATIONSHIP.REFERENCES],
+        [RELATIONSHIP.BOUNDED_WITHIN, RELATIONSHIP.REFERENCED_BY]
     )
     markRelationship(
-            target,
-            classType.getTypeVariableBounds(),
-            [RELATIONSHIP.TYPE_VARIABLE_BOUNDS, RELATIONSHIP.REFERENCES],
-            [RELATIONSHIP.BOUNDED_WITHIN, RELATIONSHIP.REFERENCED_BY]
+        target,
+        classType.getTypeVariableBounds(),
+        [RELATIONSHIP.TYPE_VARIABLE_BOUNDS, RELATIONSHIP.REFERENCES],
+        [RELATIONSHIP.BOUNDED_WITHIN, RELATIONSHIP.REFERENCED_BY]
     )
 }
 

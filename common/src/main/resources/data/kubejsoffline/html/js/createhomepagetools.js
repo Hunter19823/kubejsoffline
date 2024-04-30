@@ -53,7 +53,7 @@ function createHomePage() {
             }
         };
         createPagedTable(title, key, DATA._events[key], addToTable, 'Link', 'Class')
-                .sortableByClass()
-                .create();
+            .sortableByClass()
+            .create();
     }
 }

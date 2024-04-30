@@ -4,9 +4,9 @@ function createPagedTable(title, table_id, data, addRowAction, ...headers) {
     }
 
     return new PageableSortableTable(
-            title,
-            table_id,
-            ...headers
+        title,
+        table_id,
+        ...headers
     ).setRowAction(addRowAction).setData(data);
 }
 
@@ -220,15 +220,15 @@ PageableSortableTable = class {
             return data;
         }
         let start = Math.max(
-                0,
-                Math.min(
-                        this.page * this.page_size,
-                        data.length - this.page_size
-                )
+            0,
+            Math.min(
+                this.page * this.page_size,
+                data.length - this.page_size
+            )
         );
         let end = Math.min(
-                start + this.page_size,
-                data.length
+            start + this.page_size,
+            data.length
         );
 
         data = data.slice(start, end);
@@ -241,7 +241,7 @@ PageableSortableTable = class {
         return this;
     }
 
-    addSortOptionPair([option, sort], wrapper=undefined) {
+    addSortOptionPair([option, sort], wrapper = undefined) {
         if (exists(wrapper)) {
             sort = wrapComparator(sort, wrapper);
         }
@@ -321,8 +321,8 @@ PageableSortableTable = class {
         // Add an ellipsis if: current index - (window_radius + 2) > 0
         // Add an ellipsis if: current index + (window_radius + 2) < max_page_index
         const ellipsis_count =
-                (left_window_index - 1 > 0 ? 1 : 0) +
-                (right_window_index + 1 < max_page_count ? 1 : 0);
+            (left_window_index - 1 > 0 ? 1 : 0) +
+            (right_window_index + 1 < max_page_count ? 1 : 0);
         let extra_space = 11 - total_seen_count - ellipsis_count;
 
         // Add the number of results and how many total results there are
@@ -414,7 +414,6 @@ PageableSortableTable = class {
         }
 
 
-
         this.url.params.set(this.PARAMETER_PAGE_NUMBER, `${currentPage}`);
         // If the url has `expand-{table_id}` then add a link to collapse the table
         if (this.expand) {
@@ -496,37 +495,37 @@ PageableSortableTable = class {
         return this;
     }
 
-    sortableByClass(mutator=getClass) {
+    sortableByClass(mutator = getClass) {
         return this
-                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, mutator)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator);
+            .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator);
     }
 
-    sortableByMethod(mutator=getMethod) {
+    sortableByMethod(mutator = getMethod) {
         return this
-                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, mutator)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator);
+            .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator);
     }
 
-    sortableByField(mutator=getField) {
+    sortableByField(mutator = getField) {
         return this
-                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, mutator)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator);
+            .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator);
     }
 
-    sortableByParameter(mutator=getParameter) {
+    sortableByParameter(mutator = getParameter) {
         return this
-                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator);
+            .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator);
     }
 }

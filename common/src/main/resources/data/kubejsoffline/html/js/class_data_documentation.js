@@ -615,6 +615,7 @@ function setParameters(target) {
     function mapParameter(parameter) {
         return getParameter(parameter, target.getTypeVariableMap());
     }
+
     /**
      * Retrieves the parameters of the object.
      *

@@ -118,7 +118,7 @@ class FilterBuilder {
     }
 }
 
-function createAttributeFilter(attribute, value, inclusive=true, case_sensitive=false) {
+function createAttributeFilter(attribute, value, inclusive = true, case_sensitive = false) {
     if (case_sensitive && inclusive) {
         return new Filter((data) => {
             if (data[attribute] === undefined || data[attribute] === null) {
@@ -171,8 +171,7 @@ function createFilterFromJSON(json, value, inclusive, exact) {
             const orFilter = new FilterBuilder();
             if (!Array.isArray(filterAttribute)) {
                 orFilter.addFilter(createFilterFromJSON(filterAttribute, value, inclusive, exact).build());
-            }
-            else {
+            } else {
                 for (const filter of filterAttribute) {
                     orFilter.addFilter(createFilterFromJSON(filter, value, inclusive, exact).build());
                 }
@@ -184,7 +183,7 @@ function createFilterFromJSON(json, value, inclusive, exact) {
             const andFilter = new FilterBuilder();
             if (!Array.isArray(filterAttribute)) {
                 andFilter.addFilter(createFilterFromJSON(filterAttribute, value, inclusive, exact).build());
-            }else {
+            } else {
                 for (const filter of filterAttribute) {
                     andFilter.addFilter(createFilterFromJSON(filter, value, inclusive, exact).build());
                 }

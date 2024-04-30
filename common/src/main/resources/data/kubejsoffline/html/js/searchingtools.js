@@ -35,8 +35,8 @@ function dataFilter() {
                 }
                 if (subject_attribute) {
                     return comparator(
-                            modifier(subject_attribute),
-                            modifier(query)
+                        modifier(subject_attribute),
+                        modifier(query)
                     );
                 }
             }
@@ -239,9 +239,9 @@ function dataFilter() {
         methodFilters.push(dataFilter().withMethodReturnTypeName(query, exact, includes));
         paramFilters.push(dataFilter().withMethodParameterTypeName(query, exact, includes));
         return this.withClassFilter((subject) => classFilters.some((filter) => filter.matchesClass(subject)))
-                .withFieldFilter((subject) => fieldFilters.some((filter) => filter.matchesField(subject)))
-                .withMethodFilter((subject) => methodFilters.some((filter) => filter.matchesMethod(subject)))
-                .withParamFilter((subject) => paramFilters.some((filter) => filter.matchesParam(subject)));
+            .withFieldFilter((subject) => fieldFilters.some((filter) => filter.matchesField(subject)))
+            .withMethodFilter((subject) => methodFilters.some((filter) => filter.matchesMethod(subject)))
+            .withParamFilter((subject) => paramFilters.some((filter) => filter.matchesParam(subject)));
     }
 
     output.withClassName = function (query, exact = false, includes = true) {
@@ -286,9 +286,9 @@ function dataFilter() {
         fieldFilters.push(dataFilter().withFieldName(query, exact, includes));
         paramFilters.push(dataFilter().withMethodParameterName(query, exact, includes));
         return this.withClassFilter((subject) => classFilters.some((filter) => filter.matchesClass(subject)))
-                .withFieldFilter((subject) => fieldFilters.some((filter) => filter.matchesField(subject)))
-                .withMethodFilter((subject) => methodFilters.some((filter) => filter.matchesMethod(subject)))
-                .withParamFilter((subject) => paramFilters.some((filter) => filter.matchesParam(subject)));
+            .withFieldFilter((subject) => fieldFilters.some((filter) => filter.matchesField(subject)))
+            .withMethodFilter((subject) => methodFilters.some((filter) => filter.matchesMethod(subject)))
+            .withParamFilter((subject) => paramFilters.some((filter) => filter.matchesParam(subject)));
     }
 
     output.withClassSimpleName = function (query, exact = false, includes = true) {
@@ -579,26 +579,26 @@ function loadSearchResults() {
     createPagedTable("Matching Classes", 'class-table', results.classes, (table, classData) => {
         addClassToTable(table, classData.id());
     }, 'Link', 'ID', 'Class Name', 'Package', 'Qualified Name')
-            .sortableByClass((a) => a)
-            .create();
+        .sortableByClass((a) => a)
+        .create();
 
     createPagedTable("Matching Fields", 'field-table', results.fields, (table, fieldData) => {
         addFieldToTable(table, fieldData.getDeclaringClass(), fieldData, fieldData.type());
     }, 'Link', 'Declared In', 'Field Signature', 'Declaration Class')
-            .sortableByField((a) => a)
-            .create();
+        .sortableByField((a) => a)
+        .create();
 
     createPagedTable("Matching Methods", 'method-table', results.methods, (table, methodData) => {
         addMethodToTable(table, methodData.getDeclaringClass(), methodData);
     }, 'Link', 'Declared In', 'Method Signature', 'Declaration Class')
-            .sortableByMethod((a) => a)
-            .create();
+        .sortableByMethod((a) => a)
+        .create();
 
     createPagedTable("Matching Parameters", 'parameter-table', results.parameters, (table, methodData) => {
         addMethodToTable(table, methodData.getDeclaringClass(), methodData);
     }, 'Link', 'Declared In', 'Method Signature', 'Declaration Class')
-            .sortableByMethod((a) => a)
-            .create();
+        .sortableByMethod((a) => a)
+        .create();
 }
 
 function createSearchBar() {

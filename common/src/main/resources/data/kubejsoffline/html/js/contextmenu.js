@@ -13,7 +13,7 @@ function rangeIntersectsNode(range, node) {
         }
 
         return range.compareBoundaryPoints(Range.END_TO_START, nodeRange) == -1 &&
-                range.compareBoundaryPoints(Range.START_TO_END, nodeRange) == 1;
+            range.compareBoundaryPoints(Range.START_TO_END, nodeRange) == 1;
     }
 }
 
@@ -31,12 +31,12 @@ function getSelectedElementTags(win) {
         }
 
         treeWalker = win.document.createTreeWalker(
-                containerElement,
-                NodeFilter.SHOW_ELEMENT,
-                function (node) {
-                    return rangeIntersectsNode(range, node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
-                },
-                false
+            containerElement,
+            NodeFilter.SHOW_ELEMENT,
+            function (node) {
+                return rangeIntersectsNode(range, node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+            },
+            false
         );
 
         elmlist = [treeWalker.currentNode];
