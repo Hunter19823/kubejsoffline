@@ -597,8 +597,8 @@ ij_shell_redirect_followed_by_space = false
 ij_shell_switch_cases_indented = false
 
 [{*.cjs,*.js}]
-indent_size = 2
-tab_width = 2
+indent_size = 4
+tab_width = 4
 ij_continuation_indent_size = 4
 ij_javascript_align_imports = false
 ij_javascript_align_multiline_array_initializer_expression = false
