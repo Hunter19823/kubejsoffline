@@ -243,13 +243,14 @@ function onHashChange() {
     }
 
     // Now that we have our re-routing logic out of the way, we can rely on the page decoder to do the rest.
-    let decoded = DecodeURL();
+    CURRENT_URL = DecodeURL();
 
-    console.log(`Decoded URL created in hash change. Raw Hash: '${window.location.hash}' Decoded Hash: '${decoded.hash}' Hash Length: '${decoded.hash.length}' Params: '${decoded.params.toString()}' Href: '${decoded.href()}' Is Homepage: '${decoded.isHome()}' Is Class: '${decoded.isClass()}' Is Search: '${decoded.isSearch()}' Has Focus: '${decoded.hasFocus()}' Focus: '${decoded.getFocusOrDefaultHeader()}' Parameter Size: '${decoded.getParamSize()}' Safe Parameter Size: '${decoded.getParamSizeSafe()}'`);
-    if (!decoded) {
+    if (!CURRENT_URL) {
         console.error("Failed to decode URL.");
         return;
     }
+
+    console.log(`Decoded URL created in hash change. Raw Hash: '${window.location.hash}' Decoded Hash: '${CURRENT_URL.hash}' Hash Length: '${CURRENT_URL.hash.length}' Params: '${CURRENT_URL.params.toString()}' Href: '${CURRENT_URL.href()}' Is Homepage: '${CURRENT_URL.isHome()}' Is Class: '${CURRENT_URL.isClass()}' Is Search: '${CURRENT_URL.isSearch()}' Has Focus: '${CURRENT_URL.hasFocus()}' Focus: '${CURRENT_URL.getFocusOrDefaultHeader()}' Parameter Size: '${CURRENT_URL.getParamSize()}' Safe Parameter Size: '${CURRENT_URL.getParamSizeSafe()}'`);
 
     if (!DATA._optimized) {
         throw new Error("Data is not optimized. Please optimize the data before using the page.");
@@ -258,7 +259,7 @@ function onHashChange() {
     let hasState = false;
 
     // Is this the home page?
-    if (decoded.isHome() && !hasState) {
+    if (CURRENT_URL.isHome() && !hasState) {
         console.log("Loading Homepage.");
 
         // Load the home page.
@@ -269,7 +270,7 @@ function onHashChange() {
     }
 
     // Is this a class page?
-    if (decoded.isClass() && !hasState) {
+    if (CURRENT_URL.isClass() && !hasState) {
         if (hasState) {
             console.error("Error state in URL detected.Cannot be a class and a homepage at the same time.");
             return;
@@ -277,13 +278,13 @@ function onHashChange() {
         console.log("Loading Class from URL.");
 
         // Load the class.
-        loadClass(decoded.hash);
+        loadClass(CURRENT_URL.hash);
 
         hasState = true;
     }
 
     // Is this a search page?
-    if (decoded.isSearch() && !hasState) {
+    if (CURRENT_URL.isSearch() && !hasState) {
         if (hasState) {
             console.error("Error state in URL detected. Cannot be a search and a class/homepage at the same time.");
             return;
@@ -291,7 +292,7 @@ function onHashChange() {
         console.log("Loading search from URL.");
 
         // Load the search.
-        searchFromParameters(DecodeURL().params);
+        searchFromParameters(CURRENT_URL.clone().params);
 
         hasState = true;
     }
@@ -305,16 +306,16 @@ function onHashChange() {
         // addSortTables();
 
         // Focus the element.
-        focusElement(decoded.getFocusOrDefaultHeader());
+        focusElement(CURRENT_URL.getFocusOrDefaultHeader());
 
         // Add Sticky Headers.
         handleStickyElements();
     }
 
     // Now that we've loaded the page, we can scroll to the highlighted text.
-    if (decoded.chromeHighlightText) {
+    if (CURRENT_URL.chromeHighlightText) {
         // Decode the text.
-        let text = decodeURIComponent(decoded.chromeHighlightText);
+        let text = decodeURIComponent(CURRENT_URL.chromeHighlightText);
         // Scroll to the text.
         scrollToText(text);
     }

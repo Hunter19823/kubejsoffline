@@ -675,7 +675,7 @@ function getClass(id) {
     }
 
     output.hrefLink = function () {
-        let url = DecodeURL();
+        let url = CURRENT_URL.clone();
         url.params.set("focus", this.fullyQualifiedName());
         return url.href();
     }
@@ -773,7 +773,7 @@ function getMethod(methodData, typeVariableMap = {}) {
     output.getId = output.id;
 
     output.hrefLink = function () {
-        let url = DecodeURL();
+        let url = CURRENT_URL.clone();
         url.params.set("focus", this.id());
         return url.href();
     }
@@ -822,7 +822,7 @@ function getField(fieldData, typeVariableMap = {}) {
     output.getId = output.id;
 
     output.hrefLink = function () {
-        let url = DecodeURL();
+        let url = CURRENT_URL.clone();
         url.params.set("focus", this.id());
         return url.href();
     }
@@ -880,7 +880,7 @@ function getConstructor(constructorData, typeVariableMap = {}) {
     output.getId = output.id;
 
     output.hrefLink = function () {
-        let url = DecodeURL();
+        let url = CURRENT_URL;
         url.params.set("focus", this.id());
         return url.href();
     }

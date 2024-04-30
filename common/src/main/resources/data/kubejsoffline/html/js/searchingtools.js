@@ -602,7 +602,7 @@ function loadSearchResults() {
 }
 
 function createSearchBar() {
-    const decodedURLParams = DecodeURL().params;
+    const decodedURLParams = CURRENT_URL.clone().params;
     // Create one div that contains the search bar
     let searchDiv = document.createElement('div');
     searchDiv.append(document.createElement('br'));

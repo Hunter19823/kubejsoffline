@@ -50,7 +50,7 @@ function handleStickyElements() {
 }
 
 function addLinkToTableRow(tr, id) {
-    const url = DecodeURL();
+    const url = CURRENT_URL.clone();
     url.params.set("focus", id);
     const linkIcon = copyLinkToClipboard(url.href(), tr.id);
     const td = document.createElement('td');
@@ -60,7 +60,7 @@ function addLinkToTableRow(tr, id) {
 }
 
 function addLinkToElement(element, id) {
-    const url = DecodeURL();
+    const url = CURRENT_URL.clone();
     url.params.set("focus", id);
     const linkIcon = copyLinkToClipboard(url.href(), element.id);
     element.appendChild(linkIcon);

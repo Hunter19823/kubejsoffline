@@ -289,3 +289,9 @@ let _last_search_parameters = null;
 const GLOBAL_DATA = {};
 
 let PageableSortableTable = null;
+
+/**
+ * This is a global DecodedURL object for the latest hash.
+ * @type {URLData}
+ */
+let CURRENT_URL;

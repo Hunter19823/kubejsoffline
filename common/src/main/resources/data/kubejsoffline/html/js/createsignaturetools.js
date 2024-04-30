@@ -1,6 +1,8 @@
 function changeURL(url) {
     console.log("Changing URL to: " + url);
+    const oldScrollY = window.scrollY;
     history.pushState("", document.title, window.location.pathname + url);
+
     onHashChange();
 }
 
@@ -23,6 +25,7 @@ function createLink(element, id, rawId = null, focus = null) {
             redirect = id;
         }
     }
+
     if (focus) {
         redirect += `?focus=${focus}`;
     }
