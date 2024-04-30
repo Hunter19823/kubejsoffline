@@ -306,98 +306,95 @@ PageableSortableTable = class {
             prev.classList.add('link-but-no-underline');
         }
 
-        // Add the number of results and how many total results there are
-        for (let i = 0; i < max_page_count; i++) {
-            let page = null;
-            if (max_page_count > 10) {
-                // Expected Page Numbering
-                // *1* 2 3 4 5 ... 94 95 96 97
-                // 1 *2* 3 4 5 ... 94 95 96 97
-                // 1 2 *3* 4 5 ... 94 95 96 97
-                // 1 2 3 *4* 5 ... 94 95 96 97
-                // 1 2 3 4 *5* 6 7 8 ... 97
-                // 1 2 3 4 5 *6* 7 8 ... 97
-                // 1 ... 4 5 6 *7* 8 9 ... 97
-                // 1 ... 5 6 7 *8* 9 10 ... 97
-                // 1 ... 6 7 8 *9* 10 11 ... 97
-                // ...
-                // 1 ... 89 90 91 *92* 93 94 ... 97
-                // 1 ... 90 91 92 *93* 94 95 96 97
-                // 1 ... 90 91 92 93 *94* 95 96 97
-                // 1 2 3 4 5 ... 94 *95* 96 97
-                // 1 2 3 4 5 ... 94 95 *96* 97
-                // 1 2 3 4 5 ... 94 95 96 *97*
-                const fifth_index = 5;
-                const fifth_last_index = max_page_count - 5;
-                // If the current page is less than or equal to 4
-                if (currentPage < fifth_index-1) {
-                    // Set page 6 through n-5 as ...
-                    if (i === fifth_index) {
-                        page = span("...");
-                        this.table_header_pages_div.append(page);
-                        continue;
-                    }
-                    // Skip the pages between 7 and n-5
-                    if (i > fifth_index && i < fifth_last_index) {
-                        continue;
-                    }
-                }
-                // If the current page is greater than or equal to n-5
-                if (currentPage > fifth_last_index) {
-                    // Skip the pages between 6 and n-6
-                    if (i === fifth_index) {
-                        page = span("...");
-                        this.table_header_pages_div.append(page);
-                        continue;
-                    }
-                    // Set page 7 through n-5 as ...
-                    if (i > fifth_index && i < fifth_last_index) {
-                        continue;
-                    }
-                }
-                // If the current page is between 5 and n-5
-                if (currentPage >= fifth_index - 1 && currentPage <= fifth_last_index) {
-                    // Set page 6 and n-5 as ...
-                    if (i === currentPage + 3) {
-                        page = span("...");
-                        this.table_header_pages_div.append(page);
-                        continue;
-                    }
-                    if (i === 2 && currentPage !== fifth_index - 1) {
-                        page = span("...");
-                        this.table_header_pages_div.append(page);
-                        continue;
-                    }
-                    // Skip the pages between n-5 and n-1
-                    if (i > currentPage + 3 && i < max_page_count - 1) {
-                        continue;
-                    }
-                    // Skip the pages between 1 and current page - 3
-                    if (i < currentPage - 3 && i > 0 && currentPage !== fifth_index - 1) {
-                        continue;
-                    }
-                }
+const max_page_index = max_page_count - 1;
+const window_radius = 3;
+const left_window_index = Math.max(0, currentPage - (window_radius +1));
+const right_window_index = Math.min(max_page_count, currentPage + window_radius + 1);
+const window_size = right_window_index - left_window_index;
+const distance_to_end = max_page_count - currentPage;
+const distance_to_start = currentPage;
+const on_left_side = distance_to_start < distance_to_end;
+const total_seen_count = window_size + (left_window_index === 0 ? 0 : 1) + (right_window_index === max_page_count ? 0 : 1);
+// Add an ellipsis if: current index - (window_radius + 2) > 0
+// Add an ellipsis if: current index + (window_radius + 2) < max_page_index
+const ellipsis_count =
+        (left_window_index - 1 > 0 ? 1 : 0) +
+        (right_window_index + 1 < max_page_count ? 1 : 0);
+let extra_space = 11 - total_seen_count - ellipsis_count;
 
-            }
-            let text = `${i + 1}`;
-            // Pad the text based on the maximum page count width using spaces.
-            // This is to prevent the pagination from jumping around when the page number changes.
-            let pad = max_page_count.toString().length - text.length;
-            if (pad > 0) {
-                text = "0".repeat(pad) + text;
-            }
-            page = span(text);
-            this.table_header_pages_div.append(page);
-            if (this.expand) continue;
-            this.url.params.set(this.PARAMETER_PAGE_NUMBER, `${i}`);
-            this.url.params.set(this.PARAMETER_PAGE_SIZE, `${this.page_size}`);
-            this.url.params.set(this.PARAMETER_FOCUS, this.TABLE_HEADER);
-            const PAGE = this.url.hrefHash();
-            page.setAttribute('href', `${PAGE}`);
-            page.setAttribute('onclick', 'changeURLFromElement(this);');
-            page.classList.add('link');
-            if (i === currentPage) page.classList.add('active');
-        }
+// Add the number of results and how many total results there are
+function addPageNumber(i, self) {
+    let text = `${i + 1}`;
+    // Pad the text based on the maximum page count width using spaces.
+    // This is to prevent the pagination from jumping around when the page number changes.
+    let pad = max_page_count.toString().length - text.length;
+    if (pad > 0) {
+        text = "0".repeat(pad) + text;
+    }
+    let page = span(text);
+    self.table_header_pages_div.append(page);
+    if (self.expand) return;
+    self.url.params.set(self.PARAMETER_PAGE_NUMBER, `${i}`);
+    self.url.params.set(self.PARAMETER_PAGE_SIZE, `${self.page_size}`);
+    self.url.params.set(self.PARAMETER_FOCUS, self.TABLE_HEADER);
+    const PAGE = self.url.hrefHash();
+    page.setAttribute('href', `${PAGE}`);
+    page.setAttribute('onclick', 'changeURLFromElement(this);');
+    page.classList.add('link');
+    if (i === currentPage) page.classList.add('active');
+}
+for (let i = 0; i < max_page_count; i++) {
+    let page = null;
+    if (max_page_count <= 10) {
+        addPageNumber(i, this);
+        continue;
+    }
+    // Expected Page Numbering
+    // *01* 02 03 04 .. 11 12 13 14 15 = f([0,1,...,15], 0)
+    // 01 *02* 03 04 05 .. 12 13 14 15 = f([0,1,...,15], 1)
+    // 01 02 *03* 04 05 06 .. 13 14 15 = f([0,1,...,15], 2)
+    // 01 02 03 *04* 05 06 07 .. 14 15 = f([0,1,...,15], 3)
+    // 01 02 03 04 *05* 06 07 08 .. 15 = f([0,1,...,15], 4)
+    // 01 .. 03 04 05 *06* 07 08 09 .. 15 = f([0,1,...,15], 5)
+    // 01 .. 04 05 06 *07* 08 09 10 .. 15 = f([0,1,...,15], 6)
+    // 01 .. 05 06 07 *08* 09 10 11 .. 15 = f([0,1,...,15], 7)
+    // 01 .. 06 07 08 *09* 10 11 12 .. 15 = f([0,1,...,15], 8)
+    // 01 .. 07 08 09 *10* 11 12 13 .. 15 = f([0,1,...,15], 9)
+    // 01 02 .. 08 09 10 *11* 12 13 14 15 = f([0,1,...,15], 10)
+    // 01 02 03 .. 09 10 11 *12* 13 14 15 = f([0,1,...,15], 11)
+    // 01 02 03 04 .. 10 11 12 *13* 14 15 = f([0,1,...,15], 12)
+    // 01 02 03 04 05 .. 11 12 13 *14* 15 = f([0,1,...,15], 13)
+    // 01 02 03 04 05 06 .. 12 13 14 *15* = f([0,1,...,15], 14)
+    // If the page is the first or last page, add it
+    if (i === 0 || i === max_page_index) {
+        addPageNumber(i, this);
+        continue;
+    }
+    // If the page is in the window, add it
+    if (i > left_window_index && i < right_window_index) {
+        addPageNumber(i, this);
+        continue;
+    }
+    if (i === left_window_index && i !== 0) {
+        page = span("..");
+        this.table_header_pages_div.append(page);
+        page.classList.add('ellipsis');
+    }
+    if (i === right_window_index && i !== max_page_index) {
+        page = span("..");
+        this.table_header_pages_div.append(page);
+        page.classList.add('ellipsis');
+    }
+    if (!on_left_side && extra_space > 0 && i <= extra_space) {
+        console.log(i, extra_space);
+        addPageNumber(i, this);
+        continue;
+    }
+    if (on_left_side && extra_space > 0 && i >= max_page_index - extra_space) {
+        addPageNumber(i, this);
+        continue;
+    }
+}
         let next = span(">");
         this.table_header_pages_div.append(next);
         // Add a next button, if needed
