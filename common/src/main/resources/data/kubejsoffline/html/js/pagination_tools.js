@@ -7,6 +7,7 @@ function createPagedTable(title, table_id, data, addRowAction, ...headers) {
          * @type{PageableSortableTable}
          */
         const table = GLOBAL_DATA[table_id];
+        // TODO: Detect changes to URL.
         table.setURL(CURRENT_URL.clone());
         table.setRowAction(addRowAction);
         table.setHeaders(...headers);
