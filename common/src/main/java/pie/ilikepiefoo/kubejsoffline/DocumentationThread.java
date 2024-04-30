@@ -28,8 +28,8 @@ public class DocumentationThread extends Thread {
     public static final Logger LOG = LogManager.getLogger();
 
     private static final Gson GSON = new GsonBuilder().create();
-    private String outputFile;
     private final DocumentationBridge bridge;
+    private String outputFile;
 
     public DocumentationThread(DocumentationBridge bridge) {
         super("KJSOffline DocThread");
