@@ -1,17 +1,16 @@
 function handleStickyElements() {
-    const stickyElements = Array.from(document.querySelectorAll('.stick-able'));
-    const stickyElementPositions = stickyElements.map(element => ({
+    let stickyElementPositions = Array.from(document.querySelectorAll('.stick-able')).map(element => ({
         element,
-        top: 0,
-        bottom: 0
+        top: element.getBoundingClientRect().top + window.scrollY,
+        bottom: element.getBoundingClientRect().bottom + window.scrollY
     })).sort((a, b) => a.top - b.top);
 
     function updateStickyElementPositions() {
-        stickyElementPositions.forEach(stickyElement => {
-            const rect = stickyElement.element.getBoundingClientRect();
-            stickyElement.top = rect.top + window.scrollY;
-            stickyElement.bottom = rect.bottom + window.scrollY;
-        });
+        stickyElementPositions = Array.from(document.querySelectorAll('.stick-able')).map(element => ({
+            element,
+            top: element.getBoundingClientRect().top + window.scrollY,
+            bottom: element.getBoundingClientRect().bottom + window.scrollY
+        })).sort((a, b) => a.top - b.top);
     }
 
 

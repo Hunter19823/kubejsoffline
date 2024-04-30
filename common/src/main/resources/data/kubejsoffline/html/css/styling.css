@@ -339,3 +339,17 @@ td.link-container {
     padding: 0.7em 1em;
     z-index: 1;
 }
+
+.pagination-div {
+    display: flex;
+    align-items: center;
+}
+
+.pagination-div span {
+    margin-right: 0.5em;
+}
+
+.pagination-div .active {
+    color: #ff9800;
+    font-weight: bold;
+}

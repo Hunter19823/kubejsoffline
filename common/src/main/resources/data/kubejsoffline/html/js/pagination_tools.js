@@ -269,6 +269,8 @@ PageableSortableTable = class {
         // Create the pagination header
         this.table_header_element = document.createElement('h2');
         this.table_header_pages_div = document.createElement('div');
+        this.table_header_pages_div.classList.add('pagination-div');
+        const max_page_count = Math.ceil(this.data.length / this.page_size);
 
         let headerTitle = document.createElement('h3');
         headerTitle.innerText = this.title;
@@ -281,6 +283,8 @@ PageableSortableTable = class {
         this.table_header_element.classList.add('search-pagination');
         this.table_header_element.classList.add('stick-able');
         this.url.params.set(this.PARAMETER_FOCUS, this.TABLE_HEADER);
+        let count = span(`${this.data.length} Items`);
+        this.table_header_pages_div.append(count);
 
         // If the url has `expand-{table_id}` then add a link to collapse the table
         if (this.expand) {
@@ -288,32 +292,28 @@ PageableSortableTable = class {
             const COLLAPSE_TABLE = this.url.hrefHash();
             let collapse = span("Collapse Results");
             this.table_header_pages_div.append(collapse);
-            this.table_header_pages_div.append(span("    "));
             collapse.setAttribute('href', `${COLLAPSE_TABLE}`)
             collapse.setAttribute('onclick', 'changeURLFromElement(this);');
             collapse.classList.add('link');
-            this.table_header_pages_div.append(span("    "));
             return this;
         } else if (!(this.page_size >= this.data.length)) {
             this.url.params.set(this.PARAMETER_EXPANDED, 'true');
             const EXPAND_TABLE = this.url.hrefHash();
             let expand = span("Expand All Results");
             this.table_header_pages_div.append(expand);
-            this.table_header_pages_div.append(span("    "));
             expand.setAttribute('href', `${EXPAND_TABLE}`)
             expand.setAttribute('onclick', 'changeURLFromElement(this);');
             expand.classList.add('link');
-            this.table_header_pages_div.append(span("    "));
         }
+        if (max_page_count <= 1) return this;
         this.url.params.set(this.PARAMETER_EXPANDED, 'false');
 
         // Add a previous button, if needed
-        let lastPage = Math.ceil(this.data.length / this.page_size) - 1;
+        let lastPage = max_page_count - 1;
         let currentPage = Math.min(this.page, lastPage);
+        let prev = span("<");
+        this.table_header_pages_div.append(prev);
         if (currentPage > 0) {
-            let prev = span("Previous");
-            this.table_header_pages_div.append(prev);
-            this.table_header_pages_div.append(span("    "));
             // The Previous button should go to the minimum of the last page and the previous page
             this.url.params.set(this.PARAMETER_PAGE_NUMBER, `${Math.min(currentPage - 1, lastPage)}`);
             this.url.params.set(this.PARAMETER_PAGE_SIZE, `${this.page_size}`);
@@ -325,13 +325,22 @@ PageableSortableTable = class {
         }
 
         // Add the number of results and how many total results there are
-        this.table_header_pages_div.append(span(`Page ${currentPage + 1} of ${lastPage + 1} (${this.data.length} total results)`));
-
+        for (let i = 0; i < max_page_count; i++) {
+            let page = span(`${i + 1}`);
+            this.url.params.set(this.PARAMETER_PAGE_NUMBER, `${i}`);
+            this.url.params.set(this.PARAMETER_PAGE_SIZE, `${this.page_size}`);
+            this.url.params.set(this.PARAMETER_FOCUS, this.TABLE_HEADER);
+            const PAGE = this.url.hrefHash();
+            page.setAttribute('href', `${PAGE}`);
+            page.setAttribute('onclick', 'changeURLFromElement(this);');
+            page.classList.add('link');
+            if (i === currentPage) page.classList.add('active');
+            this.table_header_pages_div.append(page);
+        }
+        let next = span(">");
+        this.table_header_pages_div.append(next);
         // Add a next button, if needed
         if (this.data.length > (currentPage + 1) * this.page_size) {
-            this.table_header_pages_div.append(span("    "));
-            let next = span("Next");
-            this.table_header_pages_div.append(next);
             // The Previous button should go to the minimum of the last page and the previous page
             this.url.params.set(this.PARAMETER_PAGE_NUMBER, `${currentPage + 1}`);
             this.url.params.set(this.PARAMETER_PAGE_SIZE, `${this.page_size}`);
