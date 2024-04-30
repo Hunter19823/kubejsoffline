@@ -572,6 +572,13 @@
  * @public
  */
 
+/**
+ * This type is a wrapper for the url data. This class helps determine
+ * the current page, provides functions to retrieve the data, and the data itself.
+ * @typedef {{hash: string, params: URLSearchParams, chromeHighlightText: string, hasFocus: function(): boolean, getFocus: function(): string, getFocusOrDefaultHeader: function(): string, isSearch: function(): boolean, isClass: function(): boolean, isHome: function(): boolean, href: function(): string, hrefHash: function(): string, getParamSize: function(): number, getParamSizeSafe: function(): number, clone: function(): URLData}} URLData
+ * @public
+ */
+
 
 /**
  * This type is a wrapper for class's relationship to another class.

@@ -320,10 +320,19 @@ function onHashChange() {
     }
 }
 
+/**
+ * Creates a URLData object from the current URL.
+ * @returns {URLData} URLData
+ * @constructor URLData
+ */
 function DecodeURL() {
     const URL_PARAMETER_REGEX = /^(?<TypeDefinition>((\?|[a-zA-Z_0-9]+)( extends | super ))?(?<ClassDefinition>(?<package>([a-zA-Z_$0-9.])*\.)*(?<ClassName>([a-zA-Z$0-9])+)(?<Generic><.*>)?))?(?<QueryStringArgs>\?.*)/;
 
-    let output = {};
+    /**
+     * @type URLData
+     */
+    let output;
+    output = {};
     let hash = location.hash;
     if (hash?.length > 0) {
         hash = hash.substring(1);
@@ -424,6 +433,16 @@ function DecodeURL() {
 
     output.hrefHash = function () {
         return `#${this.hash}?${this.params.toString()}`;
+    }
+
+    output.clone = function () {
+        /**
+         * @type URLData
+         */
+        let out;
+        out = Object.assign({}, this);
+        out.params = new URLSearchParams(this.params.toString());
+        return out;
     }
 
     return output;
