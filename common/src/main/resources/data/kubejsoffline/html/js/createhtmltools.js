@@ -1,32 +1,3 @@
-function createTable(id) {
-    breakLine();
-    let table = document.createElement('table');
-    document.body.appendChild(table);
-    if (id && typeof id === 'string')
-        table.id = id;
-    return table;
-}
-
-function createSortableTable(id) {
-    let table = createTable(id);
-    table.classList.add('sortable-table');
-    return table;
-}
-
-function createTableWithHeaders(table, ...headers) {
-    let tbody = document.createElement('tbody');
-    let tr = document.createElement("tr");
-    let th = null;
-    table.appendChild(tbody);
-    tbody.appendChild(tr);
-    for (let i = 0; i < headers.length; i++) {
-        th = document.createElement('th');
-        tr.appendChild(th);
-        th.append(headers[i]);
-    }
-    return tbody;
-}
-
 function addRow(table, ...data) {
     let tr = document.createElement('tr');
     let td = null;

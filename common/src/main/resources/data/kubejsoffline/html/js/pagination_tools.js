@@ -10,7 +10,112 @@ function createPagedTable(title, table_id, data, addRowAction, ...headers) {
     ).setRowAction(addRowAction).setData(data).create();
 }
 
+function hasAttribute(element, attribute) {
+    if (!exists(element)) {
+        return false;
+    }
+    if (!exists(element[attribute])) {
+        return false;
+    }
+    if (typeof element[attribute] === 'function') {
+        return exists(element[attribute]());
+    } else {
+        return exists(element[attribute]);
+    }
+}
+
+function attributeComparator(attribute, comparator, mutator = (a) => a) {
+
+    function mapAttribute(element, attribute) {
+        if (typeof element[attribute] === 'function') {
+            return mutator(element[attribute]());
+        } else {
+            return mutator(element[attribute]);
+        }
+    }
+
+    return (a, b) => {
+        if (!hasAttribute(a, attribute) && !hasAttribute(b, attribute)) {
+            return 0;
+        }
+        if (!hasAttribute(a, attribute)) {
+            return -1;
+        }
+        if (!hasAttribute(b, attribute)) {
+            return 1;
+        }
+        return comparator(mapAttribute(a, attribute), mapAttribute(b, attribute));
+    };
+}
+
+function sortByModifier(a, b) {
+    // If a is public and b is not
+    if (MODIFIER.isPublic(a) && !MODIFIER.isPublic(b)) {
+        // a goes before b
+        return -1;
+    }
+    // If b is public and a is not
+    if (MODIFIER.isPublic(b) && !MODIFIER.isPublic(a)) {
+        // b goes before a
+        return 1;
+    }
+
+    // If a is protected and b is not
+    if (MODIFIER.isProtected(a) && !MODIFIER.isProtected(b)) {
+        // a goes before b
+        return -1;
+    }
+    // If b is protected and a is not
+    if (MODIFIER.isProtected(b) && !MODIFIER.isProtected(a)) {
+        // b goes before a
+        return 1;
+    }
+
+    // If a is private and b is not
+    if (MODIFIER.isPrivate(a) && !MODIFIER.isPrivate(b)) {
+        // a goes before b
+        return -1;
+    }
+    // If b is private and a is not
+    if (MODIFIER.isPrivate(b) && !MODIFIER.isPrivate(a)) {
+        // b goes before a
+        return 1;
+    }
+
+    // if a is static and b is not
+    if (MODIFIER.isStatic(a) && !MODIFIER.isStatic(b)) {
+        // a goes before b
+        return -1;
+    }
+    // if b is static and a is not
+    if (MODIFIER.isStatic(b) && !MODIFIER.isStatic(a)) {
+        // b goes before a
+        return 1;
+    }
+    // if a and b are both static
+    return 0;
+}
+
+function sortByName(a, b) {
+    return a.localeCompare(b);
+}
+
+function defaultSort(a, b) {
+    let modSort = sortByModifier(a.getModifiers(), b.getModifiers());
+    if (modSort !== 0) {
+        return modSort;
+    }
+    return sortByName(a.getName(), b.getName());
+}
+
 class PageableSortableTable {
+    static SORTABLE_DEFAULT = ['default', defaultSort];
+    static SORTABLE_BY_NAME = ['name', attributeComparator('name', sortByName, (a) => a.toLowerCase())];
+    static SORTABLE_BY_MOD = ['mod', attributeComparator('mod', sortByModifier)];
+    static SORTABLE_BY_TYPE = ['type', attributeComparator('type', sortByName, (a) => getClass(a).name().toLowerCase())];
+    static SORTABLE_BY_DECLARING_CLASS = ['declaring-class', attributeComparator('declaring-class', sortByName, (a) => getClass(a).name().toLowerCase())];
+
+
     /**
      * Creates a pageable and sortable table.
      * @param {string} title
@@ -27,13 +132,16 @@ class PageableSortableTable {
         this.PARAMETER_EXPANDED = `${this.table_id}-expanded`;
         this.PARAMETER_FOCUS = 'focus';
         this.TABLE_HEADER = `${this.table_id}-header`;
+        this.PARAMETER_SORT_BY = `${this.table_id}-sort-by`;
+        this.PARAMETER_SORT_DIRECTION = `${this.table_id}-sort-direction`;
 
         this.data = [];
         this.page = (this.url.params.has(this.PARAMETER_PAGE_NUMBER)) ? parseInt(this.url.params.get(this.PARAMETER_PAGE_NUMBER)) : 0;
         this.page_size = (this.url.params.has(this.PARAMETER_PAGE_SIZE)) ? parseInt(this.url.params.get(this.PARAMETER_PAGE_SIZE)) : GLOBAL_SETTINGS.defaultSearchPageSize;
         this.expand = (this.url.params.has(this.PARAMETER_EXPANDED)) ? this.url.params.get(this.PARAMETER_EXPANDED) === 'true' : false;
+        this.sort_by = (this.url.params.has(this.PARAMETER_SORT_BY)) ? this.url.params.get(this.PARAMETER_SORT_BY) : 'default';
         this.sort = (a, b) => a - b;
-        this.sort_order = 1;
+        this.sort_order = (this.url.params.has(this.PARAMETER_SORT_DIRECTION)) ? parseInt(this.url.params.get(this.PARAMETER_SORT_DIRECTION)) : 1;
         this.sort_options = {};
 
         this.table_div = null;
@@ -84,6 +192,9 @@ class PageableSortableTable {
     }
 
     getCurrentSort() {
+        if (this.sort_options.hasOwnProperty(this.sort_by)) {
+            this.setSort(this.sort_options[this.sort_by]);
+        }
         return this.sort;
     }
 
@@ -93,7 +204,7 @@ class PageableSortableTable {
         if (exists(sort)) {
             data.sort(sort);
         }
-        if (this.sort_order === -1) {
+        if (this.sort_order < 0) {
             data.reverse();
         }
         if (this.expand) {
@@ -119,6 +230,10 @@ class PageableSortableTable {
     addSortOption(option, sort) {
         this.sort_options[option] = sort;
         return this;
+    }
+
+    addSortOptionPair([option, sort]) {
+        return this.addSortOption(option, sort);
     }
 
     getTableHeader() {
@@ -267,6 +382,41 @@ class PageableSortableTable {
 
     create() {
         this.createTableHeader().createTable().createDiv().addToDocument();
+        GLOBAL_DATA[this.table_id] = this;
         return this;
+    }
+
+    sortableByClass() {
+        return this
+                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS);
+    }
+
+    sortableByMethod() {
+        return this
+                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS);
+    }
+
+    sortableByField() {
+        return this
+                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS);
+    }
+
+    sortableByParameter() {
+        return this
+                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE);
     }
 }

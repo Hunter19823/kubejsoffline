@@ -604,19 +604,23 @@ function loadSearchResults(page_number, page_size) {
 
     createPagedTable("Matching Classes", 'class-table', results.classes, (table, classData) => {
         addClassToTable(table, classData.id());
-    }, 'Link', 'ID', 'Class Name', 'Package', 'Qualified Name');
+    }, 'Link', 'ID', 'Class Name', 'Package', 'Qualified Name')
+            .sortableByClass();
 
     createPagedTable("Matching Fields", 'field-table', results.fields, (table, fieldData) => {
         addFieldToTable(table, fieldData.getDeclaringClass(), fieldData, fieldData.type());
-    }, 'Link', 'Declared In', 'Field Signature', 'Declaration Class');
+    }, 'Link', 'Declared In', 'Field Signature', 'Declaration Class')
+            .sortableByField();
 
     createPagedTable("Matching Methods", 'method-table', results.methods, (table, methodData) => {
         addMethodToTable(table, methodData.getDeclaringClass(), methodData);
-    }, 'Link', 'Declared In', 'Method Signature', 'Declaration Class');
+    }, 'Link', 'Declared In', 'Method Signature', 'Declaration Class')
+            .sortableByMethod();
 
     createPagedTable("Matching Parameters", 'parameter-table', results.parameters, (table, methodData) => {
         addMethodToTable(table, methodData.getDeclaringClass(), methodData);
-    }, 'Link', 'Declared In', 'Method Signature', 'Declaration Class');
+    }, 'Link', 'Declared In', 'Method Signature', 'Declaration Class')
+            .sortableByParameter();
 }
 
 function createSearchBar() {

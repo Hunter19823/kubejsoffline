@@ -52,6 +52,7 @@ function createHomePage() {
                 console.error("Failed to create homepage entry for ", key, " Class: ", event, " Error: ", e);
             }
         };
-        createPagedTable(title, key, DATA._events[key], addToTable, 'Link', 'Class');
+        createPagedTable(title, key, DATA._events[key], addToTable, 'Link', 'Class')
+                .sortableByClass();
     }
 }

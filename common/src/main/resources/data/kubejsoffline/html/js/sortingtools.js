@@ -1,3 +1,6 @@
+/**
+ * @deprecated In favor of sorting the PageableSortableTable class.
+ */
 function swapTags(a, b) {
     let parent = a.parentNode;
     let t = document.createElement('div');
@@ -7,6 +10,9 @@ function swapTags(a, b) {
     parent.replaceChild(b, t);
 }
 
+/**
+ * @deprecated In favor of sorting the PageableSortableTable class.
+ */
 function checkTableSorted(trs, comparator) {
     // Get the rows as an array
     for (let i = 2; i < trs.length; i++) {
@@ -17,6 +23,9 @@ function checkTableSorted(trs, comparator) {
     return true;
 }
 
+/**
+ * @deprecated In favor of sorting the PageableSortableTable class.
+ */
 // Sort the table using insertion sort, ignore the first row
 function sortTable(table, comparator) {
     // Get the rows as an array
@@ -48,6 +57,9 @@ function sortTable(table, comparator) {
         }
 }
 
+/**
+ * @deprecated In favor of sorting the PageableSortableTable class.
+ */
 function sortByAttribute(attribute) {
     return (a, b) => {
         let aAttr = a.getAttribute(attribute);
@@ -62,6 +74,9 @@ function sortByAttribute(attribute) {
     }
 }
 
+/**
+ * @deprecated In favor of sorting the PageableSortableTable class.
+ */
 function sortByModifiedAttribute(attribute, mutator) {
     return (a, b) => {
         // If neither have the attribute, no change
@@ -89,6 +104,9 @@ function sortByModifiedAttribute(attribute, mutator) {
     }
 }
 
+/**
+ * @deprecated In favor of sorting the PageableSortableTable class.
+ */
 function defaultSort(a, b) {
     // First check if a or b do not have the mod attribute
     if (!a.hasAttribute('mod') && !b.hasAttribute('mod')) {
@@ -190,6 +208,9 @@ function defaultSort(a, b) {
 }
 
 
+/**
+ * @deprecated In favor of sorting the PageableSortableTable class.
+ */
 function addSortTables() {
     let tables = document.getElementsByClassName('sortable-table');
     for (let i = 0; i < tables.length; i++) {
@@ -261,3 +282,4 @@ function addSortTables() {
         console.log("Finished adding sort tables and removing log to force logs to be at the bottom of the page.");
     }
 }
+

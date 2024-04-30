@@ -31,7 +31,8 @@ function createMethodTable(id, typeVariableMap = {}) {
             console.error("Failed to create method entry for ", id, " method: ", method, " Error: ", e);
         }
     }
-    createPagedTable('Methods', 'methods', methods, addToTable, 'Link', 'Methods');
+    createPagedTable('Methods', 'methods', methods, addToTable, 'Link', 'Methods')
+            .sortableByMethod();
 }
 
 function createFieldTable(id, typeVariableMap = {}) {
@@ -67,7 +68,8 @@ function createFieldTable(id, typeVariableMap = {}) {
             console.error("Failed to create field entry for ", id, " field: ", field, " Error: ", e);
         }
     }
-    createPagedTable('Fields', 'fields', fields, addToTable, 'Link', 'Fields');
+    createPagedTable('Fields', 'fields', fields, addToTable, 'Link', 'Fields')
+            .sortableByField();
 }
 
 function createConstructorTable(id, typeVariableMap = {}) {
