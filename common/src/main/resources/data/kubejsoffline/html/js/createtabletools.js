@@ -129,5 +129,6 @@ function createRelationshipTable(id, typeVariableMap = {}) {
         }
     };
     createPagedTable('Relationships', 'relations', [...relationships.entries()], addToTable, 'RelatedClass', 'Relationships')
-            .create();
+        .sortableByRelation()
+        .create();
 }

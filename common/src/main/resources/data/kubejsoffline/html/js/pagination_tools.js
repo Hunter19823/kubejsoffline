@@ -520,10 +520,7 @@ PageableSortableTable = class {
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator);
     }
 
-    sortableByParameter(mutator = getParameter) {
-        return this
-            .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
-            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
-            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator);
+    sortableByRelation(mutator = getRelationship) {
+        return this.sortableByClass(mutator);
     }
 }
