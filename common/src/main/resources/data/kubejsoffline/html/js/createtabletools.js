@@ -32,7 +32,7 @@ function createMethodTable(id, typeVariableMap = {}) {
         }
     }
     createPagedTable('Methods', 'methods', methods, addToTable, 'Link', 'Methods')
-            .sortableByMethod()
+            .sortableByMethod((a) => a)
             .create();
 }
 
@@ -70,7 +70,7 @@ function createFieldTable(id, typeVariableMap = {}) {
         }
     }
     createPagedTable('Fields', 'fields', fields, addToTable, 'Link', 'Fields')
-            .sortableByField()
+            .sortableByField((a) => a)
             .create();
 }
 

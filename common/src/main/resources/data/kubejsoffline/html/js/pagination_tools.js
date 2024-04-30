@@ -146,7 +146,7 @@ PageableSortableTable = class {
         this.page_size = (this.url.params.has(this.PARAMETER_PAGE_SIZE)) ? parseInt(this.url.params.get(this.PARAMETER_PAGE_SIZE)) : GLOBAL_SETTINGS.defaultSearchPageSize;
         this.expand = (this.url.params.has(this.PARAMETER_EXPANDED)) ? this.url.params.get(this.PARAMETER_EXPANDED) === 'true' : false;
         this.sort_by = (this.url.params.has(this.PARAMETER_SORT_BY)) ? this.url.params.get(this.PARAMETER_SORT_BY) : 'default';
-        this.sort = (a, b) => a - b;
+        this.sort = (a, b) => 0;
         this.sort_order = (this.url.params.has(this.PARAMETER_SORT_DIRECTION)) ? parseInt(this.url.params.get(this.PARAMETER_SORT_DIRECTION)) : 1;
         this.sort_options = {};
 
@@ -199,7 +199,10 @@ PageableSortableTable = class {
     }
 
     getCurrentSort() {
-        if (this.sort_options.hasOwnProperty(this.sort_by)) this.setSort(this.sort_options[this.sort_by]);
+        if (this.sort_options.hasOwnProperty(this.sort_by)) {
+            console.log(this.table_id, "Sorting by", this.sort_by, "with", this.sort_options[this.sort_by]);
+            this.setSort(this.sort_options[this.sort_by]);
+        }
 
         return this.sort;
     }

@@ -118,12 +118,12 @@ function loadRawClass(data, typeVariableMap = {}) {
     try {
         createMethodTable(id, typeVariableMap);
     } catch (e) {
-        console.error("Failed to create constructor table.", e);
+        console.error("Failed to create method table.", e);
     }
     try {
         createRelationshipTable(id, typeVariableMap);
     } catch (e) {
-        console.error("Failed to create constructor table.", e);
+        console.error("Failed to create relationship table.", e);
     }
 }
 
