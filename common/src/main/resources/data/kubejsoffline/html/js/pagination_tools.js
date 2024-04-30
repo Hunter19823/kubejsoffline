@@ -114,7 +114,7 @@ function wrapComparator(comparator, wrapper) {
     };
 }
 
-class PageableSortableTable {
+PageableSortableTable = class {
     static SORTABLE_DEFAULT = ['default', defaultSort];
     static SORTABLE_BY_NAME = ['name', attributeComparator('getName', sortByName, (a) => a.toLowerCase())];
     static SORTABLE_BY_MOD = ['mod', attributeComparator('getModifier', sortByModifier)];
@@ -150,8 +150,9 @@ class PageableSortableTable {
         this.sort_order = (this.url.params.has(this.PARAMETER_SORT_DIRECTION)) ? parseInt(this.url.params.get(this.PARAMETER_SORT_DIRECTION)) : 1;
         this.sort_options = {};
 
-        this.table_div = null;
+        this.table_items = [];
         this.table_header_element = null;
+        this.table_header_pages_div = null;
         this.table_element = null;
         this.table_header_row = null;
         this.table_body = null;
@@ -261,12 +262,13 @@ class PageableSortableTable {
     }
 
     getTableDiv() {
-        return this.table_div;
+        return this.table_items;
     }
 
     createTableHeader() {
         // Create the pagination header
         this.table_header_element = document.createElement('h2');
+        this.table_header_pages_div = document.createElement('div');
 
         let headerTitle = document.createElement('h3');
         headerTitle.innerText = this.title;
@@ -274,6 +276,7 @@ class PageableSortableTable {
         headerTitle.style.fontSize = 'revert';
         addLinkToElement(headerTitle, this.TABLE_HEADER);
         this.table_header_element.append(headerTitle);
+        this.table_header_element.append(this.table_header_pages_div);
 
         this.table_header_element.classList.add('search-pagination');
         this.table_header_element.classList.add('stick-able');
@@ -284,23 +287,23 @@ class PageableSortableTable {
             this.url.params.set(this.PARAMETER_EXPANDED, 'false');
             const COLLAPSE_TABLE = this.url.hrefHash();
             let collapse = span("Collapse Results");
-            this.table_header_element.append(collapse);
-            this.table_header_element.append(span("    "));
+            this.table_header_pages_div.append(collapse);
+            this.table_header_pages_div.append(span("    "));
             collapse.setAttribute('href', `${COLLAPSE_TABLE}`)
             collapse.setAttribute('onclick', 'changeURLFromElement(this);');
             collapse.classList.add('link');
-            this.table_header_element.append(span("    "));
+            this.table_header_pages_div.append(span("    "));
             return this;
         } else if (!(this.page_size >= this.data.length)) {
             this.url.params.set(this.PARAMETER_EXPANDED, 'true');
             const EXPAND_TABLE = this.url.hrefHash();
             let expand = span("Expand All Results");
-            this.table_header_element.append(expand);
-            this.table_header_element.append(span("    "));
+            this.table_header_pages_div.append(expand);
+            this.table_header_pages_div.append(span("    "));
             expand.setAttribute('href', `${EXPAND_TABLE}`)
             expand.setAttribute('onclick', 'changeURLFromElement(this);');
             expand.classList.add('link');
-            this.table_header_element.append(span("    "));
+            this.table_header_pages_div.append(span("    "));
         }
         this.url.params.set(this.PARAMETER_EXPANDED, 'false');
 
@@ -309,8 +312,8 @@ class PageableSortableTable {
         let currentPage = Math.min(this.page, lastPage);
         if (currentPage > 0) {
             let prev = span("Previous");
-            this.table_header_element.append(prev);
-            this.table_header_element.append(span("    "));
+            this.table_header_pages_div.append(prev);
+            this.table_header_pages_div.append(span("    "));
             // The Previous button should go to the minimum of the last page and the previous page
             this.url.params.set(this.PARAMETER_PAGE_NUMBER, `${Math.min(currentPage - 1, lastPage)}`);
             this.url.params.set(this.PARAMETER_PAGE_SIZE, `${this.page_size}`);
@@ -322,13 +325,13 @@ class PageableSortableTable {
         }
 
         // Add the number of results and how many total results there are
-        this.table_header_element.append(span(`Page ${currentPage + 1} of ${lastPage + 1} (${this.data.length} total results)`));
+        this.table_header_pages_div.append(span(`Page ${currentPage + 1} of ${lastPage + 1} (${this.data.length} total results)`));
 
         // Add a next button, if needed
         if (this.data.length > (currentPage + 1) * this.page_size) {
-            this.table_header_element.append(span("    "));
+            this.table_header_pages_div.append(span("    "));
             let next = span("Next");
-            this.table_header_element.append(next);
+            this.table_header_pages_div.append(next);
             // The Previous button should go to the minimum of the last page and the previous page
             this.url.params.set(this.PARAMETER_PAGE_NUMBER, `${currentPage + 1}`);
             this.url.params.set(this.PARAMETER_PAGE_SIZE, `${this.page_size}`);
@@ -376,15 +379,18 @@ class PageableSortableTable {
     }
 
     createDiv() {
-        this.table_div = document.createElement('div');
-        this.table_div.append(document.createElement('br'));
-        this.table_div.append(this.table_header_element);
-        this.table_div.append(this.table_element);
+        this.table_items = [
+            document.createElement('br'),
+            this.table_header_element,
+            this.table_element
+        ];
         return this;
     }
 
     addToDocument() {
-        document.body.append(this.table_div);
+        for (let item of this.table_items) {
+            document.body.appendChild(item);
+        }
         return this;
     }
 

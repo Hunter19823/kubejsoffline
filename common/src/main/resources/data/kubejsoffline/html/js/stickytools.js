@@ -14,6 +14,7 @@ function handleStickyElements() {
         });
     }
 
+
     function handleScroll() {
         const scrollPosition = window.scrollY;
 
@@ -24,8 +25,10 @@ function handleStickyElements() {
                 if (exists(currentStickyElement)) {
                     // If the bottom of the previous sticky element is greater than the top of the current sticky element
                     // then the previous sticky element should be moved up by the difference
-                    const difference = currentStickyElement.top - (stickyElement.element.offsetHeight + window.scrollY);
+                    const difference = currentStickyElement.top - (currentStickyElement.element.offsetHeight + window.scrollY);
                     stickyElement.element.style.top = `${difference}px`;
+                }else {
+                    stickyElement.element.style.top = `0`;
                 }
                 currentStickyElement = stickyElement;
                 currentStickyElement.element.classList.add('sticky');

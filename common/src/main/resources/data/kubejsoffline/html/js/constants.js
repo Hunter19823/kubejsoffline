@@ -270,3 +270,5 @@ let _last_filter = null;
 let _last_search_parameters = null;
 
 const GLOBAL_DATA = {};
+
+let PageableSortableTable = null;
