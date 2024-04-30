@@ -291,3 +291,27 @@ function getAllRelations(id) {
     });
     return relations;
 }
+
+function getRelationshipGraphAsJSON(map) {
+    const output = {};
+    map.entries().forEach(([relationshipType, relationshipMap]) => {
+        const relationshipOutput = {};
+        relationshipMap.entries().forEach(([from, toSet]) => {
+            relationshipOutput[from] = Array.from(toSet);
+        });
+        output[relationshipType] = relationshipOutput;
+    });
+    return JSON.stringify(output);
+}
+
+function loadJSONToRelationshipGraph(json) {
+    RELATIONSHIP_GRAPH.clear();
+    const parsed = JSON.parse(json);
+    Object.entries(parsed).forEach(([relationshipType, relationMap]) => {
+        const relationshipOutput = new Map();
+        Object.entries(relationMap).forEach(([from, toSet]) => {
+            relationshipOutput.set(parseInt(from), new Set(toSet));
+        });
+        RELATIONSHIP_GRAPH.set(relationshipType, relationshipOutput);
+    });
+}

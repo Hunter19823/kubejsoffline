@@ -446,7 +446,7 @@ function createOptimizationWorkerThread() {
 }
 
 function onWindowLoad() {
-    console.log("Window Loaded.");
+    console.log("Window Loaded. Now optimizing data.");
     setToast("Please wait while data is being indexed. This should only take a few seconds.");
     const WORKER = createOptimizationWorkerThread();
     WORKER.onmessage = (e) => {
@@ -458,6 +458,9 @@ function onWindowLoad() {
         Object.entries(NEW_CACHE).forEach(([key, value]) => {
             LOOK_UP_CACHE.set(key, value);
         });
+        const NEW_RELATIONSHIP_GRAPH = e.data.RELATIONSHIP_GRAPH;
+        console.log("New Relationship Graph: ", NEW_RELATIONSHIP_GRAPH);
+        loadJSONToRelationshipGraph(NEW_RELATIONSHIP_GRAPH);
         WORKER.terminate();
         clearToast();
         onHashChange();
@@ -484,7 +487,6 @@ function onWindowLoad() {
         setToast("An error occurred while optimizing data. Please refresh the page to try again. Please report this issue if it persists.");
     }
     WORKER.postMessage({task: TASKS.OPTIMIZE})
-    console.log("This shouldn't have to wait for data to be indexed.");
 }
 
 
