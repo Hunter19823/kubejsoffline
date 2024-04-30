@@ -353,3 +353,8 @@ td.link-container {
     color: #ff9800;
     font-weight: bold;
 }
+
+.link-but-no-underline {
+    color: #8cb4ff;
+    cursor: pointer;
+}

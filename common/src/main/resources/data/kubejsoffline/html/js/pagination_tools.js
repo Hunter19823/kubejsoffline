@@ -286,25 +286,7 @@ PageableSortableTable = class {
         let count = span(`${this.data.length} Items`);
         this.table_header_pages_div.append(count);
 
-        // If the url has `expand-{table_id}` then add a link to collapse the table
-        if (this.expand) {
-            this.url.params.set(this.PARAMETER_EXPANDED, 'false');
-            const COLLAPSE_TABLE = this.url.hrefHash();
-            let collapse = span("Collapse Results");
-            this.table_header_pages_div.append(collapse);
-            collapse.setAttribute('href', `${COLLAPSE_TABLE}`)
-            collapse.setAttribute('onclick', 'changeURLFromElement(this);');
-            collapse.classList.add('link');
-            return this;
-        } else if (!(this.page_size >= this.data.length)) {
-            this.url.params.set(this.PARAMETER_EXPANDED, 'true');
-            const EXPAND_TABLE = this.url.hrefHash();
-            let expand = span("Expand All Results");
-            this.table_header_pages_div.append(expand);
-            expand.setAttribute('href', `${EXPAND_TABLE}`)
-            expand.setAttribute('onclick', 'changeURLFromElement(this);');
-            expand.classList.add('link');
-        }
+
         if (max_page_count <= 1) return this;
         this.url.params.set(this.PARAMETER_EXPANDED, 'false');
 
@@ -313,7 +295,7 @@ PageableSortableTable = class {
         let currentPage = Math.min(this.page, lastPage);
         let prev = span("<");
         this.table_header_pages_div.append(prev);
-        if (currentPage > 0) {
+        if (currentPage > 0 && !this.expand) {
             // The Previous button should go to the minimum of the last page and the previous page
             this.url.params.set(this.PARAMETER_PAGE_NUMBER, `${Math.min(currentPage - 1, lastPage)}`);
             this.url.params.set(this.PARAMETER_PAGE_SIZE, `${this.page_size}`);
@@ -321,12 +303,85 @@ PageableSortableTable = class {
             const PREV_PAGE = this.url.hrefHash();
             prev.setAttribute('href', `${PREV_PAGE}`)
             prev.setAttribute('onclick', 'changeURLFromElement(this);');
-            prev.classList.add('link');
+            prev.classList.add('link-but-no-underline');
         }
 
         // Add the number of results and how many total results there are
         for (let i = 0; i < max_page_count; i++) {
-            let page = span(`${i + 1}`);
+            let page = null;
+            if (max_page_count > 10) {
+                // Expected Page Numbering
+                // *1* 2 3 4 5 ... 94 95 96 97
+                // 1 *2* 3 4 5 ... 94 95 96 97
+                // 1 2 *3* 4 5 ... 94 95 96 97
+                // 1 2 3 *4* 5 ... 94 95 96 97
+                // 1 2 3 4 *5* 6 7 8 ... 97
+                // 1 2 3 4 5 *6* 7 8 ... 97
+                // 1 ... 4 5 6 *7* 8 9 ... 97
+                // 1 ... 5 6 7 *8* 9 10 ... 97
+                // 1 ... 6 7 8 *9* 10 11 ... 97
+                // ...
+                // 1 ... 89 90 91 *92* 93 94 ... 97
+                // 1 ... 90 91 92 *93* 94 95 96 97
+                // 1 ... 90 91 92 93 *94* 95 96 97
+                // 1 2 3 4 5 ... 94 *95* 96 97
+                // 1 2 3 4 5 ... 94 95 *96* 97
+                // 1 2 3 4 5 ... 94 95 96 *97*
+                const fifth_index = 5;
+                const fifth_last_index = max_page_count - 5;
+                // If the current page is less than or equal to 4
+                if (currentPage < fifth_index-1) {
+                    // Set page 6 through n-5 as ...
+                    if (i === fifth_index) {
+                        page = span("...");
+                        this.table_header_pages_div.append(page);
+                        continue;
+                    }
+                    // Skip the pages between 7 and n-5
+                    if (i > fifth_index && i < fifth_last_index) {
+                        continue;
+                    }
+                }
+                // If the current page is greater than or equal to n-5
+                if (currentPage > fifth_last_index) {
+                    // Skip the pages between 6 and n-6
+                    if (i === fifth_index) {
+                        page = span("...");
+                        this.table_header_pages_div.append(page);
+                        continue;
+                    }
+                    // Set page 7 through n-5 as ...
+                    if (i > fifth_index && i < fifth_last_index) {
+                        continue;
+                    }
+                }
+                // If the current page is between 5 and n-5
+                if (currentPage >= fifth_index - 1 && currentPage <= fifth_last_index) {
+                    // Set page 6 and n-5 as ...
+                    if (i === currentPage + 3) {
+                        page = span("...");
+                        this.table_header_pages_div.append(page);
+                        continue;
+                    }
+                    if (i === 2 && currentPage !== fifth_index - 1) {
+                        page = span("...");
+                        this.table_header_pages_div.append(page);
+                        continue;
+                    }
+                    // Skip the pages between n-5 and n-1
+                    if (i > currentPage + 3 && i < max_page_count - 1) {
+                        continue;
+                    }
+                    // Skip the pages between 1 and current page - 3
+                    if (i < currentPage - 3 && i > 0 && currentPage !== fifth_index - 1) {
+                        continue;
+                    }
+                }
+
+            }
+            page = span(`${i + 1}`);
+            this.table_header_pages_div.append(page);
+            if (this.expand) continue;
             this.url.params.set(this.PARAMETER_PAGE_NUMBER, `${i}`);
             this.url.params.set(this.PARAMETER_PAGE_SIZE, `${this.page_size}`);
             this.url.params.set(this.PARAMETER_FOCUS, this.TABLE_HEADER);
@@ -335,12 +390,11 @@ PageableSortableTable = class {
             page.setAttribute('onclick', 'changeURLFromElement(this);');
             page.classList.add('link');
             if (i === currentPage) page.classList.add('active');
-            this.table_header_pages_div.append(page);
         }
         let next = span(">");
         this.table_header_pages_div.append(next);
         // Add a next button, if needed
-        if (this.data.length > (currentPage + 1) * this.page_size) {
+        if (this.data.length > (currentPage + 1) * this.page_size && !this.expand) {
             // The Previous button should go to the minimum of the last page and the previous page
             this.url.params.set(this.PARAMETER_PAGE_NUMBER, `${currentPage + 1}`);
             this.url.params.set(this.PARAMETER_PAGE_SIZE, `${this.page_size}`);
@@ -348,7 +402,32 @@ PageableSortableTable = class {
             const NEXT_PAGE = this.url.hrefHash();
             next.setAttribute('href', `${NEXT_PAGE}`)
             next.setAttribute('onclick', 'changeURLFromElement(this);');
-            next.classList.add('link');
+            next.classList.add('link-but-no-underline');
+        }
+
+
+
+        this.url.params.set(this.PARAMETER_PAGE_NUMBER, `${currentPage}`);
+        // If the url has `expand-{table_id}` then add a link to collapse the table
+        if (this.expand) {
+            this.url.params.set(this.PARAMETER_EXPANDED, 'false');
+            const COLLAPSE_TABLE = this.url.hrefHash();
+            let collapse = span("\u{21B4}");
+            this.table_header_pages_div.append(collapse);
+            collapse.setAttribute('href', `${COLLAPSE_TABLE}`)
+            collapse.setAttribute('onclick', 'changeURLFromElement(this);');
+            collapse.classList.add('link-but-no-underline');
+            collapse.classList.add('active');
+            collapse.style.rotate = '90deg';
+            return this;
+        } else if (!(this.page_size >= this.data.length)) {
+            this.url.params.set(this.PARAMETER_EXPANDED, 'true');
+            const EXPAND_TABLE = this.url.hrefHash();
+            let expand = span("\u{21B4}");
+            this.table_header_pages_div.append(expand);
+            expand.setAttribute('href', `${EXPAND_TABLE}`)
+            expand.setAttribute('onclick', 'changeURLFromElement(this);');
+            expand.classList.add('link-but-no-underline');
         }
 
         return this;
