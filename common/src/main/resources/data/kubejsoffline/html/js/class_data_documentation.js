@@ -123,6 +123,14 @@
  * @public
  */
 /**
+ * A combination of every type name.
+ * @see FullTypeName
+ * @see TypeName
+ * @see SimplifiedTypeName
+ * @typedef {FullTypeName | TypeName | SimplifiedTypeName} JavaTypeName
+ * @public
+ */
+/**
  * The name of a java package.
  * @typedef {string} PackageName
  * @example java.lang
@@ -441,6 +449,13 @@
  * @public
  */
 
+/**
+ * @typedef RelationshipHolder
+ * @method getRelationships - Retrieves the relationships of the object.
+ * @property {function(): Array<Relationship>} getRelationships - Retrieves the relationships of the object.
+ * @public
+ */
+
 
 /**
  * @typedef {
@@ -468,6 +483,9 @@
  */
 
 /**
+ * This type is a wrapper for compressed Constructor data.
+ * It contains all the necessary functions to retrieve the data, and the data itself.
+ *
  * @typedef {
  * ModifiersHolder &
  * AnnotationsHolder &
@@ -483,6 +501,9 @@
  */
 
 /**
+ * This type is a wrapper for compressed Field data.
+ * It contains all the necessary functions to retrieve the data, and the data itself.
+ *
  * @typedef {
  * NameHolder &
  * TypeHolder &
@@ -500,6 +521,9 @@
  */
 
 /**
+ * This type is a wrapper for compressed Method data.
+ * It contains all the necessary functions to retrieve the data, and the data itself.
+ *
  * @typedef {
  * NameHolder &
  * TypeHolder &
@@ -519,6 +543,9 @@
  */
 
 /**
+ * This type is a wrapper for compressed java type data.
+ * It contains all the necessary functions to retrieve the data, and the data itself.
+ *
  * @typedef {
  * NameHolder &
  * ModifiersHolder &
@@ -542,6 +569,17 @@
  * TypeWrapper
  * } JavaType
  *
+ * @public
+ */
+
+
+/**
+ * This type is a wrapper for class's relationship to another class.
+ * It acts like a {@link JavaType} but the type is the related class.
+ * @typedef {
+ * JavaType &
+ * RelationshipHolder
+ * } Relationship
  *
  * @public
  */

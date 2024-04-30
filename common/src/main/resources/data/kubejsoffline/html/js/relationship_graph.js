@@ -4,9 +4,9 @@
  * Adds a relationshipType, a source, and a list of targets to the relationship graph.
  * Also handles initializing parts of the relationship graph if they don't exist.
  *
- * @param relationshipType {string}
- * @param from {number}
- * @param to {number}
+ * @param relationshipType {RELATIONSHIP}
+ * @param from {TypeIdentifier}
+ * @param to {TypeIdentifier}
  */
 function addToRelationshipGraph(relationshipType, from, to) {
     if (!RELATIONSHIP_GRAPH.has(relationshipType)) {
@@ -19,28 +19,15 @@ function addToRelationshipGraph(relationshipType, from, to) {
     relationshipMap.get(from).add(to);
 }
 
-function invertRelationship(relationshipType, newRelationshipType) {
-    if (!RELATIONSHIP_GRAPH.has(relationshipType)) {
-        return;
-    }
-    RELATIONSHIP_GRAPH.get(relationshipType).forEach((targets, from) => {
-        targets.forEach(to => {
-            addToRelationshipGraph(newRelationshipType, to, from);
-        });
-    });
-}
-
-function mergeRelationships(relationshipType, newRelationshipType) {
-    if (!RELATIONSHIP_GRAPH.has(relationshipType)) {
-        return;
-    }
-    RELATIONSHIP_GRAPH.get(relationshipType).forEach((targets, from) => {
-        targets.forEach(to => {
-            addToRelationshipGraph(newRelationshipType, from, to);
-        });
-    });
-}
-
+/**
+ * This function marks the relationships between two classes, and their inverse relationships.
+ * This is done in bulk to reduce the number of iterations over the data.
+ *
+ * @param from {TypeIdentifier} the source class
+ * @param targets {Array<TypeIdentifier>} the related classes
+ * @param relationshipTypes {Array<RELATIONSHIP>} the relationships to mark
+ * @param inverseRelationshipTypes {Array<RELATIONSHIP>} the inverse relationships to mark
+ */
 function markRelationship(from, targets, relationshipTypes, inverseRelationshipTypes) {
     if (!exists(targets)) {
         return;
@@ -67,7 +54,7 @@ function markRelationship(from, targets, relationshipTypes, inverseRelationshipT
 /**
  * This function marks all known relationships between itself and other classes
  * using the data provided in the class data.
- * @param target {number} the id of the class
+ * @param target {TypeIdentifier} the id of the class
  */
 async function indexClass(target) {
     const classType = getClass(target);
@@ -271,9 +258,10 @@ function getRelation(relationshipType, id) {
 }
 
 /**
- * Get a map of all relationships for a given id.
- * @param id {number}
- * @returns {Map<int, string[]>}
+ * Get a map of every relationship a Type has to other Types.
+ *
+ * @param id {TypeIdentifier} the id of the class to get relationships for.
+ * @returns {Map<TypeIdentifier, RELATIONSHIP[]>} a map of TypeIdentifiers to a list of relationships.
  */
 function getAllRelations(id) {
     // Return a list of map of id, to list of relationship type.
@@ -292,11 +280,39 @@ function getAllRelations(id) {
     return relations;
 }
 
+/**
+ * A JSON object that represents the object with the following structure:
+ * @example {
+ *     <Relationship: RELATIONSHIP>: {
+ *         <From: TypeIdentifier>: [
+ *              <To: TypeIdentifier>,
+ *         ]
+ *     }
+ * }
+ * @typedef {
+ *  Record<RELATIONSHIP | string,Object.<TypeIdentifier | string,TypeIdentifier[]>>
+ * } RelationshipGraphJSON
+ /**
+ * Represents the string version of the relationship graph.
+ * @see RelationshipGraphJSON
+ * @typedef {string} RelationshipGraphJSONString
+ */
+
+/**
+ * Get a list of all the relationships a Type has to other Types.
+ * This is used to send and receive data between the worker and the main thread.
+ * @param map {RelationshipGraph} a map of TypeIdentifiers to a set of TypeIdentifiers.
+ * @returns {RelationshipGraphJSONString} the JSON string of the relationship graph.
+ */
 function getRelationshipGraphAsJSON(map) {
-    const output = {};
-    map.entries().forEach(([relationshipType, relationshipMap]) => {
+    /**
+     * @type RelationshipGraphJSON
+     */
+    let output;
+    output = {};
+    [...map.entries()].forEach(([relationshipType, relationshipMap]) => {
         const relationshipOutput = {};
-        relationshipMap.entries().forEach(([from, toSet]) => {
+        [...relationshipMap.entries()].forEach(([from, toSet]) => {
             relationshipOutput[from] = Array.from(toSet);
         });
         output[relationshipType] = relationshipOutput;
@@ -304,10 +320,23 @@ function getRelationshipGraphAsJSON(map) {
     return JSON.stringify(output);
 }
 
+/**
+ * Load a JSON string into the relationship graph.
+ * This is used to send and receive data between the worker and the main thread.
+ * @param json {RelationshipGraphJSONString} the JSON string to load.
+ */
 function loadJSONToRelationshipGraph(json) {
     RELATIONSHIP_GRAPH.clear();
+    /**
+     * @type {RelationshipGraphJSON}
+     */
     const parsed = JSON.parse(json);
-    Object.entries(parsed).forEach(([relationshipType, relationMap]) => {
+
+    Object.entries(parsed).forEach(
+        /**
+         * @param {[RELATIONSHIP, Object.<TypeIdentifier | string, TypeIdentifier[]>]} entry
+         */
+        ([relationshipType, relationMap]) => {
         const relationshipOutput = new Map();
         Object.entries(relationMap).forEach(([from, toSet]) => {
             relationshipOutput.set(parseInt(from), new Set(toSet));

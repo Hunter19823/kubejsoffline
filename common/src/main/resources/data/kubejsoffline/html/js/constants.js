@@ -1,7 +1,8 @@
 /**
  * Used by classdatatools to map fully qualified names to ids.
  * @file constants.js
- * @type {Map<string, number>}
+ * @type {Map<JavaTypeName, TypeIdentifier>}
+ * @public
  */
 const LOOK_UP_CACHE = new Map();
 
@@ -9,7 +10,8 @@ const LOOK_UP_CACHE = new Map();
  * Used to dump gradle variables into static javascript variables for use in the website.
  *
  * @file constants.js
- * @type {{architectury_version: string, modrinth_id: string, fabric_api_version: string, mod_version: string, forge_version: string, curseforge_id: string, mod_author: string, mod_name: string, minecraft_version: string, mod_id: string, kubejs_version: string, fabric_loader_version: string, mod_description: string, mod_homepage: string, mod_source: string}}
+ * @enum {string}
+ * @public
  */
 const PROJECT_INFO = {
     "mod_id": "${mod_id}",
@@ -34,6 +36,7 @@ const PROJECT_INFO = {
  *
  * @file constants.js
  * @type {{}}
+ * @public
  */
 const LINK_MAP = {};
 
@@ -42,7 +45,8 @@ const LINK_MAP = {};
  * Global settings for the website.
  *
  * @file constants.js
- * @type {{showMethodsInherited: boolean, showProtected: boolean, showPackage: boolean, showMethods: boolean, showConstructorsInherited: boolean, debug: boolean, showPrivate: boolean, showRelationships: boolean, showConstructors: boolean, showFields: boolean, showFieldsInherited: boolean, defaultSearchPageSize: number}}
+ * @enum {boolean | number}
+ * @public
  */
 const GLOBAL_SETTINGS = {
     "showMethods": true,
@@ -65,6 +69,7 @@ const GLOBAL_SETTINGS = {
  *
  * @file constants.js
  * @type {{VOLATILE: number, METHOD_MODIFIERS: number, VARARGS: number, NATIVE: number, INTERFACE_MODIFIERS: number, isStatic(*): boolean, isVolatile(*): boolean, isSynthetic(*): boolean, PARAMETER_MODIFIERS: number, isPrivate(*): boolean, BRIDGE: number, ABSTRACT: number, STATIC: number, isNative(*): boolean, CONSTRUCTOR_MODIFIERS: number, isStrict(*): boolean, interfaceModifiers(): number, isProtected(*): boolean, classModifiers(): number, INTERFACE: number, ANNOTATION: number, isPublic(*): boolean, ACCESS_MODIFIERS: number, isFinal(*): boolean, PROTECTED: number, isInterface(*): boolean, isMandated(*): boolean, SYNCHRONIZED: number, STRICT: number, ENUM: number, fieldModifiers(): number, FIELD_MODIFIERS: number, CLASS_MODIFIERS: number, methodModifiers(): number, SYNTHETIC: number, FINAL: number, isSynchronized(*): boolean, constructorModifiers(): number, parameterModifiers(): number, isAbstract(*): boolean, PRIVATE: number, PUBLIC: number, MANDATED: number, toString(*): string, isTransient(*): boolean, TRANSIENT: number}}
+ * @public
  */
 const MODIFIER = {
     PUBLIC: 1,
@@ -228,13 +233,25 @@ const MODIFIER = {
 }
 
 /**
+ * Represents the different types of relationships between classes.
+ * @typedef {Map<RELATIONSHIP,Map<TypeIdentifier, Set<TypeIdentifier>>>} RelationshipGraph
+ * @public
+ */
+/**
  * This constant is used to map relationships between classes to optimize the search algorithm.
  * This is used by relationship_graph.js
  * Each key in the object is a relationship type, and the value is a map of ids to a set of other ids.
- * @type {Map<string,Map<int, Set<int>>>}
+ *
+ * @type {RelationshipGraph}
+ * @public
  */
 const RELATIONSHIP_GRAPH = new Map();
 
+/**
+ * This constant is used to map relationships between classes to optimize the search algorithm.
+ * @enum {string} RELATIONSHIP
+ * @public
+ */
 const RELATIONSHIP = {
     "INHERITS": "INHERITS",
     "SUPER_CLASS": "SUPER_CLASS",

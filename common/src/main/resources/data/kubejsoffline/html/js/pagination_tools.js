@@ -440,8 +440,6 @@ PageableSortableTable = class {
         return this;
     }
 
-    // TODO: createTableDiv, which adds a newline before table.
-
     createTable() {
         // Create a class table
         this.table_element = document.createElement('table');
