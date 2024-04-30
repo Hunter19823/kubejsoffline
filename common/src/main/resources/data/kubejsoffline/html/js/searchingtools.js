@@ -510,37 +510,16 @@ function searchFromParameters(parameters) {
     wipePage();
 
     setToast("Please wait while we process your query...");
-    if (!parameters.has('page')) {
-        parameters.set('page', 0);
-    }
-    if (!parameters.has('size')) {
-        parameters.set('size', GLOBAL_SETTINGS.defaultSearchPageSize);
-    }
-    let page = parseInt(parameters.get('page'));
-    let page_size = parseInt(parameters.get('size'));
 
     function compareSearchParameters(before, after) {
-        // These keys are ignored when comparing search parameters
-        let IGNORED_KEYS = new Set(['page', 'size', 'focus']);
-
         // A set of all the keys in the before and after parameters
-        let before_keys = new Set(before.keys());
-        let after_keys = new Set(after.keys());
+        let before_keys = new Set([...before.keys()].filter((key) => exists(NEW_QUERY_TERMS[key])));
+        let after_keys = new Set([...after.keys()].filter((key) => exists(NEW_QUERY_TERMS[key])));
 
         // Determine which keys were added
         let added_keys = new Set([...after_keys].filter(x => !before_keys.has(x)));
         // Determine which keys were removed
         let removed_keys = new Set([...before_keys].filter(x => !after_keys.has(x)));
-
-        // Check if the added/removed keys are in the ignored keys
-        for (let key of IGNORED_KEYS) {
-            if (added_keys.has(key)) {
-                added_keys.delete(key);
-            }
-            if (removed_keys.has(key)) {
-                removed_keys.delete(key);
-            }
-        }
 
         // Check if the added/removed keys are the same
         if (added_keys.size !== 0 || removed_keys.size !== 0) {
@@ -549,11 +528,6 @@ function searchFromParameters(parameters) {
 
         // Determine which keys were changed
         let changed_keys = new Set([...before_keys].filter(x => after_keys.has(x)));
-
-        // Remove the ignored keys from the changed keys
-        for (let key of IGNORED_KEYS) {
-            changed_keys.delete(key);
-        }
 
         // Check if the values of the changed keys are the same
         for (let key of changed_keys) {
@@ -594,11 +568,11 @@ function searchFromParameters(parameters) {
         console.log("Done sorting results");
     }
 
-    loadSearchResults(page, page_size);
+    loadSearchResults();
     clearToast();
 }
 
-function loadSearchResults(page_number, page_size) {
+function loadSearchResults() {
 
     let results = _last_filter.getResults();
 
