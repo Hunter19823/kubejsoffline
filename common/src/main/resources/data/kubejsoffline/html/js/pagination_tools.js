@@ -348,7 +348,7 @@ function addPageNumber(i, self) {
 }
 for (let i = 0; i < max_page_count; i++) {
     let page = null;
-    if (max_page_count <= 10) {
+    if (max_page_count <= 11) {
         addPageNumber(i, this);
         continue;
     }
