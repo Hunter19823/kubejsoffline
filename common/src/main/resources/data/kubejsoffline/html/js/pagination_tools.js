@@ -394,37 +394,37 @@ class PageableSortableTable {
         return this;
     }
 
-    sortableByClass() {
+    sortableByClass(mutator=getClass) {
         return this
-                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, getClass)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, getClass)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, getClass)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, getClass)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, getClass);
+                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, mutator)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator);
     }
 
-    sortableByMethod() {
+    sortableByMethod(mutator=getMethod) {
         return this
-                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, getMethod)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, getMethod)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, getMethod)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, getMethod)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, getMethod);
+                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, mutator)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator);
     }
 
-    sortableByField() {
+    sortableByField(mutator=getField) {
         return this
-                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, getField)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, getField)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, getField)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, getField)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, getField);
+                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, mutator)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator);
     }
 
-    sortableByParameter() {
+    sortableByParameter(mutator=getParameter) {
         return this
-                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, getParameter)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, getParameter)
-                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, getParameter);
+                .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
+                .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator);
     }
 }
