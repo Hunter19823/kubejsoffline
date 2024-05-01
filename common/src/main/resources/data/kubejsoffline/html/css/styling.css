@@ -299,6 +299,9 @@ input:checked + .slider:before {
     text-decoration: underline;
     color: #8cb4ff;
     cursor: pointer;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
 }
 
 .clickable {
@@ -341,12 +344,14 @@ td.link-container {
 }
 
 .pagination-div {
-    display: flex;
-    align-items: center;
+    display: block;
 }
 
 .pagination-div span {
-    margin-right: 0.5em;
+    display: inline-block;
+    margin-right: 0.25em;
+    margin-left: 0.25em;
+    text-align: center;
 }
 
 .pagination-div .active {
@@ -357,4 +362,7 @@ td.link-container {
 .link-but-no-underline {
     color: #8cb4ff;
     cursor: pointer;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
 }

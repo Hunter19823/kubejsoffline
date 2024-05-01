@@ -127,6 +127,42 @@ function wrapComparator(comparator, wrapper) {
         return comparator(wrapper(a), wrapper(b));
     };
 }
+function getSizeOfElement(element) {
+    const tempElement = document.createElement(element.tagName);
+    tempElement.style.cssText = `
+        position: absolute;
+        visibility: hidden;
+        width: auto !important;
+        height: auto !important;
+        max-width: none !important;
+        max-height: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+    `;
+    tempElement.innerHTML = element.innerHTML;
+    document.body.appendChild(tempElement);
+    const rect = tempElement.getBoundingClientRect();
+    const size = {
+        width: rect.width,
+        height: rect.height
+    };
+    document.body.removeChild(tempElement);
+    return size;
+}
+
+
+function matchAllHeadersToSameWidth(table) {
+    let max_width = 0;
+    let children = [...table.table_header_pages_div.children].filter((item, index) => index !== 0);
+    for (let item of children) {
+        const size = getSizeOfElement(item);
+        max_width = Math.max(max_width, size.width);
+    }
+    for (let item of children) {
+        item.style.width =  `calc(${max_width}px + 0.25em)`;
+    }
+}
 
 PageableSortableTable = class {
     static SORTABLE_DEFAULT = ['default', defaultSort];
@@ -339,7 +375,6 @@ PageableSortableTable = class {
         let count = span(`${this.data.length} Items`);
         this.table_header_pages_div.append(count);
 
-
         if (max_page_count <= 1) return this;
         HEADER_URL.params.set(this.PARAMETER_EXPANDED, 'false');
 
@@ -363,12 +398,12 @@ PageableSortableTable = class {
         const max_page_index = max_page_count - 1;
         const window_radius = 3;
         const left_window_index = Math.max(0, currentPage - (window_radius + 1));
-        const right_window_index = Math.min(max_page_count, currentPage + window_radius + 1);
+        const right_window_index = Math.min(max_page_index, currentPage + window_radius + 1);
         const window_size = right_window_index - left_window_index;
         const distance_to_end = max_page_count - currentPage;
         const distance_to_start = currentPage;
         const on_left_side = distance_to_start < distance_to_end;
-        const total_seen_count = window_size + (left_window_index === 0 ? 0 : 1) + (right_window_index === max_page_count ? 0 : 1);
+        const total_seen_count = window_size + (left_window_index === 0 ? 0 : 1) + (right_window_index === max_page_index ? 0 : 1);
         // Add an ellipsis if: current index - (window_radius + 2) > 0
         // Add an ellipsis if: current index + (window_radius + 2) < max_page_index
         const ellipsis_count =
@@ -383,7 +418,7 @@ PageableSortableTable = class {
             let text = `${i + 1}`;
             // Pad the text based on the maximum page count width using spaces.
             // This is to prevent the pagination from jumping around when the page number changes.
-            let pad = max_page_count.toString().length - text.length;
+            let pad = PADDING_WIDTH - text.length;
             if (pad > 0) {
                 text = "0".repeat(pad) + text;
             }
@@ -401,10 +436,12 @@ PageableSortableTable = class {
             if (i === currentPage) page.classList.add('active');
         }
 
+        let total_count = 0;
         for (let i = 0; i < max_page_count; i++) {
             let page = null;
             if (max_page_count <= 11) {
                 addPageNumber(i, this);
+                total_count++;
                 continue;
             }
             // Expected Page Numbering
@@ -426,30 +463,41 @@ PageableSortableTable = class {
             // If the page is the first or last page, add it
             if (i === 0 || i === max_page_index) {
                 addPageNumber(i, this);
+                total_count++;
                 continue;
             }
             // If the page is in the window, add it
             if (i > left_window_index && i < right_window_index) {
                 addPageNumber(i, this);
+                total_count++;
                 continue;
             }
             if (i === left_window_index && i !== 0) {
-                page = span("..");
+                page = span(".".repeat(PADDING_WIDTH));
                 this.table_header_pages_div.append(page);
                 page.classList.add('ellipsis');
+                total_count++;
+                continue;
             }
             if (i === right_window_index && i !== max_page_index) {
-                page = span("..");
+                page = span(".".repeat(PADDING_WIDTH));
                 this.table_header_pages_div.append(page);
                 page.classList.add('ellipsis');
+                total_count++;
+                continue;
             }
             if (!on_left_side && extra_space > 0 && i <= extra_space) {
                 addPageNumber(i, this);
+                total_count++;
                 continue;
             }
             if (on_left_side && extra_space > 0 && i >= max_page_index - extra_space) {
                 addPageNumber(i, this);
+                total_count++;
             }
+        }
+        if (total_count !== 11 && max_page_count > 11) {
+            console.error("Expected 11 pages, but got ", total_count, " pages.");
         }
         let next = span(">");
         this.table_header_pages_div.append(next);
@@ -479,6 +527,7 @@ PageableSortableTable = class {
             collapse.classList.add('link-but-no-underline');
             collapse.classList.add('active');
             collapse.style.rotate = '90deg';
+            matchAllHeadersToSameWidth(this);
             return this;
         } else if (!(this.page_size >= this.data.length)) {
             const EXPAND_TABLE_URL = HEADER_URL.clone();
@@ -490,6 +539,8 @@ PageableSortableTable = class {
             expand.setAttribute('onclick', 'changeURLFromElement(this);');
             expand.classList.add('link-but-no-underline');
         }
+
+        matchAllHeadersToSameWidth(this);
 
         return this;
     }
@@ -543,7 +594,7 @@ PageableSortableTable = class {
 
     create() {
         this.updatePageData();
-        console.log("Now loading ", this.title, " with ", this.data.length, " items on page ", this.page, " with page size ", this.page_size, " and sort by ", this.sort_by, " and sort order ", this.sort_order, " and expanded ", this.expand, " with sort options ", this.sort_options, " and sort direction ", this.sort_order);
+        // console.log("Now loading ", this.title, " with ", this.data.length, " items on page ", this.page, " with page size ", this.page_size, " and sort by ", this.sort_by, " and sort order ", this.sort_order, " and expanded ", this.expand, " with sort options ", this.sort_options, " and sort direction ", this.sort_order);
         this.createTableHeader().createTable().createDiv().addToDocument();
         GLOBAL_DATA[this.table_id] = this;
         return this;
