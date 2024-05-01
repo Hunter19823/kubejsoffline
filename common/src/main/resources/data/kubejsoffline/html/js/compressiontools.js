@@ -191,22 +191,28 @@ function getGenericName(type, typeVariableMap, includeGenerics = true) {
     );
 }
 
-function getParameterizedName(type, config) {
-    // Append the package name as long as the owner type does not exist and appendPackageName is true
-    const rawTypeName = cachedGenericDefinition(type.getRawType(), config.setAppendPackageName(config.getAppendPackageName() && !exists(type.getOwnerType())).disableEnclosingName(true));
-    const ownerType = type.getOwnerType();
-    const ownerPrefix = (exists(ownerType) && (!config.getDefiningParameterizedType()) ? cachedGenericDefinition(ownerType, config.disableEnclosingName(true)) + "$" : "");
-    const actualTypes = type.getTypeVariables();
+function getGenerics(actualTypes, config) {
     if (actualTypes.length === 0 || !config.getIncludeGenerics()) {
-        return ownerPrefix + rawTypeName;
+        return "";
     }
-    const genericArguments = joiner(
+    return joiner(
         actualTypes,
         ", ",
         (actualType) => cachedGenericDefinition(actualType, config),
         "<",
         ">"
     );
+
+}
+
+function getParameterizedName(type, config) {
+    // Append the package name as long as the owner type does not exist and appendPackageName is true
+    const rawTypeName = cachedGenericDefinition(type.getRawType(), config.setAppendPackageName(config.getAppendPackageName() && !exists(type.getOwnerType())).disableEnclosingName(true));
+    const ownerType = type.getOwnerType();
+    const ownerPrefix = (exists(ownerType) && (!config.getDefiningParameterizedType()) ? cachedGenericDefinition(ownerType, config.disableEnclosingName(true)) + "$" : "");
+    const actualTypes = type.getTypeVariables();
+    const genericArguments = getGenerics(actualTypes, config);
+
     return ownerPrefix + rawTypeName + genericArguments;
 }
 
@@ -214,6 +220,7 @@ function getWildcardName(type, config) {
     const name = "?";
     const lowerBounds = type.getLowerBound();
     if (lowerBounds.length !== 0) {
+
         return name + joiner(
             lowerBounds,
             " & ",
