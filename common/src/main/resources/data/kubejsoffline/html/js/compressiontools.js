@@ -210,7 +210,7 @@ function getParameterizedName(type, config) {
     const ownerType = type.getOwnerType();
     const ownerPrefix = (exists(ownerType) && (!config.getDefiningParameterizedType()) ? cachedGenericDefinition(ownerType, config.disableEnclosingName(true)) + "$" : "");
     const actualTypes = type.getTypeVariables();
-    const genericArguments = getGenerics(actualTypes, config);
+    const genericArguments = getGenerics(actualTypes, config.disableEnclosingName(true));
 
     return ownerPrefix + rawTypeName + genericArguments;
 }
@@ -483,13 +483,15 @@ function getWildcardSignature(type, outputSpan, config) {
 }
 
 function getParameterizedTypeSignature(type, outputSpan, config) {
-    const rawTypeName = createLinkableSignature(type.getRawType(),
+    const rawTypeName = createLinkableSignature(
+        type.getRawType(),
         config
             .setAppendPackageName(config.getAppendPackageName() && !(type.package().length > 0) && !exists(type.getOwnerType()))
+            .disableEnclosingName(true)
             .setOverrideID(type.id())
     );
     const ownerType = type.getOwnerType();
-    if (exists(ownerType)) {
+    if (exists(ownerType) && !config.getDefiningParameterizedType()) {
         const ownerPrefix = createLinkableSignature(ownerType, config);
         outputSpan.append(ownerPrefix);
         outputSpan.append(span('$'));
@@ -548,6 +550,7 @@ signature_parameters = class {
         this.isDefiningTypeVariable = false;
         this.appendPackageName = true;
         this.overrideID = null;
+        this.isDefiningParameterizedType = false;
     }
 
     clone() {
@@ -578,6 +581,12 @@ signature_parameters = class {
         return clone;
     }
 
+    disableEnclosingName(isDefiningParameterizedType) {
+        const clone = this.clone();
+        clone.isDefiningParameterizedType = isDefiningParameterizedType;
+        return clone;
+    }
+
     getTypeVariableMap() {
         return this.typeVariableMap;
     }
@@ -592,6 +601,10 @@ signature_parameters = class {
 
     getOverrideID() {
         return this.overrideID;
+    }
+
+    getDefiningParameterizedType() {
+        return this.isDefiningParameterizedType;
     }
 
     remapType(type) {
