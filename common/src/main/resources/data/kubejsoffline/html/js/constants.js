@@ -297,4 +297,5 @@ let PageableSortableTable = null;
 let CURRENT_URL;
 
 let name_parameters;
+let signature_parameters;
 let cachedGenericDefinition;

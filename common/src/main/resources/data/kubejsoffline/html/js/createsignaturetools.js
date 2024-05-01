@@ -37,7 +37,13 @@ function createLink(element, id, rawId = null, focus = null) {
 
 function createShortLink(id, typeVariableMap = {}) {
     const target = getClass(id);
-    const shortSignature = createLinkableSignature(id, typeVariableMap, false, false);
+    const shortSignature = createLinkableSignature(
+        id,
+        new signature_parameters()
+            .setTypeVariableMap(typeVariableMap)
+            .setAppendPackageName(false)
+            .setDefiningTypeVariable(false),
+    );
     if (target.isRawClass()) {
         const typeVariables = target.getTypeVariables();
         if (typeVariables.length === 0) {
@@ -49,9 +55,10 @@ function createShortLink(id, typeVariableMap = {}) {
                 ", ",
                 (actualType) => createLinkableSignature(
                     actualType,
-                    typeVariableMap,
-                    false,
-                    false
+                    new signature_parameters()
+                        .setTypeVariableMap(typeVariableMap)
+                        .setAppendPackageName(false)
+                        .setDefiningTypeVariable(false),
                 ),
                 span("<"),
                 span(">")
@@ -63,7 +70,13 @@ function createShortLink(id, typeVariableMap = {}) {
 
 function createFullSignature(id, typeVariableMap = {}) {
     const target = getClass(id);
-    const fullSignature = createLinkableSignature(id, typeVariableMap, false, true);
+    const fullSignature = createLinkableSignature(
+        id,
+        new signature_parameters()
+            .setTypeVariableMap(typeVariableMap)
+            .setAppendPackageName(true)
+            .setDefiningTypeVariable(false)
+    );
     if (target.isRawClass()) {
         const typeVariables = target.getTypeVariables();
         if (typeVariables.length === 0) {
@@ -75,9 +88,10 @@ function createFullSignature(id, typeVariableMap = {}) {
                 ", ",
                 (actualType) => createLinkableSignature(
                     actualType,
-                    typeVariableMap,
-                    false,
-                    true
+                    new signature_parameters()
+                        .setTypeVariableMap(typeVariableMap)
+                        .setAppendPackageName(true)
+                        .setDefiningTypeVariable(false),
                 ),
                 span("<"),
                 span(">")
@@ -292,165 +306,3 @@ function addFieldToTable(table, class_id, field, current_class_id = null) {
     let row = addRow(table, href(span(class_id), `#${getClass(class_id).fullyQualifiedName()}`), createFieldSignature(field), createFullSignature(class_id));
     appendAttributesToFieldTableRow(row, class_id, field, current_class_id);
 }
-
-function tagJoiner(values, separator, transformer = (a) => span(a), prefix, suffix) {
-    if (!exists(transformer)) {
-        transformer = (a) => span(a);
-    }
-    const output = span();
-    if (prefix) {
-        output.append(prefix);
-    }
-    for (let i = 0; i < values.length; i++) {
-        output.append(transformer(values[i]));
-        // If not the last element, add the separator
-        if (i < values.length - 1) {
-            output.append(span(separator));
-        }
-    }
-    if (suffix) {
-        output.append(suffix);
-    }
-    return output;
-
-}
-
-function createLinkableSignature(type, typeVariableMap, isDefiningTypeVariable, appendPackageName, overrideID) {
-    type = getClass(type);
-    const outputSpan = document.createElement('span');
-    if (type.isTypeVariable()) {
-        if (isDefiningTypeVariable) {
-            outputSpan.append(createLink(span(type.name()), type.id()));
-            return outputSpan;
-        }
-        type = exists(typeVariableMap[type.id()]) ? getClass(typeVariableMap[type.id()]) : type;
-    }
-    if (type.isRawClass()) {
-        const name = decompressString(type.data[PROPERTY.CLASS_NAME])
-        if (exists(type.getDeclaringClass())) {
-            outputSpan.append(createLinkableSignature(type.getDeclaringClass(), typeVariableMap, isDefiningTypeVariable, appendPackageName));
-            outputSpan.append(span('$'));
-            appendPackageName = false;
-        }
-        if (appendPackageName && type.package() && typeof type.package() === 'string' && type.package().length > 0) {
-            outputSpan.append(span(type.package()));
-            outputSpan.append(span('.'));
-            if (exists(overrideID)) {
-                outputSpan.append(createLink(span(name), overrideID));
-            } else {
-                outputSpan.append(createLink(span(name), type.id()));
-            }
-            return outputSpan;
-        } else {
-            if (exists(overrideID)) {
-                outputSpan.append(createLink(span(name), overrideID));
-            } else {
-                outputSpan.append(createLink(span(name), type.id()));
-            }
-            return outputSpan;
-        }
-    }
-    if (type.isTypeVariable()) {
-        const typeVariableName = decompressString(type.data[PROPERTY.TYPE_VARIABLE_NAME]);
-        if (isDefiningTypeVariable) {
-            outputSpan.append(createLink(span(typeVariableName), type.id()));
-            return outputSpan;
-        }
-        const bounds = type.getTypeVariableBounds();
-        if (bounds.length === 0) {
-            outputSpan.append(createLink(span(typeVariableName), type.id()));
-            return outputSpan;
-        }
-        outputSpan.append(createLink(span(typeVariableName), type.id()));
-        outputSpan.append(
-            tagJoiner(
-                bounds,
-                " & ",
-                (bound) => createLinkableSignature(
-                    bound,
-                    typeVariableMap,
-                    true,
-                    appendPackageName
-                ),
-                span(" extends ")
-            )
-        );
-        return outputSpan;
-    }
-    if (type.isWildcard()) {
-        const name = "?";
-        outputSpan.append(span(name));
-        const lowerBounds = type.getLowerBound();
-        if (lowerBounds.length !== 0) {
-            outputSpan.append(
-                tagJoiner(
-                    lowerBounds,
-                    " & ",
-                    (bound) => createLinkableSignature(
-                        bound,
-                        typeVariableMap,
-                        true,
-                        appendPackageName
-                    ),
-                    span(" super ")
-                )
-            );
-            return outputSpan;
-        }
-        const upperBounds = type.getUpperBound();
-        if (upperBounds.length !== 0) {
-            outputSpan.append(
-                tagJoiner(
-                    upperBounds,
-                    " & ",
-                    (bound) => createLinkableSignature(
-                        bound,
-                        typeVariableMap,
-                        true,
-                        appendPackageName
-                    ),
-                    span(" extends ")
-                )
-            );
-            return outputSpan;
-        }
-        return outputSpan;
-    }
-    if (type.isParameterizedType()) {
-        const rawTypeName = createLinkableSignature(type.getRawType(), typeVariableMap, isDefiningTypeVariable, appendPackageName && !(type.package().length > 0) && !exists(type.getOwnerType()), type.id());
-        const ownerType = type.getOwnerType();
-        if (exists(ownerType)) {
-            const ownerPrefix = createLinkableSignature(ownerType, typeVariableMap, isDefiningTypeVariable, appendPackageName);
-            outputSpan.append(ownerPrefix);
-            outputSpan.append(span('$'));
-            appendPackageName = false;
-        }
-        outputSpan.append(rawTypeName);
-        const actualTypes = type.getTypeVariables();
-        if (actualTypes.length === 0) {
-            return outputSpan;
-        }
-        outputSpan.append(
-            tagJoiner(
-                actualTypes,
-                ", ",
-                (actualType) => createLinkableSignature(
-                    actualType,
-                    typeVariableMap,
-                    isDefiningTypeVariable,
-                    appendPackageName
-                ),
-                span("<"),
-                span(">")
-            )
-        );
-        return outputSpan;
-    }
-
-    console.error("Unknown Type! Cannot get generic definition for: ", type.id(), type.data);
-    return span("Unknown Type");
-
-
-}
-
-

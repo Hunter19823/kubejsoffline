@@ -371,3 +371,245 @@ name_parameters = class {
         return type;
     }
 }
+
+function tagJoiner(values, separator, transformer = (a) => span(a), prefix, suffix) {
+    if (!exists(transformer)) {
+        transformer = (a) => span(a);
+    }
+    const output = span();
+    if (prefix) {
+        output.append(prefix);
+    }
+    for (let i = 0; i < values.length; i++) {
+        output.append(transformer(values[i]));
+        // If not the last element, add the separator
+        if (i < values.length - 1) {
+            output.append(span(separator));
+        }
+    }
+    if (suffix) {
+        output.append(suffix);
+    }
+    return output;
+
+}
+
+function getRawClassSignature(type, outputSpan, config) {
+    const name = decompressString(type.data[PROPERTY.CLASS_NAME])
+    if (exists(type.getDeclaringClass())) {
+        outputSpan.append(createLinkableSignature(type.getDeclaringClass(), config));
+        outputSpan.append(span('$'));
+        config = config.setAppendPackageName(false);
+    }
+    if (config.getAppendPackageName() && type.package() && typeof type.package() === 'string' && type.package().length > 0) {
+        outputSpan.append(span(type.package()));
+        outputSpan.append(span('.'));
+        if (exists(config.getOverrideID())) {
+            outputSpan.append(createLink(span(name), config.getOverrideID()));
+        } else {
+            outputSpan.append(createLink(span(name), type.id()));
+        }
+        return outputSpan;
+    } else {
+        if (exists(config.getOverrideID())) {
+            outputSpan.append(createLink(span(name), config.getOverrideID()));
+        } else {
+            outputSpan.append(createLink(span(name), type.id()));
+        }
+        return outputSpan;
+    }
+}
+
+function getTypeVariableSignature(type, outputSpan, config) {
+    const typeVariableName = decompressString(type.data[PROPERTY.TYPE_VARIABLE_NAME]);
+    if (config.getDefiningTypeVariable()) {
+        outputSpan.append(createLink(span(typeVariableName), type.id()));
+        return outputSpan;
+    }
+    const bounds = type.getTypeVariableBounds();
+    if (bounds.length === 0) {
+        outputSpan.append(createLink(span(typeVariableName), type.id()));
+        return outputSpan;
+    }
+    outputSpan.append(createLink(span(typeVariableName), type.id()));
+    outputSpan.append(
+        tagJoiner(
+            bounds,
+            " & ",
+            (bound) => createLinkableSignature(
+                bound,
+                config.setDefiningTypeVariable(true)
+            ),
+            span(" extends ")
+        )
+    );
+    return outputSpan;
+}
+
+function getWildcardSignature(type, outputSpan, config) {
+    const name = "?";
+    outputSpan.append(span(name));
+    const lowerBounds = type.getLowerBound();
+    if (lowerBounds.length !== 0) {
+        outputSpan.append(
+            tagJoiner(
+                lowerBounds,
+                " & ",
+                (bound) => createLinkableSignature(
+                    bound,
+                    config.setDefiningTypeVariable(true)
+                ),
+                span(" super ")
+            )
+        );
+        return outputSpan;
+    }
+    const upperBounds = type.getUpperBound();
+    if (upperBounds.length !== 0) {
+        outputSpan.append(
+            tagJoiner(
+                upperBounds,
+                " & ",
+                (bound) => createLinkableSignature(
+                    bound,
+                    config.setDefiningTypeVariable(true),
+                ),
+                span(" extends ")
+            )
+        );
+        return outputSpan;
+    }
+    return outputSpan;
+}
+
+function getParameterizedTypeSignature(type, outputSpan, config) {
+    const rawTypeName = createLinkableSignature(type.getRawType(),
+        config
+            .setAppendPackageName(config.getAppendPackageName() && !(type.package().length > 0) && !exists(type.getOwnerType()))
+            .setOverrideID(type.id())
+    );
+    const ownerType = type.getOwnerType();
+    if (exists(ownerType)) {
+        const ownerPrefix = createLinkableSignature(ownerType, config);
+        outputSpan.append(ownerPrefix);
+        outputSpan.append(span('$'));
+        config = config.setAppendPackageName(false);
+    }
+    outputSpan.append(rawTypeName);
+    const actualTypes = type.getTypeVariables();
+    if (actualTypes.length === 0) {
+        return outputSpan;
+    }
+    outputSpan.append(
+        tagJoiner(
+            actualTypes,
+            ", ",
+            (actualType) => createLinkableSignature(
+                actualType,
+                config
+            ),
+            span("<"),
+            span(">")
+        )
+    );
+    return outputSpan;
+}
+
+function createLinkableSignature(type, config) {
+    type = getClass(type);
+    const outputSpan = document.createElement('span');
+    if (type.isTypeVariable()) {
+        if (config.getDefiningTypeVariable()) {
+            outputSpan.append(createLink(span(type.name()), type.id()));
+            return outputSpan;
+        }
+        type = config.remapType(type);
+    }
+    if (type.isRawClass()) {
+        return getRawClassSignature(type, outputSpan, config);
+    }
+    if (type.isTypeVariable()) {
+        return getTypeVariableSignature(type, outputSpan, config);
+    }
+    if (type.isWildcard()) {
+        return getWildcardSignature(type, outputSpan, config);
+    }
+    if (type.isParameterizedType()) {
+        return getParameterizedTypeSignature(type, outputSpan, config);
+    }
+
+    console.error("Unknown Type! Cannot get generic definition for: ", type.id(), type.data);
+    return span("Unknown Type");
+}
+
+signature_parameters = class {
+    constructor() {
+        this.typeVariableMap = {};
+        this.isDefiningTypeVariable = false;
+        this.appendPackageName = true;
+        this.overrideID = null;
+    }
+
+    clone() {
+        return Object.assign(new signature_parameters(), this);
+    }
+
+    setTypeVariableMap(typeVariableMap) {
+        const clone = this.clone();
+        clone.typeVariableMap = typeVariableMap;
+        return clone;
+    }
+
+    setDefiningTypeVariable(isDefiningTypeVariable) {
+        const clone = this.clone();
+        clone.isDefiningTypeVariable = isDefiningTypeVariable;
+        return clone;
+    }
+
+    setAppendPackageName(appendPackageName) {
+        const clone = this.clone();
+        clone.appendPackageName = appendPackageName;
+        return clone;
+    }
+
+    setOverrideID(overrideID) {
+        const clone = this.clone();
+        clone.overrideID = overrideID;
+        return clone;
+    }
+
+    getTypeVariableMap() {
+        return this.typeVariableMap;
+    }
+
+    getDefiningTypeVariable() {
+        return this.isDefiningTypeVariable;
+    }
+
+    getAppendPackageName() {
+        return this.appendPackageName;
+    }
+
+    getOverrideID() {
+        return this.overrideID;
+    }
+
+    remapType(type) {
+        if (typeof type === 'number') {
+            if (exists(getTypeVariables()[type])) {
+                return getClass(getTypeVariables()[type]);
+            }else {
+                return getClass(type);
+            }
+        }
+        if (exists(type['isTypeVariable'])) {
+            if (exists(this.typeVariableMap[type.id()])) {
+                return getClass(this.typeVariableMap[type.id()]);
+            }else {
+                return type;
+            }
+        }
+        return type;
+    }
+}
+
