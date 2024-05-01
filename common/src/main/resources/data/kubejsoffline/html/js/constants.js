@@ -295,3 +295,6 @@ let PageableSortableTable = null;
  * @type {URLData}
  */
 let CURRENT_URL;
+
+let name_parameters;
+let cachedGenericDefinition;

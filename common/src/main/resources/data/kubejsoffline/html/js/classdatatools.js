@@ -557,7 +557,7 @@ function getClass(id) {
         }
         if (this.isParameterizedType()) {
             const rawName = getClass(this.getRawType()).getSimpleName(typeVariableMap);
-            const ownerPrefix = this.getOwnerType() ? getClass(this.getOwnerType()).getSimpleName(typeVariableMap) + "." : "";
+            const ownerPrefix = this.getOwnerType() ? getClass(this.getOwnerType()).getSimpleName(typeVariableMap) + "$" : "";
             return ownerPrefix + rawName + "[]".repeat(this.getArrayDepth());
         }
         return decompressString(this.data[PROPERTY.CLASS_NAME]) + "[]".repeat(this.getArrayDepth());

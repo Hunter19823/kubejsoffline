@@ -5,6 +5,7 @@ function cachedFunction(func) {
         const key = JSON.stringify(args);
         if (!(key in cache)) {
             cache[key] = func(...args);
+            console.log("Cached: ", key, cache[key]);
         }
         return cache[key];
     };
@@ -171,40 +172,52 @@ function remapTypeVariables(typeVariableMap, parameterizedType) {
 }
 
 function getGenericDefinition(type, typeVariableMap, includeGenerics = true) {
-    return cachedGenericDefinition(type, typeVariableMap, false, true, includeGenerics);
+    return cachedGenericDefinition(type,
+        new name_parameters()
+            .setTypeVariableMap(typeVariableMap)
+            .setDefiningTypeVariable(false)
+            .setAppendPackageName(true)
+            .setIncludeGenerics(includeGenerics)
+    );
 }
 
 function getGenericName(type, typeVariableMap, includeGenerics = true) {
-    return cachedGenericDefinition(type, typeVariableMap, false, false, includeGenerics);
+    return cachedGenericDefinition(type,
+        new name_parameters()
+            .setTypeVariableMap(typeVariableMap)
+            .setDefiningTypeVariable(false)
+            .setAppendPackageName(false)
+            .setIncludeGenerics(includeGenerics)
+    );
 }
 
-function getParameterizedName(type, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics) {
+function getParameterizedName(type, config) {
     // Append the package name as long as the owner type does not exist and appendPackageName is true
-    const rawTypeName = cachedGenericDefinition(type.getRawType(), typeVariableMap, isDefiningTypeVariable, appendPackageName && !exists(type.getOwnerType()), includeGenerics);
+    const rawTypeName = cachedGenericDefinition(type.getRawType(), config.setAppendPackageName(config.getAppendPackageName() && !exists(type.getOwnerType())).disableEnclosingName(true));
     const ownerType = type.getOwnerType();
-    const ownerPrefix = (exists(ownerType) ? cachedGenericDefinition(ownerType, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics) + "$" : "");
+    const ownerPrefix = (exists(ownerType) && (!config.getDefiningParameterizedType()) ? cachedGenericDefinition(ownerType, config.disableEnclosingName(true)) + "$" : "");
     const actualTypes = type.getTypeVariables();
-    if (actualTypes.length === 0 || !includeGenerics) {
+    if (actualTypes.length === 0 || !config.getIncludeGenerics()) {
         return ownerPrefix + rawTypeName;
     }
     const genericArguments = joiner(
         actualTypes,
         ", ",
-        (actualType) => cachedGenericDefinition(actualType, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics),
+        (actualType) => cachedGenericDefinition(actualType, config),
         "<",
         ">"
     );
     return ownerPrefix + rawTypeName + genericArguments;
 }
 
-function getWildcardName(type, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics) {
+function getWildcardName(type, config) {
     const name = "?";
     const lowerBounds = type.getLowerBound();
     if (lowerBounds.length !== 0) {
         return name + joiner(
             lowerBounds,
             " & ",
-            (bound) => cachedGenericDefinition(bound, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics),
+            (bound) => cachedGenericDefinition(bound, config),
             " super "
         );
     }
@@ -213,53 +226,53 @@ function getWildcardName(type, typeVariableMap, isDefiningTypeVariable, appendPa
         return name + joiner(
             upperBounds,
             " & ",
-            (bound) => cachedGenericDefinition(bound, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics),
+            (bound) => cachedGenericDefinition(bound, config),
             " extends "
         );
     }
     return name;
 }
 
-function getTypeVariableName(type, isDefiningTypeVariable, typeVariableMap, appendPackageName, includeGenerics) {
+function getTypeVariableName(type, config) {
     const typeVariableName = decompressString(type.data[PROPERTY.TYPE_VARIABLE_NAME]);
-    if (isDefiningTypeVariable) {
+    if (config.getDefiningTypeVariable()) {
         return typeVariableName;
     }
     const bounds = type.getTypeVariableBounds();
     if (bounds.length === 0) {
         return typeVariableName;
     }
-    return typeVariableName + joiner(bounds, " & ", (bound) => cachedGenericDefinition(bound, typeVariableMap, true, appendPackageName, includeGenerics), " extends ");
+    return typeVariableName + joiner(bounds, " & ", (bound) => cachedGenericDefinition(bound, config.setDefiningTypeVariable(true)), " extends ");
 }
 
-function getRawClassName(type, appendPackageName) {
+function getRawClassName(type, config) {
     const name = decompressString(type.data[PROPERTY.CLASS_NAME])
-    if (appendPackageName) {
+    if (config.getAppendPackageName()) {
         return type.package() + "." + name;
     } else {
         return name;
     }
 }
 
-function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics) {
+function getGenericDefinitionLogic(type, config) {
     type = getClass(type);
     if (type.isTypeVariable()) {
-        type = exists(typeVariableMap[type]) ? getClass(typeVariableMap[type]) : type;
+        type = config.remapType(type);
     }
     if (type.isRawClass()) {
-        if (exists(type.getDeclaringClass())) {
-            return cachedGenericDefinition(type.getDeclaringClass(), typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics) + "$" + getRawClassName(type, false);
+        if (exists(type.getDeclaringClass()) && !config.getDefiningParameterizedType()) {
+            return cachedGenericDefinition(type.getDeclaringClass(), config) + "$" + getRawClassName(type, config);
         }
-        return getRawClassName(type, appendPackageName);
+        return getRawClassName(type, config);
     }
     if (type.isTypeVariable()) {
-        return getTypeVariableName(type, isDefiningTypeVariable, typeVariableMap, appendPackageName, includeGenerics);
+        return getTypeVariableName(type, config);
     }
     if (type.isWildcard()) {
-        return getWildcardName(type, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics);
+        return getWildcardName(type, config);
     }
     if (type.isParameterizedType()) {
-        return getParameterizedName(type, typeVariableMap, isDefiningTypeVariable, appendPackageName, includeGenerics);
+        return getParameterizedName(type, config);
     }
 
     console.error("Unknown Type! Cannot get generic definition for: ", type.id(), type.data);
@@ -269,4 +282,86 @@ function getGenericDefinitionLogic(type, typeVariableMap, isDefiningTypeVariable
 }
 
 
-let cachedGenericDefinition = cachedFunction(getGenericDefinitionLogic);
+cachedGenericDefinition = cachedFunction(getGenericDefinitionLogic);
+
+name_parameters = class {
+    constructor() {
+        this.typeVariableMap = {};
+        this.isDefiningTypeVariable = false;
+        this.appendPackageName = true;
+        this.includeGenerics = false;
+        this.isDefiningParameterizedType = false;
+    }
+
+    clone() {
+        return Object.assign(new name_parameters(), this);
+    }
+
+    setTypeVariableMap(typeVariableMap) {
+        const clone = this.clone();
+        clone.typeVariableMap = typeVariableMap;
+        return clone;
+    }
+
+    setDefiningTypeVariable(isDefiningTypeVariable) {
+        const clone = this.clone();
+        clone.isDefiningTypeVariable = isDefiningTypeVariable;
+        return clone;
+    }
+
+    setAppendPackageName(appendPackageName) {
+        const clone = this.clone();
+        clone.appendPackageName = appendPackageName;
+        return clone;
+    }
+
+    setIncludeGenerics(includeGenerics) {
+        const clone = this.clone();
+        clone.includeGenerics = includeGenerics;
+        return clone;
+    }
+
+    disableEnclosingName(isDefiningParameterizedType) {
+        const clone = this.clone();
+        clone.isDefiningParameterizedType = isDefiningParameterizedType;
+        return clone;
+    }
+
+    getTypeVariableMap() {
+        return this.typeVariableMap;
+    }
+
+    getDefiningTypeVariable() {
+        return this.isDefiningTypeVariable;
+    }
+
+    getAppendPackageName() {
+        return this.appendPackageName;
+    }
+
+    getIncludeGenerics() {
+        return this.includeGenerics;
+    }
+
+    getDefiningParameterizedType() {
+        return this.isDefiningParameterizedType;
+    }
+
+    remapType(type) {
+        if (typeof type === 'number') {
+            if (exists(getTypeVariables()[type])) {
+                return getClass(getTypeVariables()[type]);
+            }else {
+                return getClass(type);
+            }
+        }
+        if (exists(type['isTypeVariable'])) {
+            if (exists(this.typeVariableMap[type.id()])) {
+                return getClass(this.typeVariableMap[type.id()]);
+            }else {
+                return type;
+            }
+        }
+        return type;
+    }
+}
