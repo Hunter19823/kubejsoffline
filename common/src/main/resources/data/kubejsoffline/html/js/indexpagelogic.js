@@ -461,7 +461,7 @@ function createOptimizationWorkerThread() {
     parts.push(document.getElementById('relationship-graphs').innerText);
     parts.push(document.getElementById('class-data-tools').innerText);
     parts.push(document.getElementById('worker-script').innerText);
-    console.log(parts);
+
     return new Worker(URL.createObjectURL(new Blob(parts, {type: 'application/javascript'})));
 }
 
@@ -479,7 +479,6 @@ function onWindowLoad() {
             LOOK_UP_CACHE.set(key, value);
         });
         const NEW_RELATIONSHIP_GRAPH = e.data.RELATIONSHIP_GRAPH;
-        console.log("New Relationship Graph: ", NEW_RELATIONSHIP_GRAPH);
         loadJSONToRelationshipGraph(NEW_RELATIONSHIP_GRAPH);
         WORKER.terminate();
         clearToast();
