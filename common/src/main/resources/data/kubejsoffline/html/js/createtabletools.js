@@ -31,7 +31,7 @@ function createMethodTable(id, typeVariableMap = {}) {
             console.error("Failed to create method entry for ", id, " method: ", method, " Error: ", e);
         }
     }
-    createPagedTable('Methods', 'methods', methods, addToTable, 'Link', 'Methods')
+    createPagedTable('Methods', 'methods', methods, addToTable, 'Link', 'Signature', 'Return Type')
             .sortableByMethod((a) => a)
             .create();
 }
@@ -69,7 +69,7 @@ function createFieldTable(id, typeVariableMap = {}) {
             console.error("Failed to create field entry for ", id, " field: ", field, " Error: ", e);
         }
     }
-    createPagedTable('Fields', 'fields', fields, addToTable, 'Link', 'Fields')
+    createPagedTable('Fields', 'fields', fields, addToTable, 'Link', 'Signature', 'Type')
             .sortableByField((a) => a)
             .create();
 }
@@ -128,7 +128,7 @@ function createRelationshipTable(id, typeVariableMap = {}) {
             console.error("Failed to create relationship entry for ", data.id(), " To: ", to, " Relations: ", relations, " Error: ", e);
         }
     };
-    createPagedTable('Relationships', 'relations', [...relationships.entries()], addToTable, 'RelatedClass', 'Relationships')
+    createPagedTable('Relationships', 'relations', [...relationships.entries()], addToTable, 'Links', 'RelatedClass', 'Relationships')
         .sortableByRelation()
         .create();
 }
