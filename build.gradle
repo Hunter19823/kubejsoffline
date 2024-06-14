@@ -32,6 +32,9 @@ subprojects {
         processResources {
             outputs.upToDateWhen { false }
 
+            def p1 = 'git rev-parse HEAD'.execute()
+            p1.waitFor()
+            project.setProperty("github_commit_hash", p1.text.trim())
             filesMatching([rootProject.forge_config, rootProject.fabric_config, "pack.mcmeta", "data/kubejsoffline/html/js/constants.js"]) {
                 expand project.properties
             }

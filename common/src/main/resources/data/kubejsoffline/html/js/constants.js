@@ -28,7 +28,8 @@ const PROJECT_INFO = {
     "fabric_api_version": "${fabric_api_version}",
     "forge_version": "${forge_version}",
     "kubejs_version": "${kubejs_version}",
-    "architectury_version": "${architectury_version}"
+    "architectury_version": "${architectury_version}",
+    "git_commit": "${github_commit_hash}",
 }
 
 /**
