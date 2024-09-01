@@ -101,10 +101,15 @@ function createFullSignature(id, typeVariableMap = {}) {
     return fullSignature;
 }
 
+/**
+ * This function creates a html element representing a method.
+ * @param method{Method} The method being represented
+ * @param typeVariableMap{TypeVariableMap} The type variable map
+ * @returns {HTMLSpanElement} The html element representing the method
+ */
 function createMethodSignature(method, typeVariableMap = {}) {
     let out = document.createElement('span');
     let parameters = method.parameters();
-    let param = null;
     let name = span(method.name());
     appendAnnotationToolTip(name, method.annotations(), typeVariableMap);
     out.append(span(MODIFIER.toString(method.modifiers()) + " "));
@@ -113,18 +118,21 @@ function createMethodSignature(method, typeVariableMap = {}) {
     out.append(name);
     out.append('(');
     for (let i = 0; i < parameters.length; i++) {
-        param = parameters[i];
-        out.appendChild(createShortLink(param.type(), typeVariableMap));
-        name = span(param.name());
-        appendAnnotationToolTip(name, param.annotations(), typeVariableMap);
-        out.append(' ');
-        out.append(name);
+        out.append(createParameterSignature(parameters[i], typeVariableMap));
         if (i < parameters.length - 1) {
             out.append(', ');
         }
     }
     out.append(')');
     return out;
+}
+
+function createParameterSignature(parameter, typeVariableMap = {}) {
+    let output = span();
+    output.append(createShortLink(parameter.type(), typeVariableMap));
+    output.append(' ');
+    output.append(appendAnnotationToolTip(parameter.name(), parameter.annotations(), typeVariableMap));
+    return output;
 }
 
 /**

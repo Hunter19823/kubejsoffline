@@ -19,6 +19,11 @@ function createMethodTable(id, typeVariableMap = {}) {
     if (methods.length === 0) {
         return;
     }
+    /**
+     * Adds a method to a table
+     * @param table{HTMLTableElement} The table to add the method to.
+     * @param method{Method} The method to add
+     */
     const addToTable = (table, method) => {
         try {
             appendAttributesToMethodTableRow(

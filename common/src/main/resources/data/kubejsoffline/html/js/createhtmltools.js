@@ -17,6 +17,9 @@ function addRow(table, ...data) {
 function div(...args) {
     let div = document.createElement('div');
     for (let arg of args) {
+        if (typeof arg === 'string') {
+            arg = span(arg);
+        }
         div.appendChild(arg);
     }
     return div;
@@ -110,7 +113,7 @@ function href(element, url) {
 
 function appendAnnotationToolTip(tag, annotations, typeVariableMap = {}) {
     if (!annotations || annotations.length === 0)
-        return;
+        return tag;
 
     tag.classList.add('tooltip');
     let tooltip = document.createElement('div');
@@ -119,6 +122,7 @@ function appendAnnotationToolTip(tag, annotations, typeVariableMap = {}) {
         tooltip.appendChild(createAnnotationSignature(annotation, typeVariableMap));
     }
     tag.appendChild(tooltip);
+    return tag;
 }
 
 
