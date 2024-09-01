@@ -372,6 +372,17 @@ name_parameters = class {
     }
 }
 
+/**
+ * A helper function to create a span element
+ * that consists of a list of elements.
+ * @template T
+ * @param values{Array<T>} the values to join
+ * @param separator{string} the separator to use
+ * @param transformer{function(T): HTMLElement} the transformer to use
+ * @param prefix{HTMLElement?} the prefix to use
+ * @param suffix{HTMLElement?} the suffix to use
+ * @returns {HTMLSpanElement} the span element
+ */
 function tagJoiner(values, separator, transformer = (a) => span(a), prefix, suffix) {
     if (!exists(transformer)) {
         transformer = (a) => span(a);

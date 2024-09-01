@@ -263,17 +263,18 @@
  * @public
  */
 /**
- * @typedef TypeVariablesHolder
- * @method getTypeVariables - Retrieves the type variables of the object.
- * @property {function(): Array<TypeIdentifier>} getTypeVariables - Retrieves the type variables of the object.
- * @public
- */
-/**
  * @typedef NameHolder
  * @method name - Retrieves the name of the object.
  * @method getName - Retrieves the name of the object. (Alias for name)
  * @property {function(): string} name - Retrieves the name of the object.
  * @property {function(): string} getName - Retrieves the name of the object. (Alias for name)
+ * @public
+ */
+/**
+ * @typedef {NameHolder} TypeVariablesHolder
+ * @method getTypeVariables - Retrieves the type variables of the object.
+ * @property {function(): Array<TypeIdentifier>} getTypeVariables - Retrieves the type variables of the object.
+ *
  * @public
  */
 /**
