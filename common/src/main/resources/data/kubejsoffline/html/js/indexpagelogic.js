@@ -470,6 +470,7 @@ function onWindowLoad() {
     setToast("Please wait while data is being indexed. This should only take a few seconds.");
     const WORKER = createOptimizationWorkerThread();
     WORKER.onmessage = (e) => {
+        console.log("Worker thread has sent data back.");
         const OPTIMIZED_DATA = e.data.data;
         Object.entries(OPTIMIZED_DATA).forEach(([key, value]) => {
             DATA[key] = value;
@@ -501,11 +502,13 @@ function onWindowLoad() {
 
         console.debug("Hash Change Complete.");
     }
-    WORKER.onError = (e) => {
+    WORKER.onerror = (e) => {
         console.error("Error occurred optimizing data: ", e);
         setToast("An error occurred while optimizing data. Please refresh the page to try again. Please report this issue if it persists.");
     }
+    console.log("Now sending the optimize task...");
     WORKER.postMessage({task: TASKS.OPTIMIZE})
+    console.log("Optimize task sent.");
 }
 
 
