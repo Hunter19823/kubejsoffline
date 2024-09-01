@@ -27,7 +27,23 @@ function createMethodTable(id, typeVariableMap = {}) {
     const addToTable = (table, method) => {
         try {
             appendAttributesToMethodTableRow(
-                    addRow(table, createMethodSignature(method, typeVariableMap), createFullSignature(method.type())),
+                addRow(
+                    table,
+                    createMethodSignature(method, typeVariableMap),
+                    span(MODIFIER.toString(method.getModifiers())),
+                    createFullSignature(method.type()),
+                    span(method.name()),
+                    tagJoiner(
+                        method.getParameters(),
+                        ", ",
+                        (param) => createParameterSignature(param, param.getTypeVariableMap())
+                    ),
+                    tagJoiner(
+                        method.getTypeVariables(),
+                        ", ",
+                        (typeVariable) => createFullSignature(typeVariable, method.getTypeVariableMap())
+                    )
+                ),
                     method.getDeclaringClass(),
                     method,
                     target.id()
@@ -36,7 +52,7 @@ function createMethodTable(id, typeVariableMap = {}) {
             console.error("Failed to create method entry for ", id, " method: ", method, " Error: ", e);
         }
     }
-    createPagedTable('Methods', 'methods', methods, addToTable, 'Link', 'Signature', 'Return Type')
+    createPagedTable('Methods', 'methods', methods, addToTable, 'Link', 'Signature', 'Access Modifiers', 'Return Type', 'Method Name', 'Parameters', 'Type Variables')
             .sortableByMethod((a) => a)
             .create();
 }
@@ -65,7 +81,11 @@ function createFieldTable(id, typeVariableMap = {}) {
     const addToTable = (table, field) => {
         try {
             appendAttributesToFieldTableRow(
-                    addRow(table, createFieldSignature(field, typeVariableMap), createFullSignature(field.type())),
+                addRow(
+                    table,
+                    createFieldSignature(field, typeVariableMap),
+                    createFullSignature(field.type())
+                ),
                     field.getDeclaringClass(),
                     field,
                     target.id()

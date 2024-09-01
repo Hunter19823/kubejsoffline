@@ -550,6 +550,8 @@ PageableSortableTable = class {
         this.table_element = document.createElement('table');
         this.table_element.id = this.table_id;
         this.table_element.classList.add('sortable-table');
+        this.table_element.classList.add('sortable');
+        this.table_element.classList.add('searchable');
 
         // Create the table body and rows
         this.table_body = document.createElement('tbody');
