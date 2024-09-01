@@ -61,7 +61,7 @@ const GLOBAL_SETTINGS = {
     "showPackage": true,
     "showRelationships": true,
     "defaultSearchPageSize": 25,
-    "debug": true,
+    "debug": false,
 };
 
 /**
