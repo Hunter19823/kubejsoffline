@@ -170,6 +170,20 @@ PageableSortableTable = class {
     static SORTABLE_BY_MOD = ['mod', attributeComparator('getModifier', sortByModifier)];
     static SORTABLE_BY_TYPE = ['type', attributeComparator('getType', sortByName, (a) => getClass(a).name().toLowerCase())];
     static SORTABLE_BY_DECLARING_CLASS = ['declaring-class', attributeComparator('getDeclaringClass', sortByName, (a) => getClass(a).name().toLowerCase())];
+    static SORTABLE_BY_PARAMETERS = ['parameters', attributeComparator('getParameters', sortByName, (a) => {
+        return joiner(a, ", ",
+            /** @param p{Parameter} */
+            (p) => {
+                return getClass(p.getType()).simpleName() + " " + p.name();
+            })
+    })];
+    static SORTABLE_BY_TYPE_VARIABLES = ['type-variables', attributeComparator('getTypeVariables', sortByName, (a) => {
+        return joiner(a, ", ",
+            /** @param p{TypeIdentifier} */
+            (p) => {
+                return createShortLink(p).innerText;
+            })
+    })];
 
 
     /**
@@ -724,6 +738,8 @@ PageableSortableTable = class {
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, mutator)
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator)
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_PARAMETERS, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE_VARIABLES, mutator)
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator);
     }
 

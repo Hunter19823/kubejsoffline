@@ -53,7 +53,16 @@ function deobfuscateData(data) {
     return deobfuscatedData;
 }
 
-
+/**
+ * A helper function to join text by some separator with options for prefixes and suffixes.
+ * @template T
+ * @param values{Array<T>} the values to join
+ * @param separator{string} the separator to use
+ * @param transformer{function(T): string} the transformer to use
+ * @param prefix{string?} the prefix to use
+ * @param suffix{string?} the suffix to use
+ * @returns {string} the span element
+ */
 function joiner(values, separator, transformer = (a) => a, prefix = "", suffix = "") {
     if (!exists(transformer)) {
         transformer = (a) => a;
