@@ -349,7 +349,7 @@ PageableSortableTable = class {
             0,
             Math.min(
                 this.page * this.page_size,
-                data.length - this.page_size
+                data.length - 1
             )
         );
         let end = Math.min(
