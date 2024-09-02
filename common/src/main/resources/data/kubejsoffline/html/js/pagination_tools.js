@@ -197,8 +197,10 @@ PageableSortableTable = class {
         this.expand = false;
         this.sort_by = (this.url.params.has(this.PARAMETER_SORT_BY)) ? this.url.params.get(this.PARAMETER_SORT_BY) : 'default';
         this.sort = (a, b) => 0;
-        this.sort_order = (this.url.params.has(this.PARAMETER_SORT_DIRECTION)) ? parseInt(this.url.params.get(this.PARAMETER_SORT_DIRECTION)) : 1;
+        this.sort_order = (this.url.params.has(this.PARAMETER_SORT_DIRECTION)) ?
+            this._normalizeSortDirection(parseInt(this.url.params.get(this.PARAMETER_SORT_DIRECTION))) : 1;
         this.sort_options = {};
+        this.sort_option_names = [];
 
         this.table_items = [];
         this.table_header_element = null;
@@ -207,6 +209,16 @@ PageableSortableTable = class {
         this.table_header_row = null;
         this.table_body = null;
         this._sort_changed = true;
+    }
+
+    _normalizeSortDirection(direction) {
+        if (direction < 0) {
+            return -1;
+        }
+        if (direction > 0) {
+            return 1;
+        }
+        return 1;
     }
 
     setHeaders(...headers) {
@@ -261,14 +273,27 @@ PageableSortableTable = class {
 
     hasSortChanged() {
         if (this.url.params.has(this.PARAMETER_SORT_BY)) {
-            if (this.sort_by !== this.url.params.get(this.PARAMETER_SORT_BY)) {
-                this.sort_by = this.url.params.get(this.PARAMETER_SORT_BY);
+            let sort_by = this.url.params.get(this.PARAMETER_SORT_BY);
+            if (this.sort_by !== sort_by) {
+                this.sort_by = sort_by;
+                this._sort_changed = true;
+            }
+        } else {
+            if (this.sort_by !== 'default') {
+                this.sort_by = 'default';
+                this.sort_order = 1;
                 this._sort_changed = true;
             }
         }
         if (this.url.params.has(this.PARAMETER_SORT_DIRECTION)) {
-            if (this.sort_order !== parseInt(this.url.params.get(this.PARAMETER_SORT_DIRECTION))) {
-                this.sort_order = parseInt(this.url.params.get(this.PARAMETER_SORT_DIRECTION));
+            let sort_dir_normalized = this._normalizeSortDirection(parseInt(this.url.params.get(this.PARAMETER_SORT_DIRECTION)));
+            if (this.sort_order !== sort_dir_normalized) {
+                this.sort_order = sort_dir_normalized;
+                this._sort_changed = true;
+            }
+        } else {
+            if (this.sort_by === 'default' && this.sort_order !== 1) {
+                this.sort_order = 1;
                 this._sort_changed = true;
             }
         }
@@ -294,6 +319,7 @@ PageableSortableTable = class {
         let data = this.data;
         let sort = this.getCurrentSort();
         if (exists(sort) && this._sort_changed) {
+            console.debug("Current Sort for table ", this.table_id, " has changed to ", this.sort_by, " with order ", this.sort_order);
             data.sort(sort);
         }
         if (this.sort_order < 0 && this._sort_changed) {
@@ -322,6 +348,9 @@ PageableSortableTable = class {
 
     addSortOption(option, sort) {
         this.sort_options[option] = sort;
+        if (!this.sort_option_names.includes(option)) {
+            this.sort_option_names.push(option);
+        }
         return this;
     }
 
@@ -352,7 +381,7 @@ PageableSortableTable = class {
         return this.table_items;
     }
 
-    createTableHeader() {
+    createTableLabel() {
         let HEADER_URL = this.url.clone();
         // Create the pagination header
         this.table_header_element = document.createElement('h2');
@@ -545,6 +574,85 @@ PageableSortableTable = class {
         return this;
     }
 
+    getSortState(header, index = -1) {
+        // This will return either:
+        // 1, 2, 3
+        // 1 meaning default, not being sorted.
+        // 2 meaning sort ascended
+        // 3 meaning sort descended
+        console.debug("Table ", this.table_id, " is checking the sort state of ", header, " with sort by ", this.sort_by, " which maps to sortable header: ", this.getSortForHeader(header));
+        if (this.sort_by !== this.getSortForHeader(header) || (index == 1 && this.getSortForHeader(header) === this.sort_by)) {
+            return 1;
+        }
+        if (this.sort_order === 1) {
+            return 2;
+        }
+        return 3;
+    }
+
+    getSortForHeader(header_name) {
+        // Assume header was provided.
+        console.log("Sort Option Length: ", this.sort_option_names.length);
+        for (let i = 1; i < this.headers.length && i <= this.sort_option_names.length; i++) {
+            let header = this.headers[i];
+            if (header.toLowerCase() === header_name.toLowerCase()) {
+                return this.sort_option_names[i - 1];
+            }
+        }
+        console.debug("Header ", header_name, " was not found in the sort options. It cannot be sorted.", this.sort_option_names, this.headers);
+        return null;
+    }
+
+    createTableHeader(header, index) {
+        let th = document.createElement('th');
+        let sort_header_name = this.getSortForHeader(header);
+        th.append(span(header));
+        if (!exists(sort_header_name) || index >= this.sort_option_names.length) {
+            console.log("Header of ", this.table_id, " does not have a sort option for ", header);
+            return th;
+        }
+        const clonedURL = this.url.clone();
+        clonedURL.params.set(this.PARAMETER_FOCUS, this.TABLE_HEADER);
+        clonedURL.params.set(this.PARAMETER_SORT_BY, sort_header_name);
+        let currentSortState = this.getSortState(header);
+        console.debug("Table ", this.table_id, " has header ", header, " in sort state: ", currentSortState);
+        switch (currentSortState) {
+            case 1:
+                // Default Ascending
+                clonedURL.params.set(this.PARAMETER_SORT_DIRECTION, "1");
+                break
+            case 2:
+                // Switch to Descending
+                clonedURL.params.set(this.PARAMETER_SORT_DIRECTION, "-1");
+                break;
+            case 3:
+                // Switch to default
+                clonedURL.params.delete(this.PARAMETER_SORT_DIRECTION);
+                clonedURL.params.delete(this.PARAMETER_SORT_BY);
+                break;
+            default:
+                throw new Error("Invalid sort state provided: " + this.getSortState(header) + " for header: " + header);
+        }
+        const REFERENCE = clonedURL.hrefHash();
+        th.setAttribute('href', `${REFERENCE}`);
+        th.setAttribute('onclick', 'changeURLFromElement(this);');
+        let arrow = null;
+        if (currentSortState === 1) {
+            arrow = span("\u{21C5}");
+        } else if (currentSortState === 2) {
+            arrow = span("\u{25BC}");
+        } else if (currentSortState === 3) {
+            arrow = span("\u{25B2}");
+        }
+        if (exists(arrow)) {
+            arrow.style.textAlign = 'right';
+            arrow.style.float = 'right';
+            console.log("Now changing ", this.table_id, " table's ", header, " header to ", arrow, " sort arrow");
+            th.append(arrow);
+        }
+        return th;
+    }
+
     createTable() {
         // Create a class table
         this.table_element = document.createElement('table');
@@ -561,11 +669,10 @@ PageableSortableTable = class {
         this.table_header_row = document.createElement("tr");
         this.table_body.appendChild(this.table_header_row);
 
+        this.hasSortChanged();
         // Create the table headers
         for (let i = 0; i < this.headers.length; i++) {
-            let th = document.createElement('th');
-            this.table_header_row.appendChild(th);
-            th.append(this.headers[i]);
+            this.table_header_row.appendChild(this.createTableHeader(this.headers[i], i));
         }
 
         let data = this.getCurrentData();
@@ -597,7 +704,7 @@ PageableSortableTable = class {
     create() {
         this.updatePageData();
         // console.log("Now loading ", this.title, " with ", this.data.length, " items on page ", this.page, " with page size ", this.page_size, " and sort by ", this.sort_by, " and sort order ", this.sort_order, " and expanded ", this.expand, " with sort options ", this.sort_options, " and sort direction ", this.sort_order);
-        this.createTableHeader().createTable().createDiv().addToDocument();
+        this.createTableLabel().createTable().createDiv().addToDocument();
         GLOBAL_DATA[this.table_id] = this;
         return this;
     }
@@ -614,18 +721,18 @@ PageableSortableTable = class {
     sortableByMethod(mutator = getMethod) {
         return this
             .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
-            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, mutator)
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator);
     }
 
     sortableByField(mutator = getField) {
         return this
             .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
-            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, mutator)
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator);
     }
 
