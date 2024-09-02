@@ -930,7 +930,7 @@ function getAnnotation(annotationData, typeVariableMap = {}) {
  * Returns a relationship wrapper object with the given relationship data.
  *
  * @param {TypeIdentifier} to The type identifier of the class that this relationship is to.
- * @param {Relation[]} relations The relations between the two classes.
+ * @param {Array<Relationship>} relations The relations between the two classes.
  * @returns {Relationship} The relationship wrapper object.
  */
 function getRelationship([to, relations]) {

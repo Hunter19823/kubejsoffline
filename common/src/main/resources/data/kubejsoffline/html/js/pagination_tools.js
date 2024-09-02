@@ -184,7 +184,10 @@ PageableSortableTable = class {
                 return createShortLink(p).innerText;
             })
     })];
-
+    static SORTABLE_BY_RELATIONSHIP = ['relationships', attributeComparator('_relations', sortByName, (a) => {
+        console.log("Sorting Relations", a);
+        return "";
+    })]
 
     /**
      * Creates a pageable and sortable table.
@@ -727,9 +730,10 @@ PageableSortableTable = class {
         return this
             .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
-            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, mutator)
-            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator)
-            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator);
+            // .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, mutator)
+            // .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator)
+            // .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator)
+            ;
     }
 
     sortableByMethod(mutator = getMethod) {
@@ -752,7 +756,10 @@ PageableSortableTable = class {
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator);
     }
 
+    // TODO: Fix relationships
     sortableByRelation(mutator = getRelationship) {
-        return this.sortableByClass(mutator);
+        return this
+            .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_RELATIONSHIP, mutator);
     }
 }

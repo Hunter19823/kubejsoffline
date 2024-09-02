@@ -147,7 +147,11 @@ function createRelationshipTable(id, typeVariableMap = {}) {
     }
     const addToTable = (table, [to, relations]) => {
         try {
-            let row = addRow(table, createFullSignature(to, typeVariableMap), span(relations.join(",")));
+            let row = addRow(
+                table,
+                createFullSignature(to, typeVariableMap),
+                span(relations.join(","))
+            );
             appendAttributesToRelationshipToTableRow(row, to, relations, data.id())
         } catch (e) {
             console.error("Failed to create relationship entry for ", data.id(), " To: ", to, " Relations: ", relations, " Error: ", e);

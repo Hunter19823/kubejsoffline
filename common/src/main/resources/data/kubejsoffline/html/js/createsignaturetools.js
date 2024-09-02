@@ -131,7 +131,7 @@ function createParameterSignature(parameter, typeVariableMap = {}) {
     let output = span();
     output.append(createShortLink(parameter.type(), typeVariableMap));
     output.append(' ');
-    output.append(appendAnnotationToolTip(parameter.name(), parameter.annotations(), typeVariableMap));
+    output.append(appendAnnotationToolTip(span(parameter.name()), parameter.annotations(), typeVariableMap));
     return output;
 }
 
