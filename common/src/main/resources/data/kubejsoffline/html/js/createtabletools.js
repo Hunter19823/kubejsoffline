@@ -42,7 +42,8 @@ function createMethodTable(id, typeVariableMap = {}) {
                         method.getTypeVariables(),
                         ", ",
                         (typeVariable) => createFullSignature(typeVariable, method.getTypeVariableMap())
-                    )
+                    ),
+                    createFullSignature(method.getDeclaringClass())
                 ),
                     method.getDeclaringClass(),
                     method,
@@ -52,7 +53,16 @@ function createMethodTable(id, typeVariableMap = {}) {
             console.error("Failed to create method entry for ", id, " method: ", method, " Error: ", e);
         }
     }
-    createPagedTable('Methods', 'methods', methods, addToTable, 'Link', 'Signature', 'Access Modifiers', 'Return Type', 'Method Name', 'Parameters', 'Type Variables')
+    createPagedTable('Methods', 'methods', methods, addToTable,
+        'Link',
+        'Signature',
+        'Access Modifiers',
+        'Return Type',
+        'Method Name',
+        'Parameters',
+        'Type Variables',
+        'Declared In'
+    )
             .sortableByMethod((a) => a)
             .create();
 }
@@ -84,7 +94,10 @@ function createFieldTable(id, typeVariableMap = {}) {
                 addRow(
                     table,
                     createFieldSignature(field, typeVariableMap),
-                    createFullSignature(field.type())
+                    span(MODIFIER.toString(field.modifiers())),
+                    createFullSignature(field.type()),
+                    span(field.getName()),
+                    createFullSignature(field.getDeclaringClass())
                 ),
                     field.getDeclaringClass(),
                     field,
@@ -94,7 +107,7 @@ function createFieldTable(id, typeVariableMap = {}) {
             console.error("Failed to create field entry for ", id, " field: ", field, " Error: ", e);
         }
     }
-    createPagedTable('Fields', 'fields', fields, addToTable, 'Link', 'Signature', 'Type')
+    createPagedTable('Fields', 'fields', fields, addToTable, 'Link', 'Signature', 'Access Modifiers', 'Type', 'Field Name', 'Declaring Class')
             .sortableByField((a) => a)
             .create();
 }
@@ -123,7 +136,22 @@ function createConstructorTable(id, typeVariableMap = {}) {
     const addToTable = (table, constructor) => {
         try {
             appendAttributesToConstructorTableRow(
-                    addRow(table, createConstructorSignature(constructor, id, typeVariableMap)),
+                addRow(
+                    table,
+                    createConstructorSignature(constructor, id, typeVariableMap),
+                    span(MODIFIER.toString(constructor.modifiers())),
+                    tagJoiner(
+                        constructor.getParameters(),
+                        ", ",
+                        (param) => createParameterSignature(param, param.getTypeVariableMap())
+                    ),
+                    tagJoiner(
+                        constructor.getTypeVariables(),
+                        ", ",
+                        (typeVariable) => createFullSignature(typeVariable, constructor.getTypeVariableMap())
+                    ),
+                    createFullSignature(constructor.getDeclaringClass())
+                ),
                     constructor.getDeclaringClass(),
                     constructor,
                     target.id()
@@ -132,7 +160,14 @@ function createConstructorTable(id, typeVariableMap = {}) {
             console.error("Failed to create constructor table for ", target.id(), " Constructor: ", constructor, " Error: ", e);
         }
     }
-    createPagedTable('Constructors', 'constructors', constructors, addToTable, 'Link', 'Constructors')
+    createPagedTable('Constructors', 'constructors', constructors, addToTable,
+        'Link',
+        'Constructors',
+        'Access Modifiers',
+        'Parameters',
+        'Type Variables',
+        'Declared In'
+    )
             .create();
 }
 
@@ -157,7 +192,45 @@ function createRelationshipTable(id, typeVariableMap = {}) {
             console.error("Failed to create relationship entry for ", data.id(), " To: ", to, " Relations: ", relations, " Error: ", e);
         }
     };
-    createPagedTable('Relationships', 'relations', [...relationships.entries()], addToTable, 'Links', 'RelatedClass', 'Relationships')
+    createPagedTable('Relationships', 'relations', [...relationships.entries()], addToTable,
+        'Links',
+        'RelatedClass',
+        'Relationships'
+    )
         .sortableByRelation()
+        .create();
+}
+
+function createClassTable(title, table_id, classes) {
+
+    const addToTable = (table, subject) => {
+        try {
+            let row = addRow(
+                table,
+                createFullSignature(subject),
+                span(MODIFIER.toString(subject.modifiers())),
+                span(subject.getPackage()),
+                span(subject.getSimpleName()),
+                tagJoiner(
+                    subject.getTypeVariables(),
+                    ", ",
+                    (typeVariable) => createFullSignature(typeVariable, subject.getTypeVariableMap())
+                )
+            );
+            appendAttributesToClassTableRow(row, subject)
+        } catch (e) {
+            console.error(`Failed to create entry for `, table_id, " Class: ", subject, " Error: ", e);
+        }
+    };
+
+    createPagedTable(title, table_id, classes, addToTable,
+        'Link',
+        'Signature',
+        'Modifiers',
+        'Package',
+        'Name',
+        'Type Variables'
+    )
+        .sortableByClass((a) => a)
         .create();
 }

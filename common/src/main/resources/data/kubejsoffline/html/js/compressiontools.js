@@ -537,6 +537,8 @@ function getParameterizedTypeSignature(type, outputSpan, config) {
     return outputSpan;
 }
 
+// TODO: Fix nested signatures
+// Example: #net.minecraftforge.event.RegistryEvent$MissingMappings<net.minecraft.world.level.block.Block>?focus=net.minecraftforge.event.RegistryEvent%24net.minecraftforge.event.MissingMappings%3CT+extends+net.minecraftforge.registries.IForgeRegistryEntry%3CT%3E%3E.getMappings%28%29
 function createLinkableSignature(type, config) {
     type = getClass(type);
     const outputSpan = document.createElement('span');

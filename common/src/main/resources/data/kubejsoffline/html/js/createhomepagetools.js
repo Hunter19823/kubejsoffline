@@ -36,24 +36,12 @@ function createHomePage() {
     wipePage();
     const keys = Object.keys(DATA._events);
 
-    let span = null;
-    let table = null;
     for (let i = 0; i < keys.length; i++) {
         const key = keys[i];
         const period = key.lastIndexOf('.');
         const title = period === -1 ? key : `${key.substring(period + 1)} (${key.substring(0, period)})`;
         if (DATA._events[key].length === 0)
             continue;
-        const addToTable = (table, event) => {
-            try {
-                let row = addRow(table, createFullSignature(event));
-                appendAttributesToClassTableRow(row, event)
-            } catch (e) {
-                console.error("Failed to create homepage entry for ", key, " Class: ", event, " Error: ", e);
-            }
-        };
-        createPagedTable(title, key, DATA._events[key], addToTable, 'Link', 'Class')
-            .sortableByClass()
-            .create();
+        createClassTable(title, key, DATA._events[key].filter(exists).map(getClass))
     }
 }

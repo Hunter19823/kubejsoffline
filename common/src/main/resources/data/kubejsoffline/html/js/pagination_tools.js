@@ -166,7 +166,8 @@ function matchAllHeadersToSameWidth(table) {
 
 PageableSortableTable = class {
     static SORTABLE_DEFAULT = ['default', defaultSort];
-    static SORTABLE_BY_NAME = ['name', attributeComparator('getName', sortByName, (a) => a.toLowerCase())];
+    static SORTABLE_BY_NAME = ['name', attributeComparator('getName', sortByName)];
+    static SORTABLE_BY_PACKAGE = ['package', attributeComparator('getPackage', sortByName)];
     static SORTABLE_BY_MOD = ['mod', attributeComparator('getModifier', sortByModifier)];
     static SORTABLE_BY_TYPE = ['type', attributeComparator('getType', sortByName, (a) => getClass(a).name().toLowerCase())];
     static SORTABLE_BY_DECLARING_CLASS = ['declaring-class', attributeComparator('getDeclaringClass', sortByName, (a) => getClass(a).name().toLowerCase())];
@@ -185,8 +186,7 @@ PageableSortableTable = class {
             })
     })];
     static SORTABLE_BY_RELATIONSHIP = ['relationships', attributeComparator('_relations', sortByName, (a) => {
-        console.log("Sorting Relations", a);
-        return "";
+        return a.join(",");
     })]
 
     /**
@@ -336,7 +336,6 @@ PageableSortableTable = class {
         let data = this.data;
         let sort = this.getCurrentSort();
         if (exists(sort) && this._sort_changed) {
-            console.debug("Current Sort for table ", this.table_id, " has changed to ", this.sort_by, " with order ", this.sort_order);
             data.sort(sort);
         }
         if (this.sort_order < 0 && this._sort_changed) {
@@ -597,8 +596,7 @@ PageableSortableTable = class {
         // 1 meaning default, not being sorted.
         // 2 meaning sort ascended
         // 3 meaning sort descended
-        console.debug("Table ", this.table_id, " is checking the sort state of ", header, " with sort by ", this.sort_by, " which maps to sortable header: ", this.getSortForHeader(header));
-        if (this.sort_by !== this.getSortForHeader(header) || (index == 1 && this.getSortForHeader(header) === this.sort_by)) {
+        if (this.sort_by !== this.getSortForHeader(header) || (index === 1 && this.getSortForHeader(header) === this.sort_by)) {
             return 1;
         }
         if (this.sort_order === 1) {
@@ -609,7 +607,6 @@ PageableSortableTable = class {
 
     getSortForHeader(header_name) {
         // Assume header was provided.
-        console.log("Sort Option Length: ", this.sort_option_names.length);
         for (let i = 1; i < this.headers.length && i <= this.sort_option_names.length; i++) {
             let header = this.headers[i];
             if (header.toLowerCase() === header_name.toLowerCase()) {
@@ -624,7 +621,7 @@ PageableSortableTable = class {
         let th = document.createElement('th');
         let sort_header_name = this.getSortForHeader(header);
         th.append(span(header));
-        if (!exists(sort_header_name) || index >= this.sort_option_names.length) {
+        if (!exists(sort_header_name) || index > this.sort_option_names.length) {
             console.log("Header of ", this.table_id, " does not have a sort option for ", header);
             return th;
         }
@@ -632,7 +629,6 @@ PageableSortableTable = class {
         clonedURL.params.set(this.PARAMETER_FOCUS, this.TABLE_HEADER);
         clonedURL.params.set(this.PARAMETER_SORT_BY, sort_header_name);
         let currentSortState = this.getSortState(header);
-        console.debug("Table ", this.table_id, " has header ", header, " in sort state: ", currentSortState);
         switch (currentSortState) {
             case 1:
                 // Default Ascending
@@ -658,13 +654,14 @@ PageableSortableTable = class {
             arrow = span("\u{21C5}");
         } else if (currentSortState === 2) {
             arrow = span("\u{25BC}");
+            th.classList.add('sorting-header');
         } else if (currentSortState === 3) {
             arrow = span("\u{25B2}");
+            th.classList.add('sorting-header');
         }
         if (exists(arrow)) {
             arrow.style.textAlign = 'right';
             arrow.style.float = 'right';
-            console.log("Now changing ", this.table_id, " table's ", header, " header to ", arrow, " sort arrow");
             th.append(arrow);
         }
         return th;
@@ -720,7 +717,6 @@ PageableSortableTable = class {
 
     create() {
         this.updatePageData();
-        // console.log("Now loading ", this.title, " with ", this.data.length, " items on page ", this.page, " with page size ", this.page_size, " and sort by ", this.sort_by, " and sort order ", this.sort_order, " and expanded ", this.expand, " with sort options ", this.sort_options, " and sort direction ", this.sort_order);
         this.createTableLabel().createTable().createDiv().addToDocument();
         GLOBAL_DATA[this.table_id] = this;
         return this;
@@ -729,8 +725,10 @@ PageableSortableTable = class {
     sortableByClass(mutator = getClass) {
         return this
             .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_PACKAGE, mutator)
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
-            // .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE_VARIABLES, mutator)
             // .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE, mutator)
             // .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator)
             ;
@@ -744,7 +742,18 @@ PageableSortableTable = class {
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_NAME, mutator)
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_PARAMETERS, mutator)
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE_VARIABLES, mutator)
-            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator);
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator)
+            ;
+    }
+
+    sortableByConstructor(mutator = getConstructor) {
+        return this
+            .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_MOD, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_PARAMETERS, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_TYPE_VARIABLES, mutator)
+            .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator)
+            ;
     }
 
     sortableByField(mutator = getField) {
@@ -756,7 +765,6 @@ PageableSortableTable = class {
             .addSortOptionPair(PageableSortableTable.SORTABLE_BY_DECLARING_CLASS, mutator);
     }
 
-    // TODO: Fix relationships
     sortableByRelation(mutator = getRelationship) {
         return this
             .addSortOptionPair(PageableSortableTable.SORTABLE_DEFAULT, mutator)

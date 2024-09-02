@@ -576,11 +576,11 @@ function loadSearchResults() {
 
     let results = _last_filter.getResults();
 
-    createPagedTable("Matching Classes", 'class-table', results.classes, (table, classData) => {
-        addClassToTable(table, classData.id());
-    }, 'Link', 'ID', 'Class Name', 'Package', 'Qualified Name')
-        .sortableByClass((a) => a)
-        .create();
+    createClassTable(
+        "Matching Classes",
+        'class-table',
+        results.classes
+    )
 
     createPagedTable("Matching Fields", 'field-table', results.fields, (table, fieldData) => {
         addFieldToTable(table, fieldData.getDeclaringClass(), fieldData, fieldData.type());

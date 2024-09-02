@@ -222,8 +222,8 @@ function getClass(id) {
         case "object":
             if (exists(id._id)) {
                 output.data = getTypeData(id._id);
-            } else if (exists(id.data)) {
-                output.data = getTypeData(id._id);
+            } else if (exists(id.data) && exists(id.data._id)) {
+                output.data = getTypeData(id.data._id);
             } else if (Array.isArray(id) && id.length === 2) {
                 // If it's an array, then assume it's an array of a class.
                 // the first index is the array type, the depth is the second index,
@@ -852,6 +852,7 @@ function getConstructor(constructorData, typeVariableMap = {}) {
     output = setParameters(output);
     output = setDataIndex(output);
     output = setDeclaringClass(output);
+    output = setTypeVariables(output);
     output = setTypeVariableMap(output);
 
     output.toKubeJSStaticCall = function () {

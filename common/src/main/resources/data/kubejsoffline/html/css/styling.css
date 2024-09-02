@@ -366,3 +366,8 @@ td.link-container {
     -ms-user-select: none; /* IE 10 and IE 11 */
     user-select: none; /* Standard syntax */
 }
+
+.sorting-header {
+    color: #ff9800;
+    font-weight: bold;
+}

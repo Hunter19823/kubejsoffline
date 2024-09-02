@@ -299,12 +299,6 @@ function copyLinkToClipboard(link, currentElementID = null) {
 }
 
 
-function addClassToTable(table, class_id) {
-    let clazz = getClass(class_id);
-    let row = addRow(table, span(class_id), createShortLink(class_id), span(clazz.package()), createFullSignature(class_id));
-    appendAttributesToClassTableRow(row, class_id);
-}
-
 function addMethodToTable(table, classID, method, current_class_id = null) {
     let row = addRow(table, href(span(classID), `#${getClass(classID).fullyQualifiedName()}`), createMethodSignature(method), createFullSignature(classID));
     appendAttributesToMethodTableRow(row, classID, method, current_class_id);
