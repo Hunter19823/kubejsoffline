@@ -38,6 +38,7 @@ dependencies {
     modImplementation("dev.latvian.mods:kubejs-forge:${rootProject.kubejs_version}")
 
 
+    minecraftLibraries group: "pie.ilikepiefoo", name: "kubejsoffline-core", version: "${project.core_version}", transitive: false
     minecraftLibraries("org.reflections:reflections:${project.reflections_version}")
     minecraftLibraries("org.javassist:javassist:${project.javassist_version}")
 }

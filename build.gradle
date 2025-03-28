@@ -25,14 +25,17 @@ subprojects {
         // The following line declares the yarn mappings you may select this one as well.
         // mappings "net.fabricmc:yarn:1.16.5+build.10:v2"
         // Loom (Fabric / Quilt / Architectury )
-
+        implementation group: "pie.ilikepiefoo", name: "kubejsoffline-core", version: "${project.core_version}"
     }
 
     tasks.withType(ProcessResources) {
         processResources {
             outputs.upToDateWhen { false }
 
-            filesMatching([rootProject.forge_config, rootProject.fabric_config, "pack.mcmeta", "data/kubejsoffline/html/js/projectinfo.js"]) {
+            def p1 = 'git rev-parse HEAD'.execute()
+            p1.waitFor()
+            project.setProperty("github_commit_hash", p1.text.trim())
+            filesMatching([rootProject.forge_config, rootProject.fabric_config, "pack.mcmeta", "html/js/constants.js"]) {
                 expand project.properties
             }
         }
@@ -94,11 +97,13 @@ allprojects {
                 includeGroup "dev.latvian.mods"
             }
         }
+        mavenLocal()
     }
 
     tasks.withType(JavaCompile) {
         options.encoding = "UTF-8"
         options.release = 17
+        options.compilerArgs << '-parameters'
     }
 
     java {
