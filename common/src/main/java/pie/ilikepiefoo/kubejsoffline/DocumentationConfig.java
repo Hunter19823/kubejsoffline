@@ -2,16 +2,20 @@ package pie.ilikepiefoo.kubejsoffline;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import dev.architectury.platform.Platform;
+import dev.latvian.mods.kubejs.script.ScriptType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pie.ilikepiefoo.kubejsoffline.util.RelationType;
+import pie.ilikepiefoo.kubejsoffline.util.json.BindingsJSON;
 
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Set;
 
 public class DocumentationConfig {
@@ -34,6 +38,11 @@ public class DocumentationConfig {
                 LOGGER.error("Failed to load config file!", e);
                 INSTANCE = new Config();
             }
+            JsonObject bindings = new JsonObject();
+            for (Map.Entry<ScriptType, JsonObject> entry : FakeBindingsEvent.bindingsJSON.entrySet()) {
+                bindings.add(entry.getKey().name(), entry.getValue());
+            }
+            BindingsJSON.setJsonObject(bindings);
         } else {
             INSTANCE = new Config();
         }

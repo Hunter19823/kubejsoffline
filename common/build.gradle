@@ -25,6 +25,7 @@ dependencies {
     modImplementation("dev.latvian.mods:kubejs:${kubejs_version}")
 
     shadowImplementation "org.reflections:reflections:${project.reflections_version}"
+    shadowImplementation group: "pie.ilikepiefoo", name: "kubejsoffline-core", version: "${project.core_version}"
 }
 
 
@@ -35,6 +36,11 @@ shadowJar {
     exclude "org/junit/"
     exclude "org/apiguardian/"
     exclude "javassist/tools/"
+    exclude "com/google/gson/"
+    exclude "com/google/gson/*"
+    exclude "org/apache/logging/"
+    exclude "org/apache/logging/*"
+    exclude "Log4j*"
     configurations = [
             project.configurations.shadowImplementation
     ]

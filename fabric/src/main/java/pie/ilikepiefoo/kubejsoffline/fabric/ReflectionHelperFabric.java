@@ -2,16 +2,14 @@ package pie.ilikepiefoo.kubejsoffline.fabric;
 
 import dev.latvian.mods.kubejs.event.EventJS;
 import dev.latvian.mods.kubejs.recipe.RecipeJS;
-import net.fabricmc.loader.api.FabricLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
-import pie.ilikepiefoo.kubejsoffline.util.ReflectionHelper;
+import pie.ilikepiefoo.kubejsoffline.api.ReflectionHelper;
 
-import java.nio.file.Path;
 import java.util.Arrays;
 
 public class ReflectionHelperFabric implements ReflectionHelper {
@@ -38,13 +36,5 @@ public class ReflectionHelperFabric implements ReflectionHelper {
     @Override
     public Class[] getEventClasses() {
         return new Class[]{EventJS.class, net.fabricmc.fabric.api.event.Event.class, dev.architectury.event.Event.class, RecipeJS.class};
-    }
-
-    /**
-     * Get the path to the working directory of the current platform.
-     */
-    @Override
-    public Path getWorkingDirectory() {
-        return FabricLoader.getInstance().getGameDir();
     }
 }

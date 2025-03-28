@@ -7,19 +7,17 @@ import javassist.bytecode.ClassFile;
 import javassist.bytecode.FieldInfo;
 import javassist.bytecode.MethodInfo;
 import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.fml.loading.FMLPaths;
 import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.vfs.Vfs;
 import org.reflections.vfs.ZipDir;
-import pie.ilikepiefoo.kubejsoffline.util.ReflectionHelper;
+import pie.ilikepiefoo.kubejsoffline.api.ReflectionHelper;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.jar.JarFile;
 
@@ -114,14 +112,4 @@ public class ReflectionHelperForge implements ReflectionHelper {
     public Class[] getEventClasses() {
         return new Class[]{EventJS.class, Event.class, dev.architectury.event.Event.class, RecipeJS.class};
     }
-
-    /**
-     * Get the path to the working directory of the current platform.
-     */
-    @Override
-    public Path getWorkingDirectory() {
-        return FMLPaths.GAMEDIR.get();
-    }
-
-
 }

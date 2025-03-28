@@ -30,6 +30,7 @@ const PROJECT_INFO = {
     "kubejs_version": "${kubejs_version}",
     "architectury_version": "${architectury_version}",
     "git_commit": "${github_commit_hash}",
+    "core_version": "${core_version}",
 }
 
 /**
