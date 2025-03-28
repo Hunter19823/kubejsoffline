@@ -35,9 +35,8 @@ dependencies {
 
     //implementation "org.reflections:reflections:${project.reflections_version}"
     implementation("org.reflections:reflections:${project.reflections_version}")
-
-
     annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-fabric:${rootProject.mixin_extras}")
+    implementation group: "pie.ilikepiefoo", name: "kubejsoffline-core", version: "${project.core_version}"
 }
 
 shadowJar {

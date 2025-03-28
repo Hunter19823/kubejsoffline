@@ -25,8 +25,8 @@ dependencies {
     modImplementation("dev.latvian.mods:kubejs:${kubejs_version}")
 
     shadowImplementation "org.reflections:reflections:${project.reflections_version}"
-
     annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-common:${rootProject.mixin_extras}")
+    shadowImplementation group: "pie.ilikepiefoo", name: "kubejsoffline-core", version: "${project.core_version}", transitive: false
 }
 
 
@@ -37,6 +37,22 @@ shadowJar {
     exclude "org/junit/"
     exclude "org/apiguardian/"
     exclude "javassist/tools/"
+    exclude "com/google/gson/"
+    exclude "org/apache/logging/"
+    exclude "META-INF/maven/com.google.code.findbugs/"
+    exclude "META-INF/maven/com.google.code.gson/"
+    exclude "META-INF/maven/org.apache.logging.log4j/"
+    exclude "META-INF/maven/org.slf4j/"
+    exclude "META-INF/maven/org.javassist/"
+    exclude "META-INF/maven/org.reflections/"
+    exclude "META-INF/org/"
+    exclude "META-INF/services/"
+//    exclude "META-INF/versions/"
+    exclude "META-INF/DEPENDENCIES"
+    exclude "META-INF/junit*"
+    exclude "META-INF/LICENSE*"
+    exclude "META-INF/NOTICE"
+    exclude "Log4j*"
     configurations = [
             project.configurations.shadowImplementation
     ]
