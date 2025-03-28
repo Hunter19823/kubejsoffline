@@ -7,8 +7,8 @@ import dev.architectury.platform.Platform;
 import dev.latvian.mods.kubejs.script.ScriptType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import pie.ilikepiefoo.kubejsoffline.util.RelationType;
-import pie.ilikepiefoo.kubejsoffline.util.json.BindingsJSON;
+import pie.ilikepiefoo.kubejsoffline.core.util.RelationType;
+import pie.ilikepiefoo.kubejsoffline.core.util.json.BindingsJSON;
 
 import java.io.FileReader;
 import java.io.FileWriter;

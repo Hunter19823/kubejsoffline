@@ -1,7 +1,7 @@
 package pie.ilikepiefoo.kubejsoffline;
 
 
-import pie.ilikepiefoo.kubejsoffline.api.ReflectionHelper;
+import pie.ilikepiefoo.kubejsoffline.core.api.ReflectionHelper;
 
 import java.nio.file.Path;
 

@@ -35,6 +35,7 @@ dependencies {
 
     //implementation "org.reflections:reflections:${project.reflections_version}"
     implementation("org.reflections:reflections:${project.reflections_version}")
+    implementation group: "pie.ilikepiefoo", name: "kubejsoffline-core", version: "${project.core_version}"
 }
 
 shadowJar {

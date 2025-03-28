@@ -2,7 +2,7 @@ package pie.ilikepiefoo.kubejsoffline;
 
 import dev.latvian.mods.rhino.mod.util.MinecraftRemapper;
 import dev.latvian.mods.rhino.mod.util.RemappingHelper;
-import pie.ilikepiefoo.kubejsoffline.api.TypeNameMapper;
+import pie.ilikepiefoo.kubejsoffline.core.api.TypeNameMapper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

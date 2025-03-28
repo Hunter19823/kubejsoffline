@@ -5,9 +5,10 @@ import dev.latvian.mods.kubejs.script.ScriptType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
-import pie.ilikepiefoo.kubejsoffline.api.DocumentationBridge;
-import pie.ilikepiefoo.kubejsoffline.html.tag.Tag;
-import pie.ilikepiefoo.kubejsoffline.util.json.BindingsJSON;
+import pie.ilikepiefoo.kubejsoffline.core.DocumentationGenerator;
+import pie.ilikepiefoo.kubejsoffline.core.api.DocumentationBridge;
+import pie.ilikepiefoo.kubejsoffline.core.html.tag.Tag;
+import pie.ilikepiefoo.kubejsoffline.core.util.json.BindingsJSON;
 
 import java.io.File;
 import java.io.FileWriter;

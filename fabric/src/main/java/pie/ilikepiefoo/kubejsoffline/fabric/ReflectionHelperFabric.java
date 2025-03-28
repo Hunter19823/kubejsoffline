@@ -8,7 +8,7 @@ import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
-import pie.ilikepiefoo.kubejsoffline.api.ReflectionHelper;
+import pie.ilikepiefoo.kubejsoffline.core.api.ReflectionHelper;
 
 import java.util.Arrays;
 

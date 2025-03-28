@@ -4,7 +4,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
-import pie.ilikepiefoo.kubejsoffline.api.DocumentationBridge;
+import pie.ilikepiefoo.kubejsoffline.core.api.DocumentationBridge;
 
 import java.util.function.Consumer;
 

@@ -13,7 +13,7 @@ import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.vfs.Vfs;
 import org.reflections.vfs.ZipDir;
-import pie.ilikepiefoo.kubejsoffline.api.ReflectionHelper;
+import pie.ilikepiefoo.kubejsoffline.core.api.ReflectionHelper;
 
 import java.io.File;
 import java.net.MalformedURLException;
