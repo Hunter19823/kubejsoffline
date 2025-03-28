@@ -14,45 +14,45 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class RelationsJSON {
 
-	@Nonnull
-	public static JsonArray of(@Nonnull final Set<Relation> relations) {
-		final ConcurrentHashMap<Integer, Map<RelationType, Set<Integer>>> uniqueRelations = new ConcurrentHashMap<>();
-		relations.forEach((connection) -> {
-			try {
-				final JsonObject from = ClassJSONManager.getInstance().getTypeData(connection.from());
+    @Nonnull
+    public static JsonArray of(@Nonnull final Set<Relation> relations) {
+        final ConcurrentHashMap<Integer, Map<RelationType, Set<Integer>>> uniqueRelations = new ConcurrentHashMap<>();
+        relations.forEach((connection) -> {
+            try {
+                final JsonObject from = ClassJSONManager.getInstance().getTypeData(connection.from());
 
 
-				final Integer to_id = ClassJSONManager.getInstance().getTypeID(connection.to());
+                final Integer to_id = ClassJSONManager.getInstance().getTypeID(connection.to());
 
-				if (null == to_id) {
-					return;
-				}
+                if (null == to_id) {
+                    return;
+                }
 
-				if (null == from) {
-					return;
-				}
+                if (null == from) {
+                    return;
+                }
 
-				var relation = from.getAsJsonArray(connection.relation().getKeyName());
+                var relation = from.getAsJsonArray(connection.relation().getKeyName());
 
-				if (null == relation) {
-					relation = new JsonArray();
-					from.add(connection.relation().getKeyName(), relation);
-				}
-				final var relationMap = uniqueRelations.computeIfAbsent(from.get(JSONProperty.TYPE_ID.jsName).getAsInt(), (k) -> Collections.synchronizedMap(new EnumMap<>(RelationType.class)));
-				final var relationSet = relationMap.computeIfAbsent(connection.relation(), (k) -> ConcurrentHashMap.newKeySet());
-				if (relationSet.contains(to_id)) {
-					return;
-				}
-				relation.add(to_id);
-			} catch (final Exception e) {
-				e.printStackTrace();
-			}
-		});
-		uniqueRelations.forEach((key,value) -> {
-			value.forEach((relationType, relationSet) -> relationSet.clear());
-			value.clear();
-		});
-		uniqueRelations.clear();
-		return ClassJSONManager.getInstance().getTypeData();
-	}
+                if (null == relation) {
+                    relation = new JsonArray();
+                    from.add(connection.relation().getKeyName(), relation);
+                }
+                final var relationMap = uniqueRelations.computeIfAbsent(from.get(JSONProperty.TYPE_ID.jsName).getAsInt(), (k) -> Collections.synchronizedMap(new EnumMap<>(RelationType.class)));
+                final var relationSet = relationMap.computeIfAbsent(connection.relation(), (k) -> ConcurrentHashMap.newKeySet());
+                if (relationSet.contains(to_id)) {
+                    return;
+                }
+                relation.add(to_id);
+            } catch (final Exception e) {
+                e.printStackTrace();
+            }
+        });
+        uniqueRelations.forEach((key, value) -> {
+            value.forEach((relationType, relationSet) -> relationSet.clear());
+            value.clear();
+        });
+        uniqueRelations.clear();
+        return ClassJSONManager.getInstance().getTypeData();
+    }
 }

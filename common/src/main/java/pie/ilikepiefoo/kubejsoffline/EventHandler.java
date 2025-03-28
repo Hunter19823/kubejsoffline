@@ -6,12 +6,12 @@ import org.apache.logging.log4j.Logger;
 import pie.ilikepiefoo.kubejsoffline.command.DocumentCommand;
 
 public class EventHandler {
-	public static final Logger LOG = LogManager.getLogger();
+    public static final Logger LOG = LogManager.getLogger();
 
-	public static void init() {
-		DocumentCommand.EVENT.register(new DocumentCommand());
+    public static void init() {
+        DocumentCommand.EVENT.register(new DocumentCommand());
 //		LifecycleEvent.SETUP.register(EventHandler::createBindingsMap);
-	}
+    }
 
 //	private static void createBindingsMap() {
 //		LOG.info("Creating Bindings Map...");

@@ -1,40 +1,40 @@
 function Props() {
-	this.TYPE_ID = "id";
-	this.TYPE_IDENTIFIER = "temp";
-	this.BASE_CLASS_NAME = "temp";
-	this.SUPER_CLASS = "temp";
-	this.GENERIC_SUPER_CLASS = "temp";
-	this.INTERFACES = "temp";
-	this.GENERIC_INTERFACES = "temp";
-	this.PACKAGE_NAME = "temp";
-	this.ANNOTATIONS = "temp";
-	this.MODIFIERS = "temp";
-	this.CONSTRUCTORS = "temp";
-	this.FIELDS = "temp";
-	this.METHODS = "temp";
-	this.PARAMETERS = "temp";
+    this.TYPE_ID = "id";
+    this.TYPE_IDENTIFIER = "temp";
+    this.BASE_CLASS_NAME = "temp";
+    this.SUPER_CLASS = "temp";
+    this.GENERIC_SUPER_CLASS = "temp";
+    this.INTERFACES = "temp";
+    this.GENERIC_INTERFACES = "temp";
+    this.PACKAGE_NAME = "temp";
+    this.ANNOTATIONS = "temp";
+    this.MODIFIERS = "temp";
+    this.CONSTRUCTORS = "temp";
+    this.FIELDS = "temp";
+    this.METHODS = "temp";
+    this.PARAMETERS = "temp";
 
-	this.ARRAY_DEPTH = "temp";
-	this.PARAMETERIZED_ARGUMENTS = "temp";
-	this.RAW_PARAMETERIZED_TYPE = "temp";
+    this.ARRAY_DEPTH = "temp";
+    this.PARAMETERIZED_ARGUMENTS = "temp";
+    this.RAW_PARAMETERIZED_TYPE = "temp";
 
-	this.PARAMETER_NAME = "temp";
-	this.PARAMETER_TYPE = "temp";
-	this.PARAMETER_ANNOTATIONS = "temp";
+    this.PARAMETER_NAME = "temp";
+    this.PARAMETER_TYPE = "temp";
+    this.PARAMETER_ANNOTATIONS = "temp";
 
-	this.CONSTRUCTOR_NAME = "temp";
-	this.CONSTRUCTOR_ANNOTATIONS = "temp";
+    this.CONSTRUCTOR_NAME = "temp";
+    this.CONSTRUCTOR_ANNOTATIONS = "temp";
 
-	this.METHOD_NAME = "temp";
-	this.METHOD_ANNOTATIONS = "temp";
-	this.METHOD_RETURN_TYPE = "temp";
+    this.METHOD_NAME = "temp";
+    this.METHOD_ANNOTATIONS = "temp";
+    this.METHOD_RETURN_TYPE = "temp";
 
-	this.FIELD_NAME = "temp";
-	this.FIELD_ANNOTATIONS = "temp";
-	this.FIELD_TYPE = "temp";
+    this.FIELD_NAME = "temp";
+    this.FIELD_ANNOTATIONS = "temp";
+    this.FIELD_TYPE = "temp";
 
-	this.ANNOTATION_TYPE = "temp";
-	this.ANNOTATION_STRING = "temp";
+    this.ANNOTATION_TYPE = "temp";
+    this.ANNOTATION_STRING = "temp";
 }
 
 const PROPERTY = Props();
