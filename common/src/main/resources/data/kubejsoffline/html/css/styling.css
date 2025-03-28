@@ -91,7 +91,7 @@ blockquote:after {
     clear: both;
 }
 
-@media screen and (max-width:500px) {
+@media screen and (max-width: 500px) {
     body {
         text-align: left;
     }
@@ -322,7 +322,7 @@ input:checked + .slider:before {
     align-items: center;
 }
 
-td.link-container  {
+td.link-container {
     width: 1.5em;
     display: flex;
     align-items: center;

@@ -5,7 +5,8 @@ import net.minecraft.network.chat.contents.LiteralContents;
 
 public class ComponentUtils {
 
-	public static MutableComponent create(String text) {
-		return MutableComponent.create(new LiteralContents(text));
-	}
+    public static MutableComponent create( String text ) {
+        return MutableComponent.create(new LiteralContents(text));
+    }
+
 }

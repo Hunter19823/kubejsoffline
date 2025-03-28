@@ -24,14 +24,14 @@ import java.util.Arrays;
 import java.util.jar.JarFile;
 
 public class ReflectionHelperForge implements ReflectionHelper {
-	static {
-		Vfs.addDefaultURLTypes(new Vfs.UrlType() {
-			@Override
-			public boolean matches(URL url) {
-				String externalForm = url.toExternalForm();
+    static {
+        Vfs.addDefaultURLTypes(new Vfs.UrlType() {
+            @Override
+            public boolean matches(URL url) {
+                String externalForm = url.toExternalForm();
 //				LOG.info("Checking if URL matches union type: "+externalForm);
-				boolean endsInOpenJar = externalForm.matches(".+\\.jar!/.+");
-				boolean match = ("union".equals(url.getProtocol())) && !(endsInOpenJar) && externalForm.contains(".jar");
+                boolean endsInOpenJar = externalForm.matches(".+\\.jar!/.+");
+                boolean match = ("union".equals(url.getProtocol())) && !(endsInOpenJar) && externalForm.contains(".jar");
 //				if(match){
 //					LOG.info("URL '{}' matches union type",externalForm);
 //					try {
@@ -41,86 +41,87 @@ public class ReflectionHelperForge implements ReflectionHelper {
 //						LOG.warn("Failed to get path from URL: "+externalForm);
 //					}
 //				}
-				return match;
-			}
+                return match;
+            }
 
-			@Override
-			public Vfs.Dir createDir(URL url) throws Exception {
-				String path = url.toURI().getPath();
-				if(path.indexOf('/') == 0) {
-					path = path.substring(1);
-				}
-				// Check if this is being run in a linux operating system.
-				if(File.separatorChar == '/') {
-					path = "/"+path;
-				}
-				int jar = path.indexOf(".jar");
-				if(jar != -1) {
-					path = path.substring(0,jar+4);
-				}
-				//LOG.info("Creating new File for path: '{}'", path);
-				File file = new File(path);
-				if(file.exists()){
-					//LOG.info("File exists for path: '{}'", path);
-					JarFile jarFile = new JarFile(file);
-					//LOG.info("Created new JarFile for path: '{}' JarName: '{}'",path, jarFile.getName());
-					ZipDir zipDir = new ZipDir(jarFile);
-					//LOG.info("Created new ZipDir for path: '{}' ZipDirPath: '{}'",path, zipDir.getPath());
-					return zipDir;
-				}else{
-					LOG.warn("File does not exist for path: '{}'", path);
-					return null;
-				}
-			}
-		});
-		LOG.info("Added new union URL Type to VFS");
-		Vfs.addDefaultURLTypes(Vfs.DefaultUrlTypes.directory);
-		LOG.info("Added new directory Url Types to VFS");
-		LOG.info("Now attempting to load JavaAssist ClassFile class");
-		try {
-			ClassFile file = new ClassFile(false, "test", null);
-			file.addField(new FieldInfo(file.getConstPool(), "test", "I"));
-			file.addMethod(new MethodInfo(file.getConstPool(), "test", "()V"));
-			LOG.info("Successfully loaded JavaAssist ClassFile class!");
-		} catch (Throwable e) {
-			LOG.error("Failed to load JavaAssist ClassFile class. KubeJS Offline Functionality will break past this point!", e);
-		}
-	}
+            @Override
+            public Vfs.Dir createDir(URL url) throws Exception {
+                String path = url.toURI().getPath();
+                if (path.indexOf('/') == 0) {
+                    path = path.substring(1);
+                }
+                // Check if this is being run in a linux operating system.
+                if (File.separatorChar == '/') {
+                    path = "/" + path;
+                }
+                int jar = path.indexOf(".jar");
+                if (jar != -1) {
+                    path = path.substring(0, jar + 4);
+                }
+                //LOG.info("Creating new File for path: '{}'", path);
+                File file = new File(path);
+                if (file.exists()) {
+                    //LOG.info("File exists for path: '{}'", path);
+                    JarFile jarFile = new JarFile(file);
+                    //LOG.info("Created new JarFile for path: '{}' JarName: '{}'",path, jarFile.getName());
+                    ZipDir zipDir = new ZipDir(jarFile);
+                    //LOG.info("Created new ZipDir for path: '{}' ZipDirPath: '{}'",path, zipDir.getPath());
+                    return zipDir;
+                } else {
+                    LOG.warn("File does not exist for path: '{}'", path);
+                    return null;
+                }
+            }
+        });
+        LOG.info("Added new union URL Type to VFS");
+        Vfs.addDefaultURLTypes(Vfs.DefaultUrlTypes.directory);
+        LOG.info("Added new directory Url Types to VFS");
+        LOG.info("Now attempting to load JavaAssist ClassFile class");
+        try {
+            ClassFile file = new ClassFile(false, "test", null);
+            file.addField(new FieldInfo(file.getConstPool(), "test", "I"));
+            file.addMethod(new MethodInfo(file.getConstPool(), "test", "()V"));
+            LOG.info("Successfully loaded JavaAssist ClassFile class!");
+        } catch (Throwable e) {
+            LOG.error("Failed to load JavaAssist ClassFile class. KubeJS Offline Functionality will break past this point!", e);
+        }
+    }
 
-	@Override
-	public Class[] getClasses() {
-		return useReflections();
-	}
-	private static Class[] useReflections() {
-		Package[] packages = Package.getPackages();
-		String[] packageNames = Arrays.stream(packages).parallel().map(Package::getName).toList().toArray(new String[0]);
-		URL modsFolder;
-		try {
-			modsFolder = Platform.getModsFolder().toUri().toURL();
-		} catch (MalformedURLException e) {
-			throw new RuntimeException(e);
-		}
-		Configuration configuration = new ConfigurationBuilder()
-				.setParallel(true)
-				.forPackages(packageNames)
-				.addUrls(modsFolder)
-				.setScanners(Scanners.SubTypes.filterResultsBy(pred->true), Scanners.Resources);
-		Reflections reflections = new Reflections(configuration);
-		return reflections.getSubTypesOf(Object.class).toArray(new Class[0]);
-	}
+    @Override
+    public Class[] getClasses() {
+        return useReflections();
+    }
 
-	@Override
-	public Class[] getEventClasses() {
-		return new Class[]{EventJS.class, Event.class, dev.architectury.event.Event.class, RecipeJS.class};
-	}
+    private static Class[] useReflections() {
+        Package[] packages = Package.getPackages();
+        String[] packageNames = Arrays.stream(packages).parallel().map(Package::getName).toList().toArray(new String[0]);
+        URL modsFolder;
+        try {
+            modsFolder = Platform.getModsFolder().toUri().toURL();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+        Configuration configuration = new ConfigurationBuilder()
+                .setParallel(true)
+                .forPackages(packageNames)
+                .addUrls(modsFolder)
+                .setScanners(Scanners.SubTypes.filterResultsBy(pred -> true), Scanners.Resources);
+        Reflections reflections = new Reflections(configuration);
+        return reflections.getSubTypesOf(Object.class).toArray(new Class[0]);
+    }
 
-	/**
-	 * Get the path to the working directory of the current platform.
-	 */
-	@Override
-	public Path getWorkingDirectory() {
-		return FMLPaths.GAMEDIR.get();
-	}
+    @Override
+    public Class[] getEventClasses() {
+        return new Class[]{EventJS.class, Event.class, dev.architectury.event.Event.class, RecipeJS.class};
+    }
+
+    /**
+     * Get the path to the working directory of the current platform.
+     */
+    @Override
+    public Path getWorkingDirectory() {
+        return FMLPaths.GAMEDIR.get();
+    }
 
 
 }

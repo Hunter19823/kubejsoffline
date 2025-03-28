@@ -10,71 +10,72 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings( "unchecked" )
 public abstract class BaseTag<TYPE extends Tag<TYPE>> implements Tag<TYPE> {
-	protected final String name;
-	protected String content = "";
-	protected boolean closingTag;
-	protected List<Tag<?>> children = new ArrayList<>();
-	protected Tag<?> parent = null;
-	protected Map<String, String> attributes = new HashMap<>();
+    protected final String name;
+    protected String content = "";
+    protected boolean closingTag;
+    protected List<Tag<?>> children = new ArrayList<>();
+    protected Tag<?> parent = null;
+    protected Map<String,String> attributes = new HashMap<>();
 
-	public BaseTag(@Nonnull String name) {
-		this.name = name;
-		this.closingTag = true;
-	}
+    public BaseTag( @Nonnull String name ) {
+        this.name = name;
+        this.closingTag = true;
+    }
 
-	public BaseTag(@Nonnull String name, boolean closingTag) {
-		this.name = name;
-		this.closingTag = closingTag;
-	}
+    public BaseTag( @Nonnull String name, boolean closingTag ) {
+        this.name = name;
+        this.closingTag = closingTag;
+    }
 
-	@Override
-	public String getName() {
-		return this.name;
-	}
+    @Override
+    public String getName() {
+        return this.name;
+    }
 
-	@Override
-	public String getContent() {
-		return this.content;
-	}
+    @Override
+    public String getContent() {
+        return this.content;
+    }
 
-	public TYPE setContent(@NotNull String content) {
-		this.content = content;
-		return (TYPE) this;
-	}
+    @Override
+    public boolean hasClosingTag() {
+        return this.closingTag;
+    }
 
-	@Override
-	public Map<String, String> getAttributes() {
-		return this.attributes;
-	}
+    @Nullable
+    @Override
+    public Tag<?> getParent() {
+        return this.parent;
+    }
 
-	@Override
-	public <T extends Tag<T>> Tag<T> add(@Nonnull Tag<T> tag) {
-		tag.setParent(this);
+    @Override
+    public void setParent( @Nonnull Tag<?> parent ) {
+        this.parent = parent;
+    }
 
-		this.children.add(tag);
-		return tag;
-	}
+    @Override
+    public List<Tag<?>> getChildren() {
+        return this.children;
+    }
 
-	@Nullable
-	@Override
-	public Tag<?> getParent() {
-		return this.parent;
-	}
+    @Override
+    public Map<String,String> getAttributes() {
+        return this.attributes;
+    }
 
-	@Override
-	public void setParent(@Nonnull Tag<?> parent) {
-		this.parent = parent;
-	}
+    @Override
+    public <T extends Tag<T>> Tag<T> add( @Nonnull Tag<T> tag ) {
+        tag.setParent(this);
 
-	@Override
-	public boolean hasClosingTag() {
-		return this.closingTag;
-	}
+        this.children.add(tag);
+        return tag;
+    }
 
-	@Override
-	public List<Tag<?>> getChildren() {
-		return this.children;
-	}
+    public TYPE setContent( @NotNull String content ) {
+        this.content = content;
+        return (TYPE) this;
+    }
+
 }

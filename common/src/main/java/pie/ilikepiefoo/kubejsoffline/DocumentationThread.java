@@ -27,12 +27,16 @@ public class DocumentationThread extends Thread {
 	public static final Logger LOG = LogManager.getLogger();
 
 	private static final Gson GSON = new GsonBuilder().create();
-	private String outputFile;
 	private final DocumentationBridge bridge;
+	private String outputFile;
 
 	public DocumentationThread(DocumentationBridge documentationBridge) {
 		super("KJSOffline DocThread");
 		this.bridge = documentationBridge;
+	}
+
+	private static Path getOutputPath() {
+		return KubeJSOffline.HELPER.getWorkingDirectory().resolve("kubejs/documentation");
 	}
 
     @Override
@@ -62,7 +66,7 @@ public class DocumentationThread extends Thread {
 		// Start the ClassFinder
 		sendMessage(String.format("[KJS Offline] [Step %d/%d] Starting ClassFinder...", ++step, totalSteps));
 		timeMillis = System.currentTimeMillis();
-		while(!ClassFinder.INSTANCE.isFinished()) {
+		while (!ClassFinder.INSTANCE.isFinished()) {
 			ClassFinder.INSTANCE.searchCurrentDepth();
 		}
 		timeMillis = System.currentTimeMillis() - timeMillis;
@@ -113,12 +117,6 @@ public class DocumentationThread extends Thread {
 		}
 	}
 
-	@Nullable
-	private File createIndexPage() {
-		IndexPage page = new IndexPage(GSON, bridge);
-		return writeHTMLPage(page);
-	}
-
 	private void jsonifyConnections() {
 		RelationsJSON.of(ClassFinder.INSTANCE.getRelationships());
 	}
@@ -144,10 +142,6 @@ public class DocumentationThread extends Thread {
 		})));
 	}
 
-	private static Path getOutputPath() {
-		return KubeJSOffline.HELPER.getWorkingDirectory().resolve("kubejs/documentation");
-	}
-
 	@Nullable
 	private static File writeHTMLPage(final Tag<?> content) {
 		final File output = getFile();
@@ -170,5 +164,11 @@ public class DocumentationThread extends Thread {
 		}
 
 		return outputPath.resolve("index.html").toFile();
+	}
+
+	@Nullable
+	private File createIndexPage() {
+		IndexPage page = new IndexPage(GSON, bridge);
+		return writeHTMLPage(page);
 	}
 }

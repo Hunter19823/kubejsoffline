@@ -10,26 +10,26 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class DocumentationBridge {
-	private final Supplier<ResourceManager> resourceManagerSupplier;
-	private final Consumer<Component> messenger;
+    private final Supplier<ResourceManager> resourceManagerSupplier;
+    private final Consumer<Component> messenger;
 
-	public DocumentationBridge(Supplier<ResourceManager> resourceManagerSupplier, Consumer<Component> messenger) {
-		this.resourceManagerSupplier = resourceManagerSupplier;
-		this.messenger = messenger;
-	}
+    public DocumentationBridge(Supplier<ResourceManager> resourceManagerSupplier, Consumer<Component> messenger) {
+        this.resourceManagerSupplier = resourceManagerSupplier;
+        this.messenger = messenger;
+    }
 
-	public void sendMessage(Component message) {
-		this.messenger.accept(message);
-	}
+    public void sendMessage(Component message) {
+        this.messenger.accept(message);
+    }
 
 
-	public boolean hasResource(ResourceLocation location) {
-		return this.resourceManagerSupplier.get().getResource(location).isPresent();
-	}
+    public boolean hasResource(ResourceLocation location) {
+        return this.resourceManagerSupplier.get().getResource(location).isPresent();
+    }
 
-	public InputStream getResource(ResourceLocation location) throws IOException {
-		return this.resourceManagerSupplier.get().getResource(location).orElseThrow(
-				() -> new IOException("Could not find resource: " + location)
-		).open();
-	}
+    public InputStream getResource(ResourceLocation location) throws IOException {
+        return this.resourceManagerSupplier.get().getResource(location).orElseThrow(
+                () -> new IOException("Could not find resource: " + location)
+        ).open();
+    }
 }
