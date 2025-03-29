@@ -81,11 +81,7 @@ unifiedPublishing {
         releaseType = rootProject.artifact_type
         gameVersions = [
                 rootProject.minecraft_version,
-                rootProject.minecraft_version + ".1",
-                rootProject.minecraft_version + ".2",
-                rootProject.minecraft_version + ".3",
-                rootProject.minecraft_version + ".4",
-                rootProject.minecraft_version + ".5"
+                rootProject.minecraft_version + ".1"
         ]
         gameLoaders = ["neoforge"]
         displayName = "$project.mod_name NeoForge $project.version"
