@@ -121,7 +121,7 @@ subprojects {
                 def p1 = 'git rev-parse HEAD'.execute()
                 p1.waitFor()
                 project.setProperty("github_commit_hash", p1.text.trim())
-                filesMatching([rootProject.neoforge_config, "pack.mcmeta", "html/js/constants.js"]) {
+                filesMatching([rootProject.neoforge_config, "html/js/constants.js"]) {
                     expand project.properties
                 }
             }
