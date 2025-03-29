@@ -2,79 +2,34 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
 plugins {
-    id "architectury-plugin" version "${architectury_plugin_version}"
     id "dev.architectury.loom" version "${architectury_loom_version}" apply false
+    id "architectury-plugin" version "${architectury_plugin_version}"
     id "me.shedaniel.unified-publishing" version "${unified_publishing_version}" apply false
+    id 'com.github.johnrengelman.shadow' version "${shadowjar_version}" apply false
 }
 
 architectury {
     minecraft = rootProject.minecraft_version
 }
 
-subprojects {
-    apply plugin: "dev.architectury.loom"
-
-    loom {
-        silentMojangMappingsLicense()
-    }
-
-    dependencies {
-        minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-        // The following line declares the mojmap mappings, you may use other mappings as well
-        mappings loom.officialMojangMappings()
-        // The following line declares the yarn mappings you may select this one as well.
-        // mappings "net.fabricmc:yarn:1.16.5+build.10:v2"
-        // Loom (Fabric / Quilt / Architectury )
-        implementation group: "pie.ilikepiefoo", name: "kubejsoffline-core", version: "${project.core_version}"
-    }
-
-    tasks.withType(ProcessResources) {
-        processResources {
-            outputs.upToDateWhen { false }
-
-            def p1 = 'git rev-parse HEAD'.execute()
-            p1.waitFor()
-            project.setProperty("github_commit_hash", p1.text.trim())
-            filesMatching([rootProject.forge_config, rootProject.fabric_config, "pack.mcmeta", "html/js/constants.js"]) {
-                expand project.properties
-            }
-        }
-    }
-
-//	// Before runClient task clear version specific kubejs scripts
-//	tasks.register("beforeRunClient") {
-//		// Clear the forge and fabric kubejs scripts directories
-//		doFirst {
-//			println("Clearing existing kubejs scripts to prevent different versions from conflicting")
-//			var scriptDir = ["run/kubejs/server_scripts", "run/kubejs/startup_scripts", "run/kubejs/client_scripts"]
-//			scriptDir.forEach { sdir ->
-//				var pat = project.projectDir.toPath().resolve(sdir)
-//
-//				if (pat.toFile().deleteDir()) {
-//					println "Deleted ${pat}"
-//				} else {
-//					println "Failed to delete ${pat}"
-//				}
-//			}
-//		}
-//	}
-//
-//	tasks.getByName("runClient") {
-//		dependsOn "beforeRunClient"
-//	}
+allprojects {
+    version = rootProject.mod_version
+    group = rootProject.maven_group
 }
 
-allprojects {
-    ext.ENV = System.getenv()
-
-
+subprojects {
     apply plugin: "java"
+    apply plugin: "dev.architectury.loom"
     apply plugin: "architectury-plugin"
     apply plugin: "maven-publish"
 
-    archivesBaseName = rootProject.archives_base_name
-    version = rootProject.mod_version
-    group = rootProject.maven_group
+    ext.ENV = System.getenv()
+
+
+    base {
+        // Set up a suffixed format for the mod jar names, e.g. `example-fabric`.
+        archivesName = "$rootProject.archives_base_name-$project.name"
+    }
 
     repositories {
         // Add repositories to retrieve artifacts from in here.
@@ -91,67 +46,108 @@ allprojects {
         }
 
         maven {
-            // saps.dev Maven (KubeJS and Rhino)
-            url = "https://maven.saps.dev/minecraft"
+            url "https://maven.latvian.dev/releases"
             content {
                 includeGroup "dev.latvian.mods"
+                includeGroup "dev.latvian.apps"
             }
         }
 
-        // jitpack (mixinextras only)
         maven {
-            url "https://jitpack.io"
+            url 'https://jitpack.io'
             content {
-                includeGroup "com.github.llamalad7.mixinextras"
+                includeGroup "com.github.rtyley"
             }
         }
+
         mavenLocal()
     }
 
-    tasks.withType(JavaCompile) {
-        options.encoding = "UTF-8"
-        options.release = 17
-        options.compilerArgs << '-parameters'
+    tasks.withType(JavaCompile).configureEach {
+        it.options.encoding = "UTF-8"
+        it.options.release = 21
+        it.options.compilerArgs << '-parameters'
     }
 
     java {
+        // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+        // if it is present.
+        // If you remove this line, sources will not be generated.
         withSourcesJar()
+
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+
+    // Configure Maven publishing.
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId = base.archivesName.get()
+                from components.java
+            }
+        }
+
+        // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+        repositories {
+            // Add repositories to publish to here.
+            // Notice: This block does NOT have the same function as the block in the top level.
+            // The repositories here will be used for publishing your artifact, not for
+            // retrieving dependencies.
+        }
+    }
+
+
+    loom {
+        silentMojangMappingsLicense()
+    }
+
+    dependencies {
+        minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
+        // The following line declares the mojmap mappings, you may use other mappings as well
+        mappings loom.officialMojangMappings()
+        // The following line declares the yarn mappings you may select this one as well.
+        // mappings "net.fabricmc:yarn:1.16.5+build.10:v2"
+        // Loom (Fabric / Quilt / Architectury )
+        implementation group: "pie.ilikepiefoo", name: "kubejsoffline-core", version: "${project.core_version}"
+    }
+
+    tasks.withType(ProcessResources).tap {
+        configureEach {
+            processResources {
+                outputs.upToDateWhen { false }
+
+                def p1 = 'git rev-parse HEAD'.execute()
+                p1.waitFor()
+                project.setProperty("github_commit_hash", p1.text.trim())
+                filesMatching([rootProject.neoforge_config, "pack.mcmeta", "html/js/constants.js"]) {
+                    expand project.properties
+                }
+            }
+        }
     }
 }
 
 class MoveDocumentationFiles extends DefaultTask {
     // Store references to the forge and fabric html file directories
-    private final File forgeHtmlDir = new File("${project.projectDir}/forge/run/kubejs/documentation/index.html")
-    private final File fabricHtmlDir = new File("${project.projectDir}/fabric/run/kubejs/documentation/index.html")
+    private final File neoForgeHtmlDir = new File("${project.projectDir}/neoforge/run/kubejs/documentation/index.html")
 
     // Store references to the forge and fabric output directories
-    private final File forgeOutputDir = new File("${project.projectDir}/docs/${project.minecraft_version}/forge/index.html")
-    private final File fabricOutputDir = new File("${project.projectDir}/docs/${project.minecraft_version}/fabric/index.html")
+    private final File neoforgeOutputDir = new File("${project.projectDir}/docs/${project.minecraft_version}/forge/index.html")
 
     @TaskAction
     def moveFiles() {
         // Create the forge output directories if they do not exist
-        if (!forgeOutputDir.exists()) {
-            forgeOutputDir.mkdirs()
+        if (!neoforgeOutputDir.exists()) {
+            neoforgeOutputDir.mkdirs()
         }
         // If the forge file exists, move it to the forge output directory
-        if (forgeHtmlDir.exists()) {
-            Files.move(forgeHtmlDir.toPath(), forgeOutputDir.toPath(), StandardCopyOption.REPLACE_EXISTING)
-            println "Moved Forge documentation file to ${forgeOutputDir}"
+        if (neoForgeHtmlDir.exists()) {
+            Files.move(neoForgeHtmlDir.toPath(), neoforgeOutputDir.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            println "Moved Forge documentation file to ${neoforgeOutputDir}"
         } else {
             println "Forge documentation file does not exist!"
-        }
-
-        // Create the fabric output directories if they do not exist
-        if (!fabricOutputDir.exists()) {
-            fabricOutputDir.mkdirs()
-        }
-        // If the fabric file exists, move it to the fabric output directory
-        if (fabricHtmlDir.exists()) {
-            Files.move(fabricHtmlDir.toPath(), fabricOutputDir.toPath(), StandardCopyOption.REPLACE_EXISTING)
-            println "Moved Fabric documentation file to ${fabricOutputDir}"
-        } else {
-            println "Fabric documentation file does not exist!"
         }
     }
 
@@ -161,7 +157,7 @@ class MoveDocumentationFiles extends DefaultTask {
     }
 }
 
-task updateDocumentation(type: MoveDocumentationFiles) {
+tasks.register('updateDocumentation', MoveDocumentationFiles) {
     group = 'documentation'
     description = 'Moves the documentation files to the docs directory'
 }
