@@ -1,5 +1,6 @@
 plugins {
     id 'com.github.johnrengelman.shadow'
+    id 'me.shedaniel.unified-publishing'
 }
 
 architectury {
@@ -72,4 +73,50 @@ shadowJar {
 
 remapJar {
     inputFile.set shadowJar.archiveFile
+}
+
+
+unifiedPublishing {
+    project {
+        releaseType = rootProject.artifact_type
+        gameVersions = [
+                rootProject.minecraft_version,
+                rootProject.minecraft_version + ".1",
+                rootProject.minecraft_version + ".2",
+                rootProject.minecraft_version + ".3",
+                rootProject.minecraft_version + ".4",
+                rootProject.minecraft_version + ".5"
+        ]
+        gameLoaders = ["neoforge"]
+        displayName = "$project.mod_name NeoForge $project.version"
+        mainPublication remapJar
+
+        relations {
+            depends {
+                curseforge = modrinth = "architectury-api"
+            }
+            depends {
+                curseforge = modrinth = "rhino"
+            }
+            depends {
+                curseforge = modrinth = "kubejs"
+            }
+        }
+
+        var CF = System.getenv("CURSEFORGE_KEY")
+        if (CF != null) {
+            curseforge {
+                token = CF
+                id = project.curseforge_id
+            }
+        }
+        var MT = System.getenv("MODRINTH_TOKEN")
+        if (MT != null) {
+            modrinth {
+                token = MT
+                id = project.modrinth_id
+                version = "$project.name+$project.version"
+            }
+        }
+    }
 }
