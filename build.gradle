@@ -111,6 +111,7 @@ subprojects {
         // mappings "net.fabricmc:yarn:1.16.5+build.10:v2"
         // Loom (Fabric / Quilt / Architectury )
         implementation group: "pie.ilikepiefoo", name: "kubejsoffline-core", version: "${project.core_version}"
+        implementation group: "org.reflections", name: "reflections", version: "${project.reflections_version}"
     }
 
     tasks.withType(ProcessResources).tap {
