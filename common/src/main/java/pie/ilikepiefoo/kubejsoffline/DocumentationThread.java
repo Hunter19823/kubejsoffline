@@ -1,19 +1,12 @@
 package pie.ilikepiefoo.kubejsoffline;
 
-import com.google.gson.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
-import pie.ilikepiefoo.kubejsoffline.core.DocumentationGenerator;
 import pie.ilikepiefoo.kubejsoffline.core.api.DocumentationBridge;
-import pie.ilikepiefoo.kubejsoffline.core.html.tag.Tag;
-import pie.ilikepiefoo.kubejsoffline.core.util.json.BindingsJSON;
+import pie.ilikepiefoo.kubejsoffline.core.api.DocumentationProvider;
+import pie.ilikepiefoo.kubejsoffline.core.impl.SimpleDocumentationProvider;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 public class DocumentationThread extends Thread {
@@ -27,24 +20,6 @@ public class DocumentationThread extends Thread {
 
     }
 
-    private static Path getOutputPath() {
-        return KubeJSOffline.WORKING_DIR.resolve("kubejs/documentation");
-    }
-
-    @Nullable
-    private static File writeHTMLPage(final Tag<?> content) {
-        final File output = getFile();
-
-        try (final Writer writer = new FileWriter(output, StandardCharsets.UTF_8)) {
-            content.writeHTML(writer);
-            writer.flush();
-        } catch (final IOException e) {
-            LOG.error("Failed to write file: index.html to {}", output.getPath(), e);
-            return null;
-        }
-        return output;
-    }
-
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static File getFile() {
         final Path outputPath = getOutputPath().toAbsolutePath();
@@ -53,6 +28,10 @@ public class DocumentationThread extends Thread {
         }
 
         return outputPath.resolve("index.html").toFile();
+    }
+
+    private static Path getOutputPath() {
+        return KubeJSOffline.WORKING_DIR.resolve("kubejs/documentation");
     }
 
     @Override
@@ -68,11 +47,12 @@ public class DocumentationThread extends Thread {
             }
         }
         LOG.info("Helper is available, now finding bindings...");
-        JsonObject bindings = new JsonObject();
-//        for (Map.Entry<ScriptType, JsonObject> entry : FakeBindingsEvent.bindingsJSON.entrySet()) {
-//            bindings.add(entry.getKey().name(), entry.getValue());
-//        }
-        BindingsJSON.setJsonObject(bindings);
-        DocumentationGenerator.generateHtmlPage(KubeJSOffline.HELPER, bridge, new RhinoTypeMapper(), getFile());
+        DocumentationProvider provider = new SimpleDocumentationProvider.Builder()
+                .setReflectionHelper(KubeJSOffline.HELPER)
+                .setDocumentationBridge(bridge)
+                .setTypeNameMapper(new RhinoTypeMapper())
+                .setBindingsProvider(new FakeBindingsEvent())
+                .build();
+        provider.generateDocumentation(getFile());
     }
 }
