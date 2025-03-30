@@ -2,6 +2,7 @@ package pie.ilikepiefoo.kubejsoffline.neoforge;
 
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLPaths;
+import pie.ilikepiefoo.kubejsoffline.KubeJSOffline;
 
 @Mod(KubeJSOffline.MOD_ID)
 public class KubeJSOfflineNeoForge extends KubeJSOffline {

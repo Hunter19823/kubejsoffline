@@ -1,4 +1,4 @@
-package pie.ilikepiefoo.kubejsoffline.neoforge;
+package pie.ilikepiefoo.kubejsoffline;
 
 
 import com.google.gson.JsonElement;

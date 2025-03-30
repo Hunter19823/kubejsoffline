@@ -1,14 +1,14 @@
-package pie.ilikepiefoo.kubejsoffline.neoforge.command;
+package pie.ilikepiefoo.kubejsoffline.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import dev.architectury.event.events.common.CommandRegistrationEvent;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import pie.ilikepiefoo.kubejsoffline.neoforge.DocumentationThread;
-import pie.ilikepiefoo.kubejsoffline.neoforge.KubeJSOffline;
-import pie.ilikepiefoo.kubejsoffline.neoforge.MinecraftDocumentationBridge;
-import pie.ilikepiefoo.kubejsoffline.neoforge.util.ComponentUtils;
+import pie.ilikepiefoo.kubejsoffline.DocumentationThread;
+import pie.ilikepiefoo.kubejsoffline.KubeJSOffline;
+import pie.ilikepiefoo.kubejsoffline.MinecraftDocumentationBridge;
+import pie.ilikepiefoo.kubejsoffline.util.ComponentUtils;
 
 public class DocumentCommand implements CommandRegistrationEvent {
     /**

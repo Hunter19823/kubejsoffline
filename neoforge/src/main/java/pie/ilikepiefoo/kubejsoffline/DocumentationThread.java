@@ -1,4 +1,4 @@
-package pie.ilikepiefoo.kubejsoffline.neoforge;
+package pie.ilikepiefoo.kubejsoffline;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

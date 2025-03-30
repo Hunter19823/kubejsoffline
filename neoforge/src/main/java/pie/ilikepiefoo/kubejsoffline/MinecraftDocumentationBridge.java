@@ -1,10 +1,10 @@
-package pie.ilikepiefoo.kubejsoffline.neoforge;
+package pie.ilikepiefoo.kubejsoffline;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import pie.ilikepiefoo.kubejsoffline.core.api.DocumentationBridge;
-import pie.ilikepiefoo.kubejsoffline.neoforge.util.ComponentUtils;
+import pie.ilikepiefoo.kubejsoffline.util.ComponentUtils;
 
 import java.util.function.Consumer;
 

@@ -1,7 +1,7 @@
-package pie.ilikepiefoo.kubejsoffline.neoforge;
+package pie.ilikepiefoo.kubejsoffline;
 
 
-import pie.ilikepiefoo.kubejsoffline.neoforge.command.DocumentCommand;
+import pie.ilikepiefoo.kubejsoffline.command.DocumentCommand;
 
 public class EventHandler {
 

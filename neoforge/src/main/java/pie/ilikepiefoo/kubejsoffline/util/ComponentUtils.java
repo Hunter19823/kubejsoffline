@@ -1,4 +1,4 @@
-package pie.ilikepiefoo.kubejsoffline.neoforge.util;
+package pie.ilikepiefoo.kubejsoffline.util;
 
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.PlainTextContents.LiteralContents;

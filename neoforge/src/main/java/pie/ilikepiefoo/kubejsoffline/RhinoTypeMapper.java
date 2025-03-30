@@ -1,4 +1,4 @@
-package pie.ilikepiefoo.kubejsoffline.neoforge;
+package pie.ilikepiefoo.kubejsoffline;
 
 import pie.ilikepiefoo.kubejsoffline.core.api.TypeNameMapper;
 
