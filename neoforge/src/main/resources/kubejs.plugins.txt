@@ -1,1 +1,1 @@
-pie.ilikepiefoo.kubejsoffline.OfflinePlugin
+pie.ilikepiefoo.kubejsoffline.neoforge.OfflinePlugin kubejsoffline
