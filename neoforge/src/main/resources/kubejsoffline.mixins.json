@@ -1,0 +1,7 @@
+{
+  "package": "pie.ilikepiefoo.kubejsoffline.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "BindingsEventMixin"
+  ]
+}

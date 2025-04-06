@@ -5,54 +5,43 @@ import com.google.gson.JsonElement;
 import dev.latvian.mods.kubejs.event.EventGroupWrapper;
 import dev.latvian.mods.kubejs.event.EventHandler;
 import dev.latvian.mods.kubejs.plugin.KubeJSPlugin;
-import dev.latvian.mods.kubejs.script.BindingRegistry;
 import dev.latvian.mods.kubejs.script.ScriptType;
 import dev.latvian.mods.rhino.NativeJavaObject;
-import dev.latvian.mods.rhino.ScriptableObject;
 import pie.ilikepiefoo.kubejsoffline.core.api.context.Binding;
 import pie.ilikepiefoo.kubejsoffline.core.api.context.BindingsProvider;
 import pie.ilikepiefoo.kubejsoffline.core.impl.context.SimpleBinding;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class OfflinePlugin implements KubeJSPlugin, BindingsProvider {
     public static final Map<String, SimpleBinding.Builder> BINDING_MAP = new HashMap<>();
-    private final EnumMap<ScriptType, Set<BindingRegistry>> REGISTRIES = new EnumMap<>(ScriptType.class);
+    public static final Map<ScriptType, List<Map.Entry<String, Object>>> BINDINGS = Collections.synchronizedMap(new EnumMap<>(ScriptType.class));
 
     @Override
     public Iterable<Binding> getBindings() {
-        for (Map.Entry<ScriptType, Set<BindingRegistry>> entry : REGISTRIES.entrySet()) {
-            if (entry.getValue() == null) {
-                continue;
-            }
-            Set<BindingRegistry> registries = entry.getValue();
-            for (BindingRegistry registry : registries) {
-                if (registry == null) {
+        for (var scriptBasedBindings : BINDINGS.entrySet()) {
+            for (var binding : scriptBasedBindings.getValue()) {
+                if (binding == null) {
                     continue;
                 }
-                var objectIds = ScriptableObject.getPropertyIds(registry.context(), registry.scope());
-                for (Object objectId : objectIds) {
-                    if (objectId == null) {
-                        continue;
-                    }
-                    if (objectId instanceof String namedProperty) {
-                        var property = ScriptableObject.getProperty(registry.scope(), namedProperty, registry.context());
-                        addBinding(namedProperty, property, registry.context().getType());
-                    }
+                var type = binding.getKey();
+                var value = binding.getValue();
+                if (value == null) {
+                    continue;
                 }
+                addBinding(type, value, scriptBasedBindings.getKey());
             }
         }
         List<Binding> result = BINDING_MAP.values().stream().map(SimpleBinding.Builder::build).collect(Collectors.toList());
         BINDING_MAP.clear();
-        REGISTRIES.clear();
+        BINDINGS.clear();
         return result;
     }
 
@@ -127,12 +116,6 @@ public class OfflinePlugin implements KubeJSPlugin, BindingsProvider {
 
         BINDING_MAP.put(name, builder);
         return builder;
-    }
-
-    @Override
-    public void registerBindings(BindingRegistry bindings) {
-        REGISTRIES.computeIfAbsent(bindings.context().getType(), t -> new HashSet<>());
-        REGISTRIES.get(bindings.context().getType()).add(bindings);
     }
 
 }
