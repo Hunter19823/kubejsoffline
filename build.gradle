@@ -97,6 +97,15 @@ allprojects {
                 includeGroup "dev.latvian.mods"
             }
         }
+
+        maven {
+            url = uri("https://maven.pkg.github.com/Hunter19823/kubejsoffline-core")
+            credentials {
+                username = System.getenv("PACKAGE_ACTOR")
+                password = System.getenv("PACKAGE_TOKEN")
+            }
+        }
+
         mavenLocal()
     }
 
