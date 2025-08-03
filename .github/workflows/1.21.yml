@@ -1,0 +1,39 @@
+name: Publish the minecraft mod to CurseForge and Modrinth
+
+on:
+  push:
+    branches:
+      - "1.21"
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make the gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Build project
+        run: ./gradlew build
+
+      - name: Publish Unified
+        run: ./gradlew publishUnified
+        env:
+          BUILD_VERSION: ${{ github.run_number }}
+          GITHUB_ACTOR: ${{ secrets.PACKAGE_ACTOR }}
+          GITHUB_TOKEN: ${{ secrets.PACKAGE_PAT }}
+          CURSEFORGE_KEY: ${{ secrets.CURSEFORGE_KEY }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
