@@ -33,7 +33,7 @@ jobs:
         run: ./gradlew publishUnified
         env:
           BUILD_VERSION: ${{ github.run_number }}
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ secrets.PACKAGE_ACTOR }}
+          GITHUB_TOKEN: ${{ secrets.PACKAGE_PAT }}
           CURSEFORGE_KEY: ${{ secrets.CURSEFORGE_KEY }}
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
