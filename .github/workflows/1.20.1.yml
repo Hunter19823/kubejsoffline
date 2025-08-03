@@ -28,6 +28,10 @@ jobs:
 
       - name: Build project
         run: ./gradlew build
+        env:
+          BUILD_VERSION: ${{ github.run_number }}
+          PACKAGE_ACTOR: ${{ secrets.PACKAGE_ACTOR }}
+          PACKAGE_TOKEN: ${{ secrets.PACKAGE_PAT }}
 
       - name: Publish Unified
         run: ./gradlew publishUnified
