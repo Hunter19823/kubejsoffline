@@ -59,7 +59,7 @@ subprojects {
                 includeGroup "com.github.rtyley"
             }
         }
-
+        print("This is the actor ${System.getenv("PACKAGE_ACTOR")}")
         maven {
             url = uri("https://maven.pkg.github.com/Hunter19823/kubejsoffline-core")
             credentials {
