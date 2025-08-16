@@ -23,6 +23,10 @@ If you plan to use this mod with other mods, you can generate a more accurate ve
 by including the mod in your pack and running the command `/kubejs offline`.
 You can find the standard installation instructions below:
 
+### NeoForge 1.21.1: https://hunter19823.github.io/kubejsoffline/1.21.1/neoforge/
+
+### NeoForge 1.21: https://hunter19823.github.io/kubejsoffline/1.21/neoforge/
+
 #### Forge 1.20.1: https://hunter19823.github.io/kubejsoffline/1.20.1/forge/
 
 #### Fabric 1.20.1: https://hunter19823.github.io/kubejsoffline/1.20.1/fabric/
