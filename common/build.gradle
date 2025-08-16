@@ -6,10 +6,6 @@ architectury {
     common(rootProject.enabled_platforms.split(","))
 }
 
-loom {
-    accessWidenerPath = file("src/main/resources/${mod_id}.accesswidener")
-}
-
 configurations {
     shadowImplementation.extendsFrom implementation
 }

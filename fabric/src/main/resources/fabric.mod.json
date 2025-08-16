@@ -1,7 +1,7 @@
 {
   "schemaVersion" : 1,
   "id" : "${mod_id}",
-  "version" : "${mod_version}",
+  "version" : "${version}",
   "name" : "${mod_name} (Fabric)",
   "description" : "${mod_description}",
   "authors" : [
@@ -19,10 +19,6 @@
       "pie.ilikepiefoo.kubejsoffline.fabric.KubeJSOfflineFabric"
     ]
   },
-  "mixins" : [
-    "${fabric_mixin}",
-    "${common_mixin}"
-  ],
   "depends" : {
     "fabric" : "*",
     "minecraft" : ">=${minecraft_version}",
