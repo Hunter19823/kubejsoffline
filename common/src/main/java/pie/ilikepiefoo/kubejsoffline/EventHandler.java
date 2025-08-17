@@ -6,6 +6,7 @@ import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.common.PlayerEvent;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.AccessibilityOnboardingScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
@@ -48,8 +49,8 @@ public class EventHandler {
     }
 
     public static CompoundEventResult<Screen> onTitleScreen(Screen screen) {
-        if (!(screen instanceof TitleScreen)) {
-            LOG.info("The screen is not a Title Screen. Skipping KubeJS documentation generation.");
+        if (!(screen instanceof AccessibilityOnboardingScreen || screen instanceof TitleScreen)) {
+            LOG.info("Skipping screen {}", screen == null ? "(null)" : screen.getClass().getName());
             return CompoundEventResult.pass();
         }
         LOG.info("Title Screen detected. Opening Select World Screen.");
