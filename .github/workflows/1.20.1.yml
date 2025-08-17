@@ -12,7 +12,11 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.message, '[RELEASE]')
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the
+      # added or changed files to the repository.
+      contents: write
+    if: contains(github.event.head_commit.message, '[RELEASE]') || contains(github.event.head_commit.message, '[DOCUMENTATION]')
     steps:
       - uses: actions/checkout@v4
       - name: Set up Java
@@ -35,6 +39,7 @@ jobs:
           PACKAGE_TOKEN: ${{ secrets.PACKAGE_PAT }}
 
       - name: Publish Unified
+        if: contains(github.event.head_commit.message, '[RELEASE]')
         run: ./gradlew publishUnified
         env:
           BUILD_VERSION: ${{ github.run_number }}
@@ -42,3 +47,25 @@ jobs:
           PACKAGE_TOKEN: ${{ secrets.PACKAGE_PAT }}
           CURSEFORGE_KEY: ${{ secrets.CURSEFORGE_KEY }}
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+
+      - name: Generate Documentation
+        if: contains(github.event.head_commit.message, '[DOCUMENTATION]')
+        run: ./gradlew runClient
+        env:
+          BUILD_VERSION: ${{ github.run_number }}
+          PACKAGE_ACTOR: ${{ secrets.PACKAGE_ACTOR }}
+          PACKAGE_TOKEN: ${{ secrets.PACKAGE_PAT }}
+          KUBEJS_OFFLINE_AUTO_GEN: 'true'
+
+      - name: Update Documentation
+        if: contains(github.event.head_commit.message, '[DOCUMENTATION]')
+        run: ./gradlew updateDocumentation
+
+      - name: Commit Documentation
+        if: contains(github.event.head_commit.message, '[DOCUMENTATION]')
+        uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_message: 'Updated documentation for build ${{ github.run_number }}'
+          file_pattern: '*.html'
+
+
