@@ -50,7 +50,9 @@ jobs:
 
       - name: Generate Documentation
         if: contains(github.event.head_commit.message, '[DOCUMENTATION]')
-        run: ./gradlew runClient
+        uses: coactions/setup-xvfb@v1.0.1
+        with:
+          run: ./gradlew runClient
         env:
           BUILD_VERSION: ${{ github.run_number }}
           PACKAGE_ACTOR: ${{ secrets.PACKAGE_ACTOR }}
