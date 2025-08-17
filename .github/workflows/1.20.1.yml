@@ -28,6 +28,18 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Initialize caches
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/loom-cache
+            ~/.gradle/wrapper
+            ~/.minecraft/assets
+          key: ${{ runner.os }}-${{ github.ref }}-build-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ github.ref }}-build-
+
       - name: Make the gradle wrapper executable
         run: chmod +x gradlew
 
@@ -48,22 +60,22 @@ jobs:
           CURSEFORGE_KEY: ${{ secrets.CURSEFORGE_KEY }}
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
 
-      - name: Generate Documentation (Forge)
+      - name: Generate Documentation (Fabric)
         if: contains(github.event.head_commit.message, '[DOCUMENTATION]')
         uses: coactions/setup-xvfb@v1.0.1
         with:
-          run: ./gradlew :forge:runClient
+          run: ./gradlew :fabric:runClient
         env:
           BUILD_VERSION: ${{ github.run_number }}
           PACKAGE_ACTOR: ${{ secrets.PACKAGE_ACTOR }}
           PACKAGE_TOKEN: ${{ secrets.PACKAGE_PAT }}
           KUBEJS_OFFLINE_AUTO_GEN: 'true'
 
-      - name: Generate Documentation (Fabric)
+      - name: Generate Documentation (Forge)
         if: contains(github.event.head_commit.message, '[DOCUMENTATION]')
         uses: coactions/setup-xvfb@v1.0.1
         with:
-          run: ./gradlew :fabric:runClient
+          run: ./gradlew :forge:runClient
         env:
           BUILD_VERSION: ${{ github.run_number }}
           PACKAGE_ACTOR: ${{ secrets.PACKAGE_ACTOR }}
