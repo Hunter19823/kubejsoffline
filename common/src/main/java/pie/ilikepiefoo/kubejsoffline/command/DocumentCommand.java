@@ -2,6 +2,7 @@ package pie.ilikepiefoo.kubejsoffline.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import dev.architectury.event.events.common.CommandRegistrationEvent;
+import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -9,6 +10,9 @@ import pie.ilikepiefoo.kubejsoffline.DocumentationThread;
 import pie.ilikepiefoo.kubejsoffline.KubeJSOffline;
 import pie.ilikepiefoo.kubejsoffline.MinecraftDocumentationBridge;
 import pie.ilikepiefoo.kubejsoffline.util.ComponentUtils;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class DocumentCommand implements CommandRegistrationEvent {
     /**
@@ -28,7 +32,31 @@ public class DocumentCommand implements CommandRegistrationEvent {
                     );
                     bridge.sendMessage(ComponentUtils.create("KubeJS Offline has started... Please wait..."));
                     DocumentationThread thread = new DocumentationThread(bridge);
-                    thread.start();
+                    var future = CompletableFuture.runAsync(thread);
+                    future.exceptionallyAsync((throwable) -> {
+                        bridge.sendMessage(ComponentUtils.create("An error occurred while generating KubeJS documentation. Please report to @pietheniceguy on discord."));
+                        bridge.sendMessage(ComponentUtils.create("Error: " + throwable.getMessage()));
+                        KubeJSOffline.LOG.error("Error while generating KubeJS documentation", throwable);
+                        if (KubeJSOffline.isAutomaticGenerationEnabled()) {
+                            KubeJSOffline.LOG.error("Killing the JVM due to error in documentation generation.");
+                            Minecraft.getInstance().close();
+                            System.exit(1);
+                        }
+                        return null;
+                    }).thenAccept((v) -> {
+                        if (KubeJSOffline.isAutomaticGenerationEnabled()) {
+                            KubeJSOffline.LOG.info("Killing the JVM after documentation generation.");
+                            System.exit(0);
+                        } else {
+                            KubeJSOffline.LOG.info("Documentation Thread finished successfully.");
+                        }
+                    });
+                    if (KubeJSOffline.isAutomaticGenerationEnabled()) {
+                        // If automatic generation is enabled, we want to time out the future after 5 minutes.
+                        // This is to prevent the server from hanging indefinitely if something goes wrong.
+                        KubeJSOffline.LOG.info("Setting timeout for documentation generation to 5 minutes.");
+                        future.orTimeout(5, TimeUnit.MINUTES);
+                    }
                     return 1;
                 }));
     }
