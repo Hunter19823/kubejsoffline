@@ -38,3 +38,4 @@ You can find the standard installation instructions below:
 #### Forge 1.18.2: https://hunter19823.github.io/kubejsoffline/1.18.2/forge/
 
 #### Fabric 1.18.2: https://hunter19823.github.io/kubejsoffline/1.18.2/fabric/
+
