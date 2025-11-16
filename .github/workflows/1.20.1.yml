@@ -50,16 +50,6 @@ jobs:
           PACKAGE_ACTOR: ${{ secrets.PACKAGE_ACTOR }}
           PACKAGE_TOKEN: ${{ secrets.PACKAGE_PAT }}
 
-      - name: Publish Unified
-        if: contains(github.event.head_commit.message, '[RELEASE]')
-        run: ./gradlew publishUnified
-        env:
-          BUILD_VERSION: ${{ github.run_number }}
-          PACKAGE_ACTOR: ${{ secrets.PACKAGE_ACTOR }}
-          PACKAGE_TOKEN: ${{ secrets.PACKAGE_PAT }}
-          CURSEFORGE_KEY: ${{ secrets.CURSEFORGE_KEY }}
-          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
-
       - name: Generate Documentation (Fabric)
         if: contains(github.event.head_commit.message, '[DOCUMENTATION]')
         uses: coactions/setup-xvfb@v1.0.1
@@ -81,6 +71,16 @@ jobs:
           PACKAGE_ACTOR: ${{ secrets.PACKAGE_ACTOR }}
           PACKAGE_TOKEN: ${{ secrets.PACKAGE_PAT }}
           KUBEJS_OFFLINE_AUTO_GEN: 'true'
+
+      - name: Publish Unified
+        if: contains(github.event.head_commit.message, '[RELEASE]')
+        run: ./gradlew publishUnified
+        env:
+          BUILD_VERSION: ${{ github.run_number }}
+          PACKAGE_ACTOR: ${{ secrets.PACKAGE_ACTOR }}
+          PACKAGE_TOKEN: ${{ secrets.PACKAGE_PAT }}
+          CURSEFORGE_KEY: ${{ secrets.CURSEFORGE_KEY }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
 
       - name: Update Documentation
         if: contains(github.event.head_commit.message, '[DOCUMENTATION]')
