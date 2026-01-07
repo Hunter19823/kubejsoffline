@@ -7,6 +7,8 @@ import dev.latvian.mods.kubejs.script.BindingsEvent;
 import dev.latvian.mods.kubejs.script.ScriptType;
 import dev.latvian.mods.kubejs.typings.desc.DescriptionContext;
 import dev.latvian.mods.kubejs.util.KubeJSPlugins;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import pie.ilikepiefoo.kubejsoffline.core.api.context.Binding;
 import pie.ilikepiefoo.kubejsoffline.core.api.context.BindingsProvider;
 import pie.ilikepiefoo.kubejsoffline.core.impl.context.SimpleBinding;
@@ -19,6 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class FakeBindingsEvent extends BindingsEvent implements BindingsProvider {
+    private static final Logger LOG = LogManager.getLogger();
     public static final Map<String, SimpleBinding.Builder> BINDING_MAP = new HashMap<>();
     private ScriptType scriptType;
 
@@ -31,9 +34,17 @@ public class FakeBindingsEvent extends BindingsEvent implements BindingsProvider
         for (ScriptType type : ScriptType.values()) {
             setType(type);
             for (var plugin : KubeJSPlugins.getAll()) {
-                plugin.registerBindings(this);
+                try {
+                    plugin.registerBindings(this);
+                } catch (Throwable e) {
+                    LOG.error("An error occurred while attempting to register bindings for KubeJS Plugin {}. Skipping over these bindings.", plugin.getClass().getName(), e);
+                }
             }
-            KubeJSPlugins.addSidedBindings(this);
+            try {
+                KubeJSPlugins.addSidedBindings(this);
+            } catch (Throwable e) {
+                LOG.error("An error occurred while attempting to register sided bindings. Skipping over sided bindings.", e);
+            }
         }
         return BINDING_MAP.values().stream().map(SimpleBinding.Builder::build).collect(Collectors.toList());
     }    @Override
