@@ -1,5 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.language.jvm.tasks.ProcessResources
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -90,7 +91,7 @@ dependencies {
     api("dev.architectury:architectury-neoforge:${property("architecturyVersion")}")
 
     jarJar(api("pie.ilikepiefoo:kubejsoffline-core:${property("coreVersion")}")!!)
-    jarJar(api("org.reflections:reflections:${property("reflectionsVersion")}")!!)
+    compileOnly("org.reflections:reflections:${property("reflectionsVersion")}")
 
     shadowBundle("pie.ilikepiefoo:kubejsoffline-core:${property("coreVersion")}")
     shadowBundle("org.reflections:reflections:${property("reflectionsVersion")}")
@@ -136,8 +137,10 @@ tasks.named<ProcessResources>("processResources") {
 
 tasks.register<ShadowJar>("depsShadowJar") {
     group = "build"
-    description = "Bundles kubejsoffline-core and reflections with relocations"
+    description = "Bundles mod, kubejsoffline-core, and reflections with relocations"
+    dependsOn(tasks.named("compileJava"))
     configurations = listOf(shadowBundle)
+    from(tasks.named<JavaCompile>("compileJava").flatMap { it.destinationDirectory })
     archiveClassifier.set("dev-shadow")
 
     exclude("javax/")
@@ -162,10 +165,8 @@ tasks.register<ShadowJar>("depsShadowJar") {
     exclude("META-INF/NOTICE")
     exclude("Log4j*")
 
-
-    // TODO: Figure out how to re-enable this so it doesn't break other mods.
-//    relocate("org.reflections", "${property("group")}.kubejsoffline.reflections")
-//    relocate("javassist", "${property("group")}.kubejsoffline.javassist")
+    relocate("org.reflections", "pie.ilikepiefoo.kubejsoffline.reflections")
+    relocate("javassist", "pie.ilikepiefoo.kubejsoffline.javassist")
 }
 
 val prepareDevShadowRuntime = tasks.register<Sync>("prepareDevShadowRuntime") {
@@ -177,13 +178,24 @@ val prepareDevShadowRuntime = tasks.register<Sync>("prepareDevShadowRuntime") {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
+val clearNonShadowMainClasses = tasks.register<Delete>("clearNonShadowMainClasses") {
+    group = "build"
+    description = "Removes pre-relocation mod classes so dev/runtime loads shadow output only"
+    dependsOn(prepareDevShadowRuntime)
+    delete(sourceSets.main.get().java.destinationDirectory)
+}
+
+clearNonShadowMainClasses.configure {
+    mustRunAfter(tasks.named("compileJava"))
+}
+
 sourceSets.main.get().output.dir(
     layout.buildDirectory.dir("devShadowRuntime/classes"),
     "builtBy" to prepareDevShadowRuntime,
 )
 
 tasks.named("classes") {
-    dependsOn(prepareDevShadowRuntime)
+    dependsOn(prepareDevShadowRuntime, clearNonShadowMainClasses)
 }
 
 neoForge {
@@ -197,10 +209,9 @@ tasks.named<ShadowJar>("shadowJar") {
 }
 
 tasks.named<Jar>("jar") {
+    dependsOn(prepareDevShadowRuntime)
     from(sourceSets.main.get().output)
     from(tasks.named("jarJar"))
-    dependsOn(tasks.named("depsShadowJar"))
-    from(tasks.named<ShadowJar>("depsShadowJar").flatMap { it.archiveFile.map { file -> zipTree(file) } })
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
