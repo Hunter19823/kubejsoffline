@@ -20,3 +20,8 @@ classes/
 
 *.gz
 *.log
+
+almostgradle/
+KubeJS/
+kubejsadditions/
+cotsl-client/
