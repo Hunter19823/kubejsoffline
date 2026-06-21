@@ -39,10 +39,7 @@ public class OfflinePlugin implements KubeJSPlugin, BindingsProvider {
                 addBinding(type, value, scriptBasedBindings.getKey());
             }
         }
-        List<Binding> result = BINDING_MAP.values().stream().map(SimpleBinding.Builder::build).collect(Collectors.toList());
-        BINDING_MAP.clear();
-        BINDINGS.clear();
-        return result;
+        return BINDING_MAP.values().stream().map(SimpleBinding.Builder::build).collect(Collectors.toList());
     }
 
     public void addBinding(String name, Object value, ScriptType scriptType) {

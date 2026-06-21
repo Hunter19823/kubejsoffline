@@ -53,5 +53,8 @@ public class DocumentationThread extends Thread {
                 .setBindingsProvider(new OfflinePlugin())
                 .build();
         provider.generateDocumentation(getFile());
+
+        OfflinePlugin.BINDING_MAP.clear();
+        OfflinePlugin.BINDINGS.clear();
     }
 }
