@@ -1,7 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.gradle.api.tasks.Copy
-import org.gradle.api.tasks.compile.JavaCompile
-import org.gradle.language.jvm.tasks.ProcessResources
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
@@ -90,7 +87,7 @@ dependencies {
 
     api("dev.architectury:architectury-neoforge:${property("architecturyVersion")}")
 
-    jarJar(api("pie.ilikepiefoo:kubejsoffline-core:${property("coreVersion")}")!!)
+    api("pie.ilikepiefoo:kubejsoffline-core:${property("coreVersion")}")
     compileOnly("org.reflections:reflections:${property("reflectionsVersion")}")
 
     shadowBundle("pie.ilikepiefoo:kubejsoffline-core:${property("coreVersion")}")
